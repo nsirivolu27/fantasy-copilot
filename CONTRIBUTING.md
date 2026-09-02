@@ -66,3 +66,13 @@ ahead.
 8. **Tools are defined once.** `src/lib/tools/registry.ts` is the single list. The chat
    route and (in Phase 10) the MCP server both read from it. A PR that adds a tool in a
    second place will be sent back.
+
+## Two more rules, added with the integration layer
+
+9. **`src/lib/core/` stays pure.** No Prisma, no Next, no React, no npm dependencies, and no
+   relative imports between core modules. `npm run test:boundaries` enforces all of it. That
+   purity is what lets the trade marketplace share the engine without dragging the database
+   along, and what keeps every core module unit testable on its own.
+10. **Don't invent third-party APIs.** If a service has no public API, add a generic adapter
+    (HTTP endpoint, CSV import) rather than a client for endpoints you guessed at. A wrong
+    integration is worse than an honest manual one.

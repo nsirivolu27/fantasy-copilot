@@ -21,9 +21,9 @@ Built on free, public data. **No paid APIs. No API keys. No accounts.**
 
 **[Live interactive preview →](https://claude.ai/code/artifact/7799e1d0-791a-424e-b213-dfa2ecf44532)** — the interface with real fixture data and real model output. Source in [`demo/`](./demo).
 
-> **Status: Phases 1, 2, 8 and 9.** League sync, projections backtested on real nflverse
-> data, a retrieval layer, a configurable LLM layer, and a grounded chat interface all work
-> end to end. The app is deployable today. Waivers, trades and the MCP server are next.
+> **Status: Phases 1, 2, 5, 8, 9 and 10.** League sync, projections backtested on real
+> nflverse data, a trade engine, a public REST API, webhooks, an MCP server, retrieval and
+> grounded chat all work end to end. The app is deployable today. Start/sit and waivers next.
 
 ---
 
@@ -36,12 +36,12 @@ Built on free, public data. **No paid APIs. No API keys. No accounts.**
 | 8 | Tool registry + retrieval layer + configurable LLM (any provider) | ✅ Done |
 | 9 | League chat, grounded in tools and retrieval | ✅ Done |
 | 2 | nflverse ingest, player resolution, projection model, backtest | ✅ Done |
-| 3 | Start/sit optimizer, bye and injury alerts | ⬜ |
+| 3 | Start/sit optimizer, bye and injury alerts | ⬜ Next (engine already built) |
 | 4 | Waiver targets, FAAB bids, streaming planner | ⬜ |
-| 5 | Trade analyzer, "find me a trade" | ⬜ |
+| 5 | Trade engine, value providers, "find me a trade" | ✅ Done |
 | 6 | League hub: power rankings, playoff odds, weekly digest | ⬜ |
 | 7 | ESPN + manual/CSV adapters | ⬜ |
-| 10 | MCP server — query your league from any AI client | ⬜ |
+| 10 | MCP server — query your league from any AI client | ✅ Done |
 | 11 | Decision Leverage (Δ win%) + published calibration | ⬜ |
 | 12 | Fitted projection model + season learning loop | ⬜ |
 | 13 | Polish | ⬜ |
@@ -100,6 +100,40 @@ more useful than one that's confidently wrong.
 `docker compose up -d`, or push to Vercel with a free Neon database — about five minutes
 either way. Full instructions, environment variables and the serverless caveats are in
 [DEPLOYING.md](./DEPLOYING.md).
+
+## Built to plug into other apps
+
+This is designed to sit alongside a trade marketplace and a trade analyzer rather than absorb
+them, so the boundaries are explicit and layered:
+
+- **`src/lib/core/`** — the domain layer: lineup optimization, trade evaluation, the projection
+  model, scoring, retrieval. Zero dependencies, zero Prisma, zero React. Copy the files, extract
+  them as a package, or ignore them and call the API. That purity is enforced by
+  `scripts/test-boundaries.mjs`, not by convention.
+- **`/api/v1`** — a versioned REST API with scoped API keys (stored only as hashes) and signed
+  outbound webhooks, so a sibling app doesn't have to poll.
+- **`/api/mcp`** — the same tool registry the chat uses, over the Model Context Protocol.
+
+All three read one list of tools. Adding a capability adds it everywhere.
+
+**[INTEGRATIONS.md](./INTEGRATIONS.md)** has the endpoint reference, webhook signature
+verification, and the value-provider interface.
+
+## The trade engine
+
+A trade is judged by **what it does to each roster's best legal starting lineup**, not by
+comparing player values in the abstract. That single decision is what makes the output useful:
+
+- A fourth good running back is worth almost nothing to a team already starting three.
+- The same trade is scored separately for each side — and a tool that tells you every trade you
+  propose is a win is worthless, because the other manager won't accept it.
+- `find_trades` scans all other rosters for one-for-one swaps that improve **both** teams, ranked
+  so the fairest surface first.
+
+Player values sit behind a `TradeValueProvider` interface — built-in points-above-replacement,
+any HTTP endpoint, or an imported CSV value chart. RotoTrade and the other popular calculators
+publish no public API, so there is no fake client for one in this repo; the HTTP and CSV
+providers are the honest path. See INTEGRATIONS.md.
 
 ## The chat layer
 

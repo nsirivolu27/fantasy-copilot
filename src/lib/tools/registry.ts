@@ -2,6 +2,8 @@ import { prisma } from "@/lib/db";
 import { parseJson } from "@/lib/json";
 import { getSportModule } from "@/lib/sports";
 import { retrieve } from "@/lib/rag";
+import { bestLineup, evaluate, findTrades } from "@/lib/trade/service";
+import { VERDICT_LABEL } from "@/lib/core";
 import type { NormalizedSlot } from "@/lib/platforms/types";
 
 /**
@@ -301,6 +303,116 @@ export const tools: FantasyTool[] = [
   },
 
   {
+    name: "optimal_lineup",
+    title: "Optimal lineup",
+    description:
+      "The best legal starting lineup for a team given current projections, and which players sit. Handles FLEX and superflex correctly.",
+    inputSchema: {
+      type: "object",
+      properties: { team: { type: "string", description: "Team name, manager name, or 'me'." } },
+    },
+    readOnly: true,
+    handler: async (input, ctx) => {
+      const team = await findTeam(ctx.leagueId, str(input.team) || "me");
+      if (!team) return { summary: "No matching team.", data: null };
+      const result = await bestLineup(ctx.leagueId, team.id);
+      if (result.total === 0) {
+        return {
+          summary: "No projections exist yet, so a lineup can't be optimized. Generate them from Settings.",
+          data: null,
+        };
+      }
+      return {
+        summary: `${result.teamName} optimal lineup projects ${result.total.toFixed(1)} points: ${result.assignments
+          .map((a) => `${a.slot} ${a.player?.name ?? "(empty)"}`)
+          .join(", ")}. Sitting: ${result.benched.map((b) => b.name).join(", ") || "nobody"}.`,
+        data: result,
+      };
+    },
+  },
+
+  {
+    name: "evaluate_trade",
+    title: "Evaluate a trade",
+    description:
+      "Scores a proposed trade for BOTH sides by how much each team's best starting lineup changes. Use whenever a specific trade is named. Give player names; they are resolved against rosters.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        fromTeam: { type: "string", description: "Team sending the first set of players. Defaults to the user's team." },
+        toTeam: { type: "string", description: "The other team's name or manager." },
+        fromPlayers: { type: "string", description: "Comma-separated player names the first team sends." },
+        toPlayers: { type: "string", description: "Comma-separated player names the other team sends." },
+      },
+      required: ["toTeam"],
+    },
+    readOnly: true,
+    handler: async (input, ctx) => {
+      const from = await findTeam(ctx.leagueId, str(input.fromTeam) || "me");
+      const to = await findTeam(ctx.leagueId, str(input.toTeam));
+      if (!from || !to) return { summary: "Could not resolve both teams.", data: null };
+      if (from.id === to.id) return { summary: "That is the same team on both sides.", data: null };
+
+      const fromIds = await resolvePlayerNames(from.id, str(input.fromPlayers));
+      const toIds = await resolvePlayerNames(to.id, str(input.toPlayers));
+
+      const result = await evaluate({
+        leagueId: ctx.leagueId,
+        fromTeamId: from.id,
+        toTeamId: to.id,
+        fromPlayerIds: fromIds,
+        toPlayerIds: toIds,
+      });
+
+      return {
+        summary: [
+          `Verdict for ${from.name}: ${VERDICT_LABEL[result.verdict]}.`,
+          ...result.reasoning,
+          ...result.warnings,
+        ].join(" "),
+        data: result,
+      };
+    },
+  },
+
+  {
+    name: "find_trades",
+    title: "Find trades",
+    description:
+      "Scans every other roster for one-for-one swaps that improve BOTH teams. Use for 'who should I trade with' and 'find me a trade'.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        team: { type: "string", description: "Team name or 'me'." },
+        limit: { type: "number", description: "How many to return (default 5)." },
+      },
+    },
+    readOnly: true,
+    handler: async (input, ctx) => {
+      const team = await findTeam(ctx.leagueId, str(input.team) || "me");
+      if (!team) return { summary: "No matching team.", data: null };
+      const limit = typeof input.limit === "number" ? Math.min(input.limit, 10) : 5;
+      const found = await findTrades(ctx.leagueId, team.id, limit);
+      if (found.length === 0) {
+        return {
+          summary:
+            "No one-for-one swap improves both rosters right now. That is common in a settled league — a package deal may still work, but this app only checks 1-for-1.",
+          data: [],
+        };
+      }
+      return {
+        summary: found
+          .map(
+            (f) =>
+              `${f.evaluation.sideA.gives.join(", ")} → ${f.evaluation.sideB.teamName} for ${f.evaluation.sideB.gives.join(", ")}: you +${f.evaluation.sideA.weeklyDelta.toFixed(1)}/wk, they +${f.evaluation.sideB.weeklyDelta.toFixed(1)}/wk`,
+          )
+          .join("\n"),
+        data: found,
+      };
+    },
+  },
+
+  {
     name: "search_league",
     title: "Search league data",
     description:
@@ -328,6 +440,30 @@ export const tools: FantasyTool[] = [
     },
   },
 ];
+
+/** Matches comma-separated names against one team's roster. */
+async function resolvePlayerNames(teamId: string, names: string): Promise<string[]> {
+  const wanted = names
+    .split(",")
+    .map((n) => n.trim())
+    .filter(Boolean);
+  if (wanted.length === 0) return [];
+
+  const spots = await prisma.rosterSpot.findMany({
+    where: { teamId },
+    include: { player: true },
+  });
+
+  const ids: string[] = [];
+  for (const name of wanted) {
+    const needle = name.toLowerCase();
+    const match =
+      spots.find((s) => s.player.fullName.toLowerCase() === needle) ??
+      spots.find((s) => s.player.fullName.toLowerCase().includes(needle));
+    if (match) ids.push(match.playerId);
+  }
+  return ids;
+}
 
 export const toolsByName = new Map(tools.map((t) => [t.name, t]));
 
