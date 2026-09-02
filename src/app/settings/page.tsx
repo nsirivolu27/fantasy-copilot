@@ -3,6 +3,7 @@ import { getActiveLeague } from "@/lib/settings";
 import { setMyTeamAction } from "@/app/actions";
 import { Badge, Banner, Card, CardHeader, Stat } from "@/components/ui";
 import { SyncForm } from "@/components/SyncForm";
+import { ProviderSettings } from "@/components/ProviderSettings";
 
 export const dynamic = "force-dynamic";
 
@@ -129,6 +130,8 @@ export default async function SettingsPage() {
           )}
         </div>
       </Card>
+
+      <ProviderSettings />
 
       <Card>
         <CardHeader title="How this works" />

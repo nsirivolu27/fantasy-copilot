@@ -27,6 +27,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 League
               </Link>
               <Link
+                href="/chat"
+                className="rounded-md px-3 py-1.5 text-[var(--muted)] transition hover:bg-white/5 hover:text-white"
+              >
+                Chat
+              </Link>
+              <Link
                 href="/settings"
                 className="rounded-md px-3 py-1.5 text-[var(--muted)] transition hover:bg-white/5 hover:text-white"
               >

@@ -57,3 +57,12 @@ clever metaprogramming. If a junior dev can't follow it on first read, simplify 
 See the phase list in the README. Phases are built in order — a PR implementing Phase 5
 before Phase 3 exists will be hard to review, so open an issue first if you want to jump
 ahead.
+
+## Two more rules, added with the chat layer
+
+7. **The LLM explains; it never computes.** No projection, rank, probability or league fact
+   may originate from a language model. Numbers come from tools and retrieval. The system
+   prompt says so explicitly — don't loosen it.
+8. **Tools are defined once.** `src/lib/tools/registry.ts` is the single list. The chat
+   route and (in Phase 10) the MCP server both read from it. A PR that adds a tool in a
+   second place will be sent back.

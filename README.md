@@ -19,8 +19,9 @@ Built on free, public data. **No paid APIs. No API keys. No accounts.**
 - **Honest about itself** — projections ship with a confidence rating, and the model's
   accuracy gets published, including the weeks it was wrong.
 
-> **Status: Phase 1 of 13.** League sync works end to end. Projections, waivers, trades,
-> chat and the MCP server are not built yet. See the roadmap below.
+> **Status: Phases 1, 8 and 9 (partial).** League sync, a retrieval layer over your league
+> data, a configurable LLM layer, and a grounded chat interface all work end to end. The
+> app is deployable today. Projections, waivers, trades and the MCP server are next.
 
 ---
 
@@ -29,14 +30,15 @@ Built on free, public data. **No paid APIs. No API keys. No accounts.**
 | Phase | What lands | Status |
 |---|---|---|
 | 1 | Foundation, adapter boundary, Sleeper league sync | ✅ Done |
+| — | Deployable: Postgres, Docker, health check, scheduled sync, site lock | ✅ Done |
+| 8 | Tool registry + retrieval layer + configurable LLM (any provider) | ✅ Done |
+| 9 | League chat, grounded in tools and retrieval | ✅ Done |
 | 2 | nflverse ingest, player resolution, projection model | ⬜ Next |
 | 3 | Start/sit optimizer, bye and injury alerts | ⬜ |
 | 4 | Waiver targets, FAAB bids, streaming planner | ⬜ |
 | 5 | Trade analyzer, "find me a trade" | ⬜ |
 | 6 | League hub: power rankings, playoff odds, weekly digest | ⬜ |
 | 7 | ESPN + manual/CSV adapters | ⬜ |
-| 8 | Tool registry + configurable LLM layer (any provider) | ⬜ |
-| 9 | League chatbot, grounded in tool calls | ⬜ |
 | 10 | MCP server — query your league from any AI client | ⬜ |
 | 11 | Decision Leverage (Δ win%) + published calibration | ⬜ |
 | 12 | Fitted projection model + season learning loop | ⬜ |
@@ -57,7 +59,49 @@ more useful than one that's confidently wrong.
 
 ---
 
-## Phase 1 — what's here now
+## Deploying
+
+`docker compose up -d`, or push to Vercel with a free Neon database — about five minutes
+either way. Full instructions, environment variables and the serverless caveats are in
+[DEPLOYING.md](./DEPLOYING.md).
+
+## The chat layer
+
+Ask your league questions in plain language. Two things make the answers trustworthy:
+
+**Retrieval, not vibes.** The synced league becomes a few hundred short documents — the
+league itself, its scoring, each team, each roster, each rostered player — indexed with
+BM25. Relevant ones are retrieved for every question and handed to the model as context.
+It's lexical rather than embedding-based on purpose: embeddings cost money or need a key,
+and league data is short, factual and full of proper nouns, which is exactly where lexical
+scoring is strongest.
+
+**Tools, not memory.** Five read-only tools (`get_league_info`, `list_teams`, `get_roster`,
+`find_player`, `search_league`) are defined once in `src/lib/tools/registry.ts`. The chat
+route converts them into the model's function-calling format; the MCP server will expose
+the same array in Phase 10. There is deliberately no second list.
+
+Doing both means the app works across the whole range of models someone might plug in: a
+weak local model still gets correct facts pushed into its context, while a strong one goes
+and fetches exactly what it needs. Tool calls are shown in the UI, collapsible, so you can
+check the work.
+
+The system prompt forbids stating any number that didn't come from a tool or the retrieved
+context, and forbids inventing projections or start/sit advice that the app hasn't built
+yet. Ask it who to start and it will tell you that isn't built, rather than guessing.
+
+### Bring your own model
+
+Providers are database rows, not code — add one in Settings, no redeploy. Nearly every
+provider speaks the OpenAI chat-completions format, so one adapter plus a base URL covers
+**Groq, OpenRouter, Together, DeepSeek, Ollama, LM Studio and vLLM**; Anthropic gets its
+own branch. There is no SDK and no new dependency — it's about 300 readable lines of
+`fetch`.
+
+Groq's free tier is the recommended starting point. Ollama costs nothing and never leaves
+your machine.
+
+## Phase 1 — the foundation
 
 Foundation + real Sleeper league sync. No projections, waivers, trades, chat, or MCP yet —
 those are later phases, and this phase deliberately stops here.
@@ -87,12 +131,15 @@ flow works with no network. Use league ID `1124839284756483920` on the Settings 
 ### Tests
 
 ```bash
-node --experimental-strip-types scripts/test-normalize.mjs
+npm test
 ```
 
-Ten checks on the logic most likely to be silently wrong: lineup-slot assignment, empty
+Twenty checks, no dependencies and no database needed: ten on the logic most likely to be
+silently wrong: lineup-slot assignment, empty
 starter slots, IR/taxi separation, Sleeper's split points fields, team-name fallbacks, and
-that nothing about the league format is hardcoded. No dependencies needed.
+that nothing about the league format is hardcoded — plus ten on the retrieval layer,
+checking that a player question actually retrieves that player, that rare terms outrank
+common ones, and that a no-match query returns nothing rather than noise.
 
 ## What Phase 1 does
 

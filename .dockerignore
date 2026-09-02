@@ -1,10 +1,9 @@
 node_modules
 .next
+.git
 .env
 .env.local
 *.db
-*.db-journal
 prisma/dev.db*
-.DS_Store
-next-env.d.ts
 prisma/generated-schema.prisma
+README.md

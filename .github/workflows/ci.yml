@@ -22,16 +22,16 @@ jobs:
         run: npm ci
 
       - name: Generate Prisma client
-        run: npx prisma generate
+        run: npm run db:generate
 
       - name: Unit tests (no network, no database)
-        run: node --experimental-strip-types scripts/test-normalize.mjs
+        run: npm test
 
       - name: Typecheck
         run: npx tsc --noEmit
 
       - name: Create schema
-        run: npx prisma db push --skip-generate
+        run: npm run db:push
 
       - name: Build
-        run: npx next build
+        run: npm run build

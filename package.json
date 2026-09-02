@@ -26,14 +26,19 @@
     "node": ">=22"
   },
   "scripts": {
-    "dev": "next dev",
-    "build": "prisma generate && next build",
+    "prisma:schema": "node scripts/prisma-schema.mjs",
+    "dev": "npm run prisma:schema && next dev",
+    "build": "npm run prisma:schema && prisma generate --schema=prisma/generated-schema.prisma && next build",
     "start": "next start",
     "lint": "next lint",
-    "db:push": "prisma db push",
-    "db:studio": "prisma studio",
-    "postinstall": "prisma generate",
-    "test:normalize": "node scripts/test-normalize.mjs"
+    "db:push": "npm run prisma:schema && prisma db push --schema=prisma/generated-schema.prisma",
+    "db:studio": "npm run prisma:schema && prisma studio --schema=prisma/generated-schema.prisma",
+    "db:generate": "npm run prisma:schema && prisma generate --schema=prisma/generated-schema.prisma",
+    "postinstall": "npm run db:generate",
+    "typecheck": "tsc --noEmit",
+    "test": "npm run test:sleeper && npm run test:rag",
+    "test:sleeper": "node --experimental-strip-types scripts/test-normalize.mjs",
+    "test:rag": "node --experimental-strip-types scripts/test-rag.mjs"
   },
   "dependencies": {
     "@prisma/client": "^6.5.0",

@@ -1,0 +1,40 @@
+# Self-host with one command:  docker compose up -d
+# Then open http://localhost:3000
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: fantasy
+      POSTGRES_PASSWORD: fantasy
+      POSTGRES_DB: fantasy_copilot
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U fantasy -d fantasy_copilot"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  app:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://fantasy:fantasy@db:5432/fantasy_copilot
+      # Uncomment to lock a publicly reachable deployment:
+      # APP_PASSWORD: change-me
+      # SYNC_SECRET: change-me
+    ports:
+      - "3000:3000"
+    # Create the schema on first boot, then start the server.
+    command: >
+      sh -c "node scripts/prisma-schema.mjs &&
+             ./node_modules/.bin/prisma db push --schema=prisma/generated-schema.prisma --skip-generate &&
+             node server.js"
+
+volumes:
+  pgdata:

@@ -1,17 +1,20 @@
 // Fantasy Copilot — Phase 1 schema.
 //
-// Datasource note: SQLite is the default so the app runs with no DB setup.
-// Prisma's SQLite connector has no native Json column type, so JSON payloads
-// (scoring settings, roster slots, platform IDs) are stored as TEXT and read
-// through the typed helpers in src/lib/json.ts. Those same helpers work
-// unchanged on Postgres, so switching is a one-line provider change here.
+// Datasource note: this schema runs unchanged on SQLite (local dev) and
+// Postgres (deployments). JSON payloads — scoring settings, roster slots,
+// platform IDs — are stored as TEXT and read through the typed helpers in
+// src/lib/json.ts, because Prisma's SQLite connector has no native Json type.
+// TEXT behaves identically on both, so no migration is needed to switch.
 
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite" // change to "postgresql" for Postgres
+  // Do not edit by hand — scripts/prisma-schema.mjs rewrites this into
+  // prisma/generated-schema.prisma to match DATABASE_URL (sqlite locally,
+  // postgresql when deployed). Run prisma via the npm db:* scripts.
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -124,4 +127,53 @@ model PlayerCacheMeta {
   id          String   @id @default("sleeper-nfl")
   fetchedAt   DateTime
   playerCount Int      @default(0)
+}
+
+// ─── LLM layer ───────────────────────────────────────────────────────────────
+// Providers are database rows, not code. Almost every provider speaks the
+// OpenAI chat-completions wire format, so "openai-compatible" plus a baseUrl
+// covers Groq, OpenRouter, Together, DeepSeek, Ollama, LM Studio and more.
+// Only Anthropic needs its own request shape.
+
+model LlmProvider {
+  id            String  @id @default(cuid())
+  label         String
+  kind          String  @default("openai-compatible") // openai-compatible | anthropic
+  baseUrl       String
+  apiKey        String? // stored server-side, never returned to the browser
+  modelId       String
+  supportsTools Boolean @default(true)
+  isDefault     Boolean @default(false)
+
+  lastTestedAt  DateTime?
+  lastTestOk    Boolean?
+  lastTestNote  String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Conversation {
+  id        String    @id @default(cuid())
+  leagueId  String?
+  title     String    @default("New chat")
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  messages  Message[]
+
+  @@index([leagueId])
+}
+
+model Message {
+  id             String       @id @default(cuid())
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  role      String // user | assistant | system
+  content   String
+  /// JSON array of {name, input, summary} describing tools used for this answer.
+  toolsJson String   @default("[]")
+  createdAt DateTime @default(now())
+
+  @@index([conversationId])
 }
