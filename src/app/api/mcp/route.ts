@@ -8,7 +8,7 @@ export const maxDuration = 60;
 
 /**
  * MCP server — the same tool registry the chat uses, exposed over the Model
- * Context Protocol so Claude Desktop, Cursor or the trading app can query the
+ * Context Protocol so Claude Desktop or Cursor can query the
  * league directly. There is deliberately no second list of tools.
  *
  * mcp-handler is loaded dynamically: if the package is missing or its API has
@@ -67,7 +67,10 @@ async function handle(request: Request): Promise<Response> {
   const auth = await authenticate(request, "read:league");
   if (!auth.ok) {
     return NextResponse.json(
-      { error: auth.error, hint: "Create an API key in Settings → Integrations, then set it as the bearer token in your MCP client config." },
+      {
+        error: auth.error,
+        hint: "Create an API key in Settings, then set it as the bearer token in your MCP client config.",
+      },
       { status: auth.status ?? 401 },
     );
   }

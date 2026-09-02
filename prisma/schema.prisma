@@ -231,9 +231,7 @@ model Message {
   @@index([conversationId])
 }
 
-// ─── Trades and the marketplace ──────────────────────────────────────────────
-// These models exist so an external trading app can read and write the same
-// state the app itself uses. See INTEGRATIONS.md.
+// ─── Trades ──────────────────────────────────────────────────────────────────
 
 model TradeBlock {
   id       String @id @default(cuid())
@@ -250,35 +248,7 @@ model TradeBlock {
   @@index([leagueId])
 }
 
-model TradeProposal {
-  id       String @id @default(cuid())
-  leagueId String
-
-  fromTeamId String
-  toTeamId   String
-  /// JSON arrays of player ids moving in each direction.
-  fromPlayersJson String @default("[]")
-  toPlayersJson   String @default("[]")
-
-  /// draft | proposed | accepted | declined | expired | withdrawn
-  status String @default("draft")
-  /// Where it came from: "app" or an external system's key label.
-  origin String @default("app")
-  /// External id, so a trading app can reconcile its own records.
-  externalId String?
-
-  /// Cached evaluation at proposal time, as JSON.
-  evaluationJson String?
-  message        String?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@unique([leagueId, externalId])
-  @@index([leagueId, status])
-}
-
-// ─── Integration surface ─────────────────────────────────────────────────────
+// ─── MCP access ──────────────────────────────────────────────────────────────
 
 model ApiKey {
   id     String @id @default(cuid())
@@ -286,7 +256,7 @@ model ApiKey {
   /// SHA-256 of the key. The plaintext is shown once, at creation, and never stored.
   hash   String @unique
   prefix String
-  /// JSON array: "read:league" | "read:projections" | "write:trades" | "read:trades"
+  /// JSON array: "read:league" | "read:projections" | "read:trades"
   scopesJson String @default("[\"read:league\"]")
 
   lastUsedAt DateTime?
@@ -294,23 +264,6 @@ model ApiKey {
   createdAt  DateTime  @default(now())
 
   @@index([prefix])
-}
-
-model WebhookSubscription {
-  id     String @id @default(cuid())
-  label  String
-  url    String
-  /// JSON array of event names, or ["*"] for everything.
-  eventsJson String @default("[\"*\"]")
-  /// Signing secret; payloads carry an HMAC so receivers can verify origin.
-  secret String
-
-  active       Boolean   @default(true)
-  lastStatus   Int?
-  lastAttemptAt DateTime?
-  failureCount Int       @default(0)
-
-  createdAt DateTime @default(now())
 }
 
 model ValueProviderConfig {

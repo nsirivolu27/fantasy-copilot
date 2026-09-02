@@ -6,7 +6,7 @@ import { SETTING_KEYS, setSetting } from "@/lib/settings";
 import { syncLeague } from "@/lib/sync/syncLeague";
 import { chat } from "@/lib/llm/providers";
 import { invalidateLeagueIndex } from "@/lib/rag";
-import { ingestSeasonStats } from "@/lib/data/ingest";
+import { ingestByeWeeks, ingestSeasonStats } from "@/lib/data/ingest";
 import { runProjections } from "@/lib/projections/run";
 import { getActiveLeague } from "@/lib/settings";
 import type { PlatformId } from "@/lib/platforms";
@@ -168,10 +168,21 @@ export async function refreshProjectionsAction(
 
   try {
     const ingest = await ingestSeasonStats(league.season);
+
+    // Bye weeks power the start/sit alerts. Best effort — a schedule fetch
+    // failure must not lose the stats we just ingested.
+    let byes: { teamsResolved: number; anomalies: string[] } | null = null;
+    try {
+      byes = await ingestByeWeeks(league.season);
+    } catch (err) {
+      console.warn("[projections] bye weeks unavailable:", err instanceof Error ? err.message : err);
+    }
+
     const run = await runProjections(league.id);
     invalidateLeagueIndex(league.id);
     revalidatePath("/");
     revalidatePath("/chat");
+    revalidatePath("/lineup");
 
     const parts = [
       `Ingested ${ingest.rowsStored} stat rows across ${ingest.weeks.length} weeks.`,
@@ -179,6 +190,12 @@ export async function refreshProjectionsAction(
     ];
     if (run.skippedNoStats > 0) {
       parts.push(`${run.skippedNoStats} had no game history and used replacement level.`);
+    }
+    if (byes) {
+      parts.push(`Bye weeks resolved for ${byes.teamsResolved} NFL teams.`);
+      if (byes.anomalies.length > 0) parts.push(`Unresolved: ${byes.anomalies.join("; ")}.`);
+    } else {
+      parts.push("Bye weeks could not be fetched; start/sit bye alerts will be missing.");
     }
     if (run.unsupportedScoringKeys.length > 0) {
       parts.push(

@@ -76,3 +76,5 @@ ahead.
 10. **Don't invent third-party APIs.** If a service has no public API, add a generic adapter
     (HTTP endpoint, CSV import) rather than a client for endpoints you guessed at. A wrong
     integration is worse than an honest manual one.
+11. **Say when a call is close.** Sub-threshold gaps are coin flips and must be presented as
+    such. A tool that projects confidence it hasn't earned is worse than one that admits doubt.

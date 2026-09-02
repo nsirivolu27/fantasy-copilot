@@ -6,6 +6,7 @@ import { getSportModule } from "@/lib/sports";
 import { PLACEHOLDER_LEAGUE } from "@/lib/defaults";
 import type { NormalizedSlot } from "@/lib/platforms/types";
 import { Badge, Banner, Card, CardHeader, EmptyState, Stat } from "@/components/ui";
+import { getStartSitAdvice } from "@/lib/lineup/service";
 import { TeamCard, type RosterRow } from "@/components/TeamCard";
 
 export const dynamic = "force-dynamic";
@@ -65,6 +66,10 @@ export default async function LeaguePage() {
   });
   const projectionByPlayer = new Map(projectionRows.map((p) => [p.playerId, p]));
 
+  // Lineup problems for the user's own team, surfaced before anything else.
+  const advice = await getStartSitAdvice(league.id).catch(() => null);
+  const criticalAlerts = advice?.alerts.filter((a) => a.severity === "critical") ?? [];
+
   const starterSlots = slots.filter((s) => s.isStarter);
   const benchSlots = slots.filter((s) => !s.isStarter);
   const scoringKeys = Object.keys(scoring).sort();
@@ -93,6 +98,22 @@ export default async function LeaguePage() {
           {league.lastSyncedAt ? (
             <> Last good sync: {league.lastSyncedAt.toLocaleString()}.</>
           ) : null}
+        </Banner>
+      ) : null}
+
+      {criticalAlerts.map((a, i) => (
+        <Banner key={i} tone="error" title={a.message}>
+          <Link href="/lineup" className="underline">
+            Fix it on the lineup page
+          </Link>
+        </Banner>
+      ))}
+
+      {advice && advice.pointsGained > 1.5 ? (
+        <Banner tone="warn" title={`Your lineup is leaving ${advice.pointsGained.toFixed(1)} points on the bench`}>
+          <Link href="/lineup" className="underline">
+            See the {advice.changes.filter((c) => !c.isCoinFlip).length} suggested change(s)
+          </Link>
         </Banner>
       ) : null}
 

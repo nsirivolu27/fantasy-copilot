@@ -3,6 +3,7 @@ import { parseJson } from "@/lib/json";
 import { getSportModule } from "@/lib/sports";
 import { retrieve } from "@/lib/rag";
 import { bestLineup, evaluate, findTrades } from "@/lib/trade/service";
+import { getStartSitAdvice } from "@/lib/lineup/service";
 import { VERDICT_LABEL } from "@/lib/core";
 import type { NormalizedSlot } from "@/lib/platforms/types";
 
@@ -328,6 +329,44 @@ export const tools: FantasyTool[] = [
           .join(", ")}. Sitting: ${result.benched.map((b) => b.name).join(", ") || "nobody"}.`,
         data: result,
       };
+    },
+  },
+
+  {
+    name: "start_sit_advice",
+    title: "Start/sit advice",
+    description:
+      "Compares a team's current lineup to the optimal one: which changes to make, what each is worth, which calls are coin flips, and any bye or injury problems. Use for 'who should I start', 'should I bench X', 'is my lineup set'.",
+    inputSchema: {
+      type: "object",
+      properties: { team: { type: "string", description: "Team name, manager name, or 'me'." } },
+    },
+    readOnly: true,
+    handler: async (input, ctx) => {
+      const team = await findTeam(ctx.leagueId, str(input.team) || "me");
+      const advice = await getStartSitAdvice(ctx.leagueId, team?.id);
+      if (!advice) return { summary: "No team is marked as the user's, and none was named.", data: null };
+      if (!advice.hasProjections) {
+        return {
+          summary:
+            "No projections exist for this week, so a lineup can't be optimized. They're generated from Settings. Do not guess at start/sit without them.",
+          data: null,
+        };
+      }
+
+      const lines = [
+        `${advice.teamName}, week ${advice.week}: current lineup projects ${advice.currentTotal.toFixed(1)}, optimal projects ${advice.optimalTotal.toFixed(1)} (+${advice.pointsGained.toFixed(1)}).`,
+      ];
+      for (const a of advice.alerts) lines.push(`${a.severity.toUpperCase()}: ${a.message}`);
+      const real = advice.changes.filter((c) => !c.isCoinFlip);
+      if (real.length === 0) lines.push("No change is worth making; the lineup is already optimal.");
+      for (const c of real) {
+        lines.push(`${c.slot}: start ${c.in.name} over ${c.out?.name ?? "an empty slot"} (+${c.gain.toFixed(1)}). ${c.reason}`);
+      }
+      for (const c of advice.changes.filter((x) => x.isCoinFlip)) {
+        lines.push(`${c.slot}: ${c.out?.name} vs ${c.in.name} is a coin flip (${c.gain.toFixed(1)} apart) — say so rather than picking confidently.`);
+      }
+      return { summary: lines.join("\n"), data: advice };
     },
   },
 

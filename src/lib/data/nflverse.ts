@@ -77,3 +77,27 @@ export async function fetchWeeklyStats(season: string): Promise<NflverseWeek[]> 
 
   return out;
 }
+
+/**
+ * Every NFL game, used to derive bye weeks (see core/schedule.ts).
+ * One file covers all seasons, so it's fetched once and filtered.
+ */
+export async function fetchSchedule(): Promise<
+  { season: string; week: number; gameType: string; awayTeam: string; homeTeam: string }[]
+> {
+  const res = await fetch(`${RELEASE_BASE}/schedules/games.csv`, {
+    redirect: "follow",
+    cache: "no-store",
+  });
+  if (!res.ok) throw new Error(`nflverse schedule returned ${res.status}.`);
+
+  return parseCsv(await res.text())
+    .map((row) => ({
+      season: row.season ?? "",
+      week: num(row.week) ?? 0,
+      gameType: row.game_type ?? "REG",
+      awayTeam: row.away_team ?? "",
+      homeTeam: row.home_team ?? "",
+    }))
+    .filter((g) => g.season && g.week > 0 && g.awayTeam && g.homeTeam);
+}

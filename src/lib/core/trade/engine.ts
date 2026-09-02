@@ -16,6 +16,12 @@ export interface LineupPlayer {
   name: string;
   position: string;
   projectedPoints: number;
+  /** Sleeper designation: Out, Doubtful, Questionable, IR… */
+  injuryStatus?: string | null;
+  /** True when this player's NFL team is on bye for the week being set. */
+  isOnBye?: boolean;
+  /** False when no projection exists, so advice can say so instead of guessing. */
+  hasProjection?: boolean;
 }
 
 export interface LineupSlot {
@@ -290,3 +296,149 @@ export const VERDICT_LABEL: Record<Verdict, string> = {
   lean_decline: "Lean decline",
   decline: "Decline",
 };
+
+// ── Start/sit advice ────────────────────────────────────────────────────────
+
+/** A gap smaller than this is noise, not a recommendation. */
+export const COIN_FLIP_THRESHOLD = 1.5;
+
+const CANNOT_PLAY = new Set(["OUT", "IR", "PUP", "SUSP", "DOUBTFUL", "NA"]);
+
+export interface LineupChange {
+  slot: string;
+  slotIndex: number;
+  out: LineupPlayer | null;
+  in: LineupPlayer;
+  /** Points gained at this slot. */
+  gain: number;
+  /** True when the gap is small enough that either choice is defensible. */
+  isCoinFlip: boolean;
+  reason: string;
+}
+
+export interface LineupAlert {
+  severity: "critical" | "warning";
+  message: string;
+  playerId?: string;
+}
+
+export interface LineupAdvice {
+  currentTotal: number;
+  optimalTotal: number;
+  pointsGained: number;
+  changes: LineupChange[];
+  alerts: LineupAlert[];
+  optimal: LineupResult;
+}
+
+/**
+ * Compares the lineup as it stands against the optimal one.
+ *
+ * Two deliberate choices. Players who cannot play are removed from the pool
+ * before optimizing, so the optimizer never recommends starting someone who is
+ * Out. And a swap worth less than COIN_FLIP_THRESHOLD is labelled a coin flip
+ * rather than dressed up as a recommendation — most start/sit calls genuinely
+ * are close, and pretending otherwise is how a tool loses trust.
+ */
+export function adviseLineup(args: {
+  roster: LineupPlayer[];
+  currentStarterIds: string[];
+  slots: LineupSlot[];
+}): LineupAdvice {
+  const { roster, slots } = args;
+  const currentIds = new Set(args.currentStarterIds);
+  const byId = new Map(roster.map((p) => [p.playerId, p]));
+
+  const alerts: LineupAlert[] = [];
+
+  // Current lineup: whoever is actually starting, in their slots.
+  const currentStarters = args.currentStarterIds
+    .map((id) => byId.get(id))
+    .filter((p): p is LineupPlayer => p != null);
+  const currentTotal = round2(
+    currentStarters.reduce((sum, p) => sum + p.projectedPoints, 0),
+  );
+
+  for (const p of currentStarters) {
+    if (p.isOnBye) {
+      alerts.push({ severity: "critical", message: `${p.name} is on bye and is in your starting lineup.`, playerId: p.playerId });
+    } else if (p.injuryStatus && CANNOT_PLAY.has(p.injuryStatus.toUpperCase())) {
+      alerts.push({ severity: "critical", message: `${p.name} is listed ${p.injuryStatus} and is starting.`, playerId: p.playerId });
+    } else if (p.injuryStatus) {
+      alerts.push({ severity: "warning", message: `${p.name} is listed ${p.injuryStatus}.`, playerId: p.playerId });
+    }
+    if (p.hasProjection === false) {
+      alerts.push({ severity: "warning", message: `No projection for ${p.name}, so the optimizer can't rank him.`, playerId: p.playerId });
+    }
+  }
+
+  const filled = currentStarters.length;
+  if (filled < slots.length) {
+    alerts.push({
+      severity: "critical",
+      message: `${slots.length - filled} starting slot${slots.length - filled > 1 ? "s are" : " is"} empty.`,
+    });
+  }
+
+  // Anyone who cannot play is excluded from the optimizer's pool entirely.
+  const available = roster.filter(
+    (p) => !p.isOnBye && !(p.injuryStatus && CANNOT_PLAY.has(p.injuryStatus.toUpperCase())),
+  );
+  const optimal = optimizeLineup(available, slots);
+
+  const currentBySlot = new Map<number, LineupPlayer | null>();
+  slots.forEach((slot, i) => currentBySlot.set(slot.index, currentStarters[i] ?? null));
+
+  const changes: LineupChange[] = [];
+  for (const assignment of optimal.assignments) {
+    const suggested = assignment.player;
+    if (!suggested) continue;
+    const existing = currentBySlot.get(assignment.slotIndex) ?? null;
+    if (existing && existing.playerId === suggested.playerId) continue;
+    if (currentIds.has(suggested.playerId) && existing && currentIds.has(existing.playerId)) {
+      // Both already start; this is a shuffle between slots, not a real change.
+      continue;
+    }
+
+    const gain = round2(suggested.projectedPoints - (existing?.projectedPoints ?? 0));
+    const isCoinFlip = Math.abs(gain) < COIN_FLIP_THRESHOLD && existing != null;
+
+    changes.push({
+      slot: assignment.slot,
+      slotIndex: assignment.slotIndex,
+      out: existing,
+      in: suggested,
+      gain,
+      isCoinFlip,
+      reason: buildReason(suggested, existing, gain, isCoinFlip),
+    });
+  }
+
+  changes.sort((a, b) => b.gain - a.gain);
+
+  return {
+    currentTotal,
+    optimalTotal: optimal.total,
+    pointsGained: round2(optimal.total - currentTotal),
+    changes,
+    alerts,
+    optimal,
+  };
+}
+
+function buildReason(
+  incoming: LineupPlayer,
+  outgoing: LineupPlayer | null,
+  gain: number,
+  isCoinFlip: boolean,
+): string {
+  if (!outgoing) return `${incoming.name} fills an empty slot (${incoming.projectedPoints.toFixed(1)} projected).`;
+  if (outgoing.isOnBye) return `${outgoing.name} is on bye; ${incoming.name} projects ${incoming.projectedPoints.toFixed(1)}.`;
+  if (outgoing.injuryStatus && CANNOT_PLAY.has(outgoing.injuryStatus.toUpperCase())) {
+    return `${outgoing.name} is ${outgoing.injuryStatus}; ${incoming.name} projects ${incoming.projectedPoints.toFixed(1)}.`;
+  }
+  if (isCoinFlip) {
+    return `Coin flip — ${gain.toFixed(1)} points between them. Either is defensible.`;
+  }
+  return `${incoming.name} projects ${gain.toFixed(1)} more than ${outgoing.name}.`;
+}

@@ -21,9 +21,9 @@ Built on free, public data. **No paid APIs. No API keys. No accounts.**
 
 **[Live interactive preview →](https://claude.ai/code/artifact/7799e1d0-791a-424e-b213-dfa2ecf44532)** — the interface with real fixture data and real model output. Source in [`demo/`](./demo).
 
-> **Status: Phases 1, 2, 5, 8, 9 and 10.** League sync, projections backtested on real
-> nflverse data, a trade engine, a public REST API, webhooks, an MCP server, retrieval and
-> grounded chat all work end to end. The app is deployable today. Start/sit and waivers next.
+> **Status: Phases 1, 2, 3, 5, 8, 9 and 10.** League sync, projections backtested on real
+> nflverse data, a start/sit optimizer, a trade engine, an MCP server, retrieval and grounded
+> chat all work end to end. The app is deployable today. Waivers and streaming are next.
 
 ---
 
@@ -33,11 +33,12 @@ Built on free, public data. **No paid APIs. No API keys. No accounts.**
 |---|---|---|
 | 1 | Foundation, adapter boundary, Sleeper league sync | ✅ Done |
 | — | Deployable: Postgres, Docker, health check, scheduled sync, site lock | ✅ Done |
+| — | Bye weeks derived from the nflverse schedule | ✅ Done |
 | 8 | Tool registry + retrieval layer + configurable LLM (any provider) | ✅ Done |
 | 9 | League chat, grounded in tools and retrieval | ✅ Done |
 | 2 | nflverse ingest, player resolution, projection model, backtest | ✅ Done |
-| 3 | Start/sit optimizer, bye and injury alerts | ⬜ Next (engine already built) |
-| 4 | Waiver targets, FAAB bids, streaming planner | ⬜ |
+| 3 | Start/sit optimizer, bye and injury alerts | ✅ Done |
+| 4 | Waiver targets, FAAB bids, streaming planner | ⬜ Next |
 | 5 | Trade engine, value providers, "find me a trade" | ✅ Done |
 | 6 | League hub: power rankings, playoff odds, weekly digest | ⬜ |
 | 7 | ESPN + manual/CSV adapters | ⬜ |
@@ -101,23 +102,23 @@ more useful than one that's confidently wrong.
 either way. Full instructions, environment variables and the serverless caveats are in
 [DEPLOYING.md](./DEPLOYING.md).
 
-## Built to plug into other apps
+## Start/sit
 
-This is designed to sit alongside a trade marketplace and a trade analyzer rather than absorb
-them, so the boundaries are explicit and layered:
+The `/lineup` page compares your current lineup to the optimal one and shows what each change is
+worth. Three decisions shape it:
 
-- **`src/lib/core/`** — the domain layer: lineup optimization, trade evaluation, the projection
-  model, scoring, retrieval. Zero dependencies, zero Prisma, zero React. Copy the files, extract
-  them as a package, or ignore them and call the API. That purity is enforced by
-  `scripts/test-boundaries.mjs`, not by convention.
-- **`/api/v1`** — a versioned REST API with scoped API keys (stored only as hashes) and signed
-  outbound webhooks, so a sibling app doesn't have to poll.
-- **`/api/mcp`** — the same tool registry the chat uses, over the Model Context Protocol.
+- **Players who can't play are removed from the pool**, not merely flagged — the optimizer will
+  never suggest starting someone who's Out or on bye.
+- **Anything under 1.5 points is labelled a coin flip**, not a recommendation. Most start/sit
+  calls genuinely are close, and manufacturing confidence from a 0.4-point gap is how a tool
+  loses trust.
+- **Bye weeks are derived, not hardcoded.** No free source publishes a bye list, but nflverse
+  publishes every game — a team's bye is the regular-season week it doesn't appear. That stays
+  correct every season with no maintenance.
 
-All three read one list of tools. Adding a capability adds it everywhere.
-
-**[INTEGRATIONS.md](./INTEGRATIONS.md)** has the endpoint reference, webhook signature
-verification, and the value-provider interface.
+The slot-filling order matters too: the optimizer fills the most restrictive slots first, which
+is the fix for the classic FLEX bug where a naive pass hands your best RB to the FLEX and leaves
+RB2 empty.
 
 ## The trade engine
 
@@ -130,10 +131,10 @@ comparing player values in the abstract. That single decision is what makes the 
 - `find_trades` scans all other rosters for one-for-one swaps that improve **both** teams, ranked
   so the fairest surface first.
 
-Player values sit behind a `TradeValueProvider` interface — built-in points-above-replacement,
-any HTTP endpoint, or an imported CSV value chart. RotoTrade and the other popular calculators
-publish no public API, so there is no fake client for one in this repo; the HTTP and CSV
-providers are the honest path. See INTEGRATIONS.md.
+Player values sit behind a `TradeValueProvider` interface — built-in points-above-replacement
+(scaled by weeks remaining, age-curved in dynasty), any HTTP endpoint, or an imported CSV value
+chart. The popular trade calculators publish no public API, so there's no fake client for one in
+this repo; the generic providers are the honest path.
 
 ## The chat layer
 

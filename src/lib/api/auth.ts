@@ -2,24 +2,16 @@ import { createHash, randomBytes, timingSafeEqual } from "node:crypto";
 import { prisma } from "@/lib/db";
 
 /**
- * API keys for external apps (the trading app, the trade analyzer).
+ * API keys for the MCP endpoint, so an AI client (Claude Desktop, Cursor) can
+ * query the league without a browser session.
  *
  * Only a SHA-256 hash is stored — the plaintext is shown once at creation and
  * never again, so a database leak doesn't hand over working credentials.
  */
 
-export type Scope =
-  | "read:league"
-  | "read:projections"
-  | "read:trades"
-  | "write:trades";
+export type Scope = "read:league" | "read:projections" | "read:trades";
 
-export const ALL_SCOPES: Scope[] = [
-  "read:league",
-  "read:projections",
-  "read:trades",
-  "write:trades",
-];
+export const ALL_SCOPES: Scope[] = ["read:league", "read:projections", "read:trades"];
 
 const PREFIX = "fcp_";
 

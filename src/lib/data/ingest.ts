@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db";
-import { fetchWeeklyStats } from "./nflverse";
+import { fetchSchedule, fetchWeeklyStats } from "./nflverse";
+import { deriveByeWeeks } from "@/lib/core/schedule";
 
 /**
  * Pulls a season of nflverse weekly stats and stores them against players we
@@ -75,5 +76,33 @@ export async function ingestSeasonStats(season: string): Promise<IngestResult> {
     rowsStored,
     unmatchedPlayers: unmatched.size,
     weeks: [...weeks].sort((a, b) => a - b),
+  };
+}
+
+/**
+ * Derives bye weeks from the schedule and stores them on players.
+ * Best effort: a failure here must never break a stats ingest.
+ */
+export async function ingestByeWeeks(season: string): Promise<{
+  teamsResolved: number;
+  playersUpdated: number;
+  anomalies: string[];
+}> {
+  const games = await fetchSchedule();
+  const { byeByTeam, anomalies } = deriveByeWeeks(games, season);
+
+  let playersUpdated = 0;
+  for (const [team, week] of Object.entries(byeByTeam)) {
+    const result = await prisma.player.updateMany({
+      where: { nflTeam: team },
+      data: { byeWeek: week },
+    });
+    playersUpdated += result.count;
+  }
+
+  return {
+    teamsResolved: Object.keys(byeByTeam).length,
+    playersUpdated,
+    anomalies: anomalies.map((a) => `${a.team}: off in weeks ${a.weeks.join(", ")}`),
   };
 }

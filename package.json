@@ -36,13 +36,14 @@
     "db:generate": "npm run prisma:schema && prisma generate --schema=prisma/generated-schema.prisma",
     "postinstall": "npm run db:generate",
     "typecheck": "tsc --noEmit",
-    "test": "npm run test:sleeper && npm run test:rag && npm run test:projections && npm run test:trade && npm run test:boundaries",
+    "test": "npm run test:sleeper && npm run test:rag && npm run test:projections && npm run test:trade && npm run test:schedule && npm run test:boundaries",
     "test:sleeper": "node --experimental-strip-types scripts/test-normalize.mjs",
     "test:rag": "node --experimental-strip-types scripts/test-rag.mjs",
     "test:projections": "node --experimental-strip-types scripts/test-projections.mjs",
     "backtest": "node --experimental-strip-types scripts/backtest.mjs",
     "test:trade": "node --experimental-strip-types scripts/test-trade.mjs",
-    "test:boundaries": "node --experimental-strip-types scripts/test-boundaries.mjs"
+    "test:boundaries": "node --experimental-strip-types scripts/test-boundaries.mjs",
+    "test:schedule": "node --experimental-strip-types scripts/test-schedule.mjs"
   },
   "dependencies": {
     "@prisma/client": "^6.5.0",

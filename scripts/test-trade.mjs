@@ -8,6 +8,8 @@ import {
   slotAccepts,
   evaluateTrade,
   verdictFor,
+  adviseLineup,
+  COIN_FLIP_THRESHOLD,
 } from "../src/lib/core/trade/engine.ts";
 import {
   pointsAboveReplacementProvider,
@@ -239,6 +241,105 @@ await test("players the sender doesn't roster are ignored with a warning", () =>
     slots: SLOTS,
   });
   assert.match(r.warnings.join(" "), /doesn't roster/i);
+});
+
+// ── Start/sit advice ─────────────────────────────────────────────────────────
+
+const startSitRoster = [
+  p("qb", "QB One", "QB", 20),
+  p("rb1", "RB One", "RB", 18), p("rb2", "RB Two", "RB", 15),
+  p("wr1", "WR One", "WR", 14), p("wr2", "WR Two", "WR", 6),
+  p("te1", "TE One", "TE", 9), p("k1", "K One", "K", 8), p("d1", "D One", "DEF", 7),
+  p("flexguy", "Flex Guy", "RB", 12),
+  p("benchwr", "Bench WR", "WR", 13),
+];
+const CURRENT = ["qb", "rb1", "rb2", "wr1", "wr2", "te1", "flexguy", "k1", "d1"];
+
+await test("a clearly better bench player is recommended, with the gain", () => {
+  const advice = adviseLineup({ roster: startSitRoster, currentStarterIds: CURRENT, slots: SLOTS });
+  assert.ok(advice.pointsGained > 0, `expected a gain, got ${advice.pointsGained}`);
+  const change = advice.changes.find((c) => c.in.playerId === "benchwr");
+  assert.ok(change, "Bench WR (13) should replace WR Two (6)");
+  assert.equal(change.out.playerId, "wr2");
+  assert.equal(change.gain, 7);
+  assert.equal(change.isCoinFlip, false);
+});
+
+await test("an already-optimal lineup recommends nothing", () => {
+  const advice = adviseLineup({
+    roster: startSitRoster,
+    currentStarterIds: ["qb", "rb1", "rb2", "wr1", "benchwr", "te1", "flexguy", "k1", "d1"],
+    slots: SLOTS,
+  });
+  assert.equal(advice.changes.length, 0);
+  assert.equal(advice.pointsGained, 0);
+});
+
+await test("a sub-1.5-point gap is labelled a coin flip, not a recommendation", () => {
+  const roster = [
+    p("qb", "QB One", "QB", 20), p("rb1", "RB One", "RB", 18), p("rb2", "RB Two", "RB", 15),
+    p("wr1", "WR One", "WR", 14), p("wr2", "WR Two", "WR", 12.0),
+    p("te1", "TE One", "TE", 9), p("k1", "K One", "K", 8), p("d1", "D One", "DEF", 7),
+    p("flexguy", "Flex Guy", "RB", 11),
+    p("close", "Close Call", "WR", 12.9),
+  ];
+  const advice = adviseLineup({
+    roster,
+    currentStarterIds: ["qb", "rb1", "rb2", "wr1", "wr2", "te1", "flexguy", "k1", "d1"],
+    slots: SLOTS,
+  });
+  const change = advice.changes.find((c) => c.in.playerId === "close");
+  assert.ok(change);
+  assert.ok(Math.abs(change.gain) < COIN_FLIP_THRESHOLD);
+  assert.equal(change.isCoinFlip, true);
+  assert.match(change.reason, /coin flip/i);
+});
+
+await test("a bye-week starter is a critical alert and is never left in the lineup", () => {
+  const roster = startSitRoster.map((x) =>
+    x.playerId === "wr1" ? { ...x, isOnBye: true } : x,
+  );
+  const advice = adviseLineup({ roster, currentStarterIds: CURRENT, slots: SLOTS });
+  assert.ok(advice.alerts.some((a) => a.severity === "critical" && /bye/i.test(a.message)));
+  const starters = advice.optimal.assignments.map((a) => a.player?.playerId);
+  assert.ok(!starters.includes("wr1"), "a bye-week player must not be in the optimal lineup");
+});
+
+await test("an Out player is excluded from the optimizer, not merely flagged", () => {
+  const roster = startSitRoster.map((x) =>
+    x.playerId === "rb1" ? { ...x, injuryStatus: "Out" } : x,
+  );
+  const advice = adviseLineup({ roster, currentStarterIds: CURRENT, slots: SLOTS });
+  assert.ok(advice.alerts.some((a) => a.severity === "critical" && /Out/.test(a.message)));
+  const starters = advice.optimal.assignments.map((a) => a.player?.playerId);
+  assert.ok(!starters.includes("rb1"));
+});
+
+await test("Questionable is a warning, and the player can still start", () => {
+  const roster = startSitRoster.map((x) =>
+    x.playerId === "rb1" ? { ...x, injuryStatus: "Questionable" } : x,
+  );
+  const advice = adviseLineup({ roster, currentStarterIds: CURRENT, slots: SLOTS });
+  assert.ok(advice.alerts.some((a) => a.severity === "warning" && /Questionable/.test(a.message)));
+  const starters = advice.optimal.assignments.map((a) => a.player?.playerId);
+  assert.ok(starters.includes("rb1"), "Questionable players are still eligible");
+});
+
+await test("empty starting slots are reported as critical", () => {
+  const advice = adviseLineup({
+    roster: startSitRoster,
+    currentStarterIds: ["qb", "rb1", "rb2"],
+    slots: SLOTS,
+  });
+  assert.ok(advice.alerts.some((a) => a.severity === "critical" && /empty/i.test(a.message)));
+});
+
+await test("a missing projection is surfaced rather than treated as zero points", () => {
+  const roster = startSitRoster.map((x) =>
+    x.playerId === "k1" ? { ...x, hasProjection: false } : x,
+  );
+  const advice = adviseLineup({ roster, currentStarterIds: CURRENT, slots: SLOTS });
+  assert.ok(advice.alerts.some((a) => /No projection/i.test(a.message)));
 });
 
 console.log(`\n${passed} passing\n`);
