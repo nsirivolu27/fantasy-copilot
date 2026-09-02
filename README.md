@@ -19,6 +19,8 @@ Built on free, public data. **No paid APIs. No API keys. No accounts.**
 - **Honest about itself** — projections ship with a confidence rating, and the model's
   accuracy gets published, including the weeks it was wrong.
 
+**[Live interactive preview →](https://claude.ai/code/artifact/7799e1d0-791a-424e-b213-dfa2ecf44532)** — the interface with real fixture data and real model output. Source in [`demo/`](./demo).
+
 > **Status: Phases 1, 2, 8 and 9.** League sync, projections backtested on real nflverse
 > data, a retrieval layer, a configurable LLM layer, and a grounded chat interface all work
 > end to end. The app is deployable today. Waivers, trades and the MCP server are next.

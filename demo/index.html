@@ -1,0 +1,596 @@
+<title>Fantasy Copilot</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  /* ── Tokens: light is the base, both dark states redefine only these ── */
+  :root {
+    --ground:  #F4F6F2;
+    --panel:   #FFFFFF;
+    --panel-2: #EDF1EC;
+    --line:    #DCE3DB;
+    --line-soft:#E7ECE6;
+    --text:    #111814;
+    --muted:   #5C6A61;
+    --accent:  #8A6511;
+    --accent-soft: #F0E2C0;
+    --good:    #2F7A45;
+    --warn:    #96601C;
+    --bad:     #9E3E33;
+    --qb:#9E3E33; --rb:#2F7A45; --wr:#1D5C86; --te:#8A6511; --k:#5B4A8C; --def:#4A5750;
+    --shadow: 0 1px 2px rgba(17,24,20,.06), 0 8px 24px -12px rgba(17,24,20,.18);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground:  #0A0F0C;
+      --panel:   #111813;
+      --panel-2: #161E18;
+      --line:    #202B23;
+      --line-soft:#1A241C;
+      --text:    #ECF1ED;
+      --muted:   #8FA096;
+      --accent:  #E3B23C;
+      --accent-soft: #2A2214;
+      --good:    #5FAE6E;
+      --warn:    #D08A3E;
+      --bad:     #C0574C;
+      --qb:#C0574C; --rb:#5FAE6E; --wr:#5B9BD1; --te:#E3B23C; --k:#9C8BD0; --def:#8FA096;
+      --shadow: 0 1px 2px rgba(0,0,0,.4), 0 10px 30px -14px rgba(0,0,0,.7);
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground:  #0A0F0C;
+    --panel:   #111813;
+    --panel-2: #161E18;
+    --line:    #202B23;
+    --line-soft:#1A241C;
+    --text:    #ECF1ED;
+    --muted:   #8FA096;
+    --accent:  #E3B23C;
+    --accent-soft: #2A2214;
+    --good:    #5FAE6E;
+    --warn:    #D08A3E;
+    --bad:     #C0574C;
+    --qb:#C0574C; --rb:#5FAE6E; --wr:#5B9BD1; --te:#E3B23C; --k:#9C8BD0; --def:#8FA096;
+    --shadow: 0 1px 2px rgba(0,0,0,.4), 0 10px 30px -14px rgba(0,0,0,.7);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    background: var(--ground);
+    color: var(--text);
+    font-family: "IBM Plex Sans", ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+    font-size: 15px;
+    line-height: 1.55;
+    margin: 0;
+  }
+  .wrap { max-width: 940px; margin: 0 auto; padding: 28px 20px 64px; }
+
+  h1, h2, h3, .display {
+    font-family: Oswald, "IBM Plex Sans", system-ui, sans-serif;
+    font-weight: 500;
+    letter-spacing: .01em;
+    text-wrap: balance;
+    margin: 0;
+  }
+  .mono { font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace; }
+  .tnum { font-variant-numeric: tabular-nums; }
+
+  /* ── Masthead ── */
+  .masthead { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 14px; justify-content: space-between; }
+  .brand { display: flex; align-items: center; gap: 11px; }
+  .mark {
+    width: 34px; height: 34px; border-radius: 7px; display: grid; place-items: center;
+    background: var(--accent); color: var(--ground); font-family: Oswald, sans-serif;
+    font-size: 19px; font-weight: 600; flex: none;
+  }
+  h1 { font-size: 27px; line-height: 1.1; text-transform: uppercase; letter-spacing: .04em; }
+  .tagline { color: var(--muted); font-size: 13.5px; margin-top: 1px; }
+  .chip {
+    display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px;
+    border: 1px solid var(--line); border-radius: 999px; font-size: 11.5px;
+    color: var(--muted); background: var(--panel); white-space: nowrap;
+  }
+  .chip b { color: var(--text); font-weight: 500; }
+  .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--good); flex: none; }
+
+  .notice {
+    margin: 18px 0 0; padding: 12px 14px; border-radius: 9px; font-size: 13.5px;
+    border: 1px solid var(--line); border-left: 3px solid var(--accent);
+    background: var(--panel); color: var(--muted);
+  }
+  .notice b { color: var(--text); font-weight: 600; }
+
+  /* ── Tabs ── */
+  .tabs { display: flex; gap: 2px; margin: 22px 0 0; border-bottom: 1px solid var(--line); overflow-x: auto; }
+  .tab {
+    appearance: none; background: none; border: 0; border-bottom: 2px solid transparent;
+    color: var(--muted); font: inherit; font-size: 13.5px; padding: 9px 14px; cursor: pointer;
+    white-space: nowrap; margin-bottom: -1px;
+  }
+  .tab:hover { color: var(--text); }
+  .tab[aria-selected="true"] { color: var(--text); border-bottom-color: var(--accent); font-weight: 500; }
+  .tab:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; border-radius: 4px; }
+  .panel { padding-top: 20px; }
+  .panel[hidden] { display: none !important; }
+
+  /* ── Generic surfaces ── */
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 11px; }
+  .card + .card { margin-top: 12px; }
+  .card-head { padding: 12px 15px; border-bottom: 1px solid var(--line-soft); }
+  .card-head h3 { font-size: 14px; text-transform: uppercase; letter-spacing: .06em; }
+  .card-head p { margin: 2px 0 0; font-size: 12.5px; color: var(--muted); }
+  .card-body { padding: 14px 15px; }
+
+  .stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 9px; margin-top: 16px; }
+  @media (min-width: 620px) { .stats { grid-template-columns: repeat(4, 1fr); } }
+  .stat { background: var(--panel); border: 1px solid var(--line); border-radius: 9px; padding: 10px 12px; }
+  .stat .k { font-size: 10.5px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
+  .stat .v { font-family: Oswald, sans-serif; font-size: 20px; margin-top: 2px; line-height: 1.15; }
+  .stat .s { font-size: 11.5px; color: var(--muted); }
+
+  /* ── Roster ── */
+  .team { background: var(--panel); border: 1px solid var(--line); border-radius: 11px; overflow: hidden; }
+  .team + .team { margin-top: 10px; }
+  .team.mine { border-color: color-mix(in srgb, var(--accent) 55%, var(--line)); }
+  .team-head {
+    display: flex; align-items: center; gap: 11px; width: 100%; text-align: left;
+    background: none; border: 0; color: inherit; font: inherit; padding: 12px 14px; cursor: pointer;
+  }
+  .team-head:hover { background: var(--panel-2); }
+  .team-head:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+  .team-name { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .team-name strong { font-weight: 600; font-size: 14.5px; }
+  .team-meta { font-size: 12px; color: var(--muted); margin-top: 1px; }
+  .team-proj { margin-left: auto; text-align: right; flex: none; }
+  .team-proj .n { font-family: Oswald, sans-serif; font-size: 18px; line-height: 1; }
+  .team-proj .l { font-size: 10px; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); }
+  .caret { flex: none; color: var(--muted); transition: transform .18s ease; font-size: 15px; }
+  [aria-expanded="true"] .caret { transform: rotate(90deg); }
+
+  .roster { border-top: 1px solid var(--line-soft); padding: 6px 0 10px; }
+  .sect { font-size: 10.5px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); padding: 9px 15px 4px; }
+  .row { display: flex; align-items: center; gap: 9px; padding: 5px 15px; }
+  .row:hover { background: var(--panel-2); }
+  .slot { width: 46px; flex: none; font-size: 11px; color: var(--muted); letter-spacing: .04em; }
+  .pos {
+    width: 30px; flex: none; text-align: center; font-size: 10.5px; font-weight: 600;
+    padding: 2px 0; border-radius: 4px; letter-spacing: .03em;
+    color: var(--ground); background: var(--def);
+  }
+  .pos.QB{background:var(--qb)} .pos.RB{background:var(--rb)} .pos.WR{background:var(--wr)}
+  .pos.TE{background:var(--te)} .pos.K{background:var(--k)} .pos.DEF{background:var(--def)}
+  .pname { flex: 1; min-width: 0; font-size: 13.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .tag { font-size: 10px; padding: 1px 6px; border-radius: 4px; border: 1px solid currentColor; flex: none; }
+  .tag.q { color: var(--warn); }
+  .nfl { width: 34px; flex: none; text-align: right; font-size: 11px; color: var(--muted); }
+  .proj { width: 74px; flex: none; text-align: right; display: flex; align-items: baseline; justify-content: flex-end; gap: 5px; }
+  .proj .p { font-size: 13.5px; font-weight: 600; }
+  .proj .band { font-size: 10.5px; color: var(--muted); }
+  .proj .none { font-size: 12px; color: var(--muted); }
+  .conf { width: 5px; height: 5px; border-radius: 50%; flex: none; }
+  .conf.hi{background:var(--good)} .conf.mid{background:var(--warn)} .conf.lo{background:var(--muted)}
+
+  /* ── Scoring grid ── */
+  .kv { display: grid; grid-template-columns: 1fr; gap: 0 26px; }
+  @media (min-width: 560px) { .kv { grid-template-columns: 1fr 1fr; } }
+  .kv div { display: flex; justify-content: space-between; gap: 12px; padding: 5px 0; border-bottom: 1px solid var(--line-soft); font-size: 13px; }
+  .kv dt { color: var(--muted); }
+  .kv dd { margin: 0; font-weight: 500; }
+
+  .slots { display: flex; flex-wrap: wrap; gap: 5px; }
+  .slotpill { font-size: 11px; padding: 3px 8px; border-radius: 5px; border: 1px solid var(--line); color: var(--muted); }
+  .slotpill.start { color: var(--text); border-color: color-mix(in srgb, var(--accent) 45%, var(--line)); }
+
+  /* ── Chat ── */
+  .chatlog { display: flex; flex-direction: column; gap: 11px; }
+  .msg { max-width: 88%; padding: 9px 13px; border-radius: 13px; font-size: 13.5px; }
+  .msg.u { align-self: flex-end; background: var(--accent-soft); border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent); border-bottom-right-radius: 4px; }
+  .msg.a { align-self: flex-start; background: var(--panel-2); border: 1px solid var(--line-soft); border-bottom-left-radius: 4px; }
+  .msg p { margin: 0; }
+  .msg p + p { margin-top: 7px; }
+  .toolchip {
+    margin-top: 8px; padding-top: 7px; border-top: 1px solid var(--line);
+    font-size: 11px; color: var(--muted);
+  }
+  .toolchip code { color: var(--accent); font-family: "IBM Plex Mono", monospace; font-size: 10.5px; }
+  .asks { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 14px; }
+  .ask {
+    appearance: none; background: var(--panel); border: 1px solid var(--line); border-radius: 999px;
+    color: var(--muted); font: inherit; font-size: 12.5px; padding: 5px 12px; cursor: pointer;
+  }
+  .ask:hover { color: var(--text); border-color: color-mix(in srgb, var(--accent) 50%, var(--line)); }
+  .ask:disabled { opacity: .38; cursor: default; }
+  .ask:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  /* ── Model table ── */
+  .scroll { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; min-width: 420px; font-size: 13.5px; }
+  th { text-align: right; font-size: 10.5px; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); font-weight: 500; padding: 0 0 7px; }
+  th:first-child, td:first-child { text-align: left; }
+  td { padding: 6px 0; border-top: 1px solid var(--line-soft); text-align: right; }
+  td:first-child { font-weight: 500; }
+  th + th, td + td { padding-left: 18px; }
+  .best { color: var(--good); font-weight: 600; }
+  tr.total td { border-top: 1.5px solid var(--line); font-weight: 600; }
+
+  .callout { border: 1px solid var(--line); border-left: 3px solid var(--warn); background: var(--panel); border-radius: 9px; padding: 13px 15px; font-size: 13.5px; }
+  .callout h3 { font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: var(--warn); }
+  .callout p { margin: 7px 0 0; color: var(--muted); }
+  .callout strong { color: var(--text); }
+
+  ol.how { margin: 0; padding-left: 19px; font-size: 13.5px; color: var(--muted); }
+  ol.how li { padding-left: 3px; margin-bottom: 5px; }
+  ol.how b { color: var(--text); font-weight: 500; }
+
+  pre { background: var(--panel-2); border: 1px solid var(--line-soft); border-radius: 8px; padding: 11px 13px; overflow-x: auto; font-size: 11.5px; margin: 10px 0 0; }
+  code { font-family: "IBM Plex Mono", monospace; }
+
+  footer { margin-top: 30px; padding-top: 16px; border-top: 1px solid var(--line); font-size: 12.5px; color: var(--muted); }
+  footer a { color: var(--accent); }
+
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<div class="wrap">
+  <header class="masthead">
+    <div class="brand">
+      <div class="mark">FC</div>
+      <div>
+        <h1>Fantasy Copilot</h1>
+        <p class="tagline">Free, self-hosted league companion — Sleeper sync, projections, grounded chat.</p>
+      </div>
+    </div>
+    <div style="display:flex;gap:7px;flex-wrap:wrap">
+      <span class="chip"><span class="dot"></span> Phases 1, 2, 8, 9 <b>shipped</b></span>
+      <span class="chip">MIT</span>
+    </div>
+  </header>
+
+  <p class="notice">
+    <b>This is a static preview, not the running app.</b> The rosters and scoring below come from the
+    repo's test fixture; the projections are <b>real output from the actual model</b>, run over the real
+    2024 nflverse season. The chat replies are scripted transcripts — the live app calls whichever model
+    you configure. Run the real thing with <code class="mono">docker compose up -d</code>.
+  </p>
+
+  <div class="tabs" role="tablist">
+    <button class="tab" role="tab" id="t-league" aria-controls="p-league" aria-selected="true">League</button>
+    <button class="tab" role="tab" id="t-chat"   aria-controls="p-chat"   aria-selected="false">Chat</button>
+    <button class="tab" role="tab" id="t-model"  aria-controls="p-model"  aria-selected="false">Model</button>
+  </div>
+
+  <!-- ── LEAGUE ────────────────────────────────────────────────── -->
+  <section class="panel" id="p-league" role="tabpanel" aria-labelledby="t-league">
+    <div class="stats">
+      <div class="stat"><div class="k">Season</div><div class="v">2026</div><div class="s">in season</div></div>
+      <div class="stat"><div class="k">Week</div><div class="v">1</div><div class="s">from Sleeper</div></div>
+      <div class="stat"><div class="k">Teams</div><div class="v">12</div><div class="s">3 in fixture</div></div>
+      <div class="stat"><div class="k">Waivers</div><div class="v">FAAB</div><div class="s">$100 budget</div></div>
+    </div>
+
+    <div style="margin-top:18px">
+      <div style="display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:9px">
+        <h2 style="font-size:15px;text-transform:uppercase;letter-spacing:.06em">Teams</h2>
+        <span style="font-size:11.5px;color:var(--muted)">Week projections · <span class="mono">v2-season-anchored</span></span>
+      </div>
+      <div id="teams"></div>
+    </div>
+
+    <div class="card" style="margin-top:14px">
+      <div class="card-head"><h3>Roster slots</h3><p>9 starters · 7 bench and reserve — read from the league, never hardcoded</p></div>
+      <div class="card-body"><div class="slots" id="slots"></div></div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><h3>Scoring settings</h3><p>12 rules pulled from Sleeper. Every past game is scored with these before the model sees it.</p></div>
+      <div class="card-body"><dl class="kv" id="scoring"></dl></div>
+    </div>
+  </section>
+
+  <!-- ── CHAT ──────────────────────────────────────────────────── -->
+  <section class="panel" id="p-chat" role="tabpanel" aria-labelledby="t-chat" hidden>
+    <div class="card">
+      <div class="card-head">
+        <h3>League chat</h3>
+        <p>Retrieval over 40 league documents · 6 read-only tools · answers grounded in synced data</p>
+      </div>
+      <div class="card-body">
+        <div class="chatlog" id="chatlog"></div>
+        <div class="asks" id="asks"></div>
+      </div>
+    </div>
+    <p style="font-size:12.5px;color:var(--muted);margin-top:11px">
+      The system prompt forbids stating any number that didn't come from a tool call. Ask it something the
+      app hasn't built and it says so — the third question below shows that.
+    </p>
+  </section>
+
+  <!-- ── MODEL ─────────────────────────────────────────────────── -->
+  <section class="panel" id="p-model" role="tabpanel" aria-labelledby="t-model" hidden>
+    <div class="card">
+      <div class="card-head">
+        <h3>Mean absolute error</h3>
+        <p>Fantasy points per game. Lower is better. Real 2024 season, weeks 5–17, 3,415 player-weeks, full PPR.</p>
+      </div>
+      <div class="card-body scroll">
+        <table>
+          <thead><tr><th>Position</th><th>This model</th><th>Last week</th><th>Season avg</th></tr></thead>
+          <tbody id="backtest"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="callout" style="margin-top:12px">
+      <h3>Read this before trusting a projection</h3>
+      <p>
+        The model beats both baselines at every position — but by <strong>0.7% overall</strong>, and only
+        2.6% at QB. That is a small edge, and it is the honest number.
+      </p>
+      <p>
+        Version 1 was <strong>4.4% worse</strong> than simply averaging a player's season. It leaned on a
+        four-game recency weighting, and weekly fantasy scoring turns out to be mostly noise. The fix came
+        from sweeping the blend weight against real data instead of tuning by feel: make the season average
+        the anchor, then add a usage term at whatever weight the backtest picks.
+      </p>
+      <p>
+        So the projection is a commodity. That's precisely why the roadmap spends its real effort on
+        <strong>decision leverage</strong> — ranking choices by how much they move your odds of winning
+        rather than by projected points. A +2.0 swap in a game you win 88% of the time is worth nothing.
+      </p>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><h3>How a projection is built</h3></div>
+      <div class="card-body">
+        <ol class="how">
+          <li>Every past game is scored with <b>your league's own settings</b>, so format never matters.</li>
+          <li>The <b>season average anchors</b> the estimate — the hard baseline becomes the base.</li>
+          <li>An <b>opportunity term</b> (recency-weighted usage × season-long efficiency) blends in at weights the backtest chose: QB 80%, RB 40%, TE 30%, WR 20%.</li>
+          <li><b>Injury designations gate it</b> — Out and IR project zero, Questionable takes 15% off.</li>
+          <li><b>Floor and ceiling</b> come from the player's own 20th/80th percentile spread.</li>
+          <li><b>Confidence</b> combines sample size and role stability: a steady 10-touch back outranks one alternating 2 and 18.</li>
+        </ol>
+        <pre><code># reproduce every number above
+curl -L -o player_stats_2024.csv https://github.com/nflverse/nflverse-data/\
+releases/download/player_stats/player_stats_2024.csv
+npm run backtest 2024</code></pre>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    Built with Claude. Free data only — <a href="https://docs.sleeper.com">Sleeper</a> for leagues,
+    <a href="https://github.com/nflverse/nflverse-data">nflverse</a> for stats. No API keys, no paid services.
+  </footer>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  // Real model output: project() run over the 2024 nflverse season through week 12.
+  var P = {
+    "Christian McCaffrey": [12.9, 9.6, 16.2, .83], "Bucky Irving": [14.1, 9.3, 19.0, .94],
+    "Rashee Rice": [21.9, 17.5, 26.4, .78], "Derrick Henry": [20.0, 16.8, 23.2, .93],
+    "Travis Kelce": [12.4, 6.1, 18.7, .87], "Chuba Hubbard": [17.3, 11.7, 22.9, .91],
+    "Bo Nix": [17.8, 14.7, 20.8, .95], "Josh Allen": [24.4, 23.1, 25.6, .95],
+    "Breece Hall": [16.6, 11.8, 21.4, .95], "Jahmyr Gibbs": [19.0, 15.1, 22.8, .91],
+    "Justin Jefferson": [16.4, 11.7, 21.1, .94], "Ja'Marr Chase": [25.1, 14.4, 35.7, .94],
+    "Brock Bowers": [16.2, 10.1, 22.3, .87], "Amon-Ra St. Brown": [18.9, 13.4, 24.4, .93],
+    "Trey McBride": [14.3, 8.9, 19.8, .86]
+  };
+
+  var SLOTS = ["QB","RB","RB","WR","WR","TE","FLEX","K","DEF","BN","BN","BN","BN","BN","BN","IR"];
+  var LABEL = { DEF: "D/ST", BN: "Bench", FLEX: "FLEX" };
+
+  var TEAMS = [
+    { name: "tech rejects", mgr: "nihal", rec: "1-0", pf: 128.42, pa: 99.08, mine: true,
+      starters: [
+        ["QB","Bo Nix","QB","DEN"], ["RB","Christian McCaffrey","RB","SF"], ["RB","Bucky Irving","RB","TB"],
+        ["WR","Rashee Rice","WR","KC"], ["WR","Luther Burden","WR","CHI"],
+        ["TE","Travis Kelce","TE","KC","Questionable"], ["FLEX","Derrick Henry","RB","BAL"],
+        ["K","Chris Boswell","K","PIT"], ["DEF","San Francisco","DEF","SF"]
+      ],
+      bench: [["BN","Chuba Hubbard","RB","CAR"], ["BN","Carnell Tate","WR","CHI"]] },
+    { name: "jeet", mgr: "jeet", rec: "0-1", pf: 99.08, pa: 128.42, mine: false,
+      starters: [
+        ["QB","Josh Allen","QB","BUF"], ["RB","Breece Hall","RB","NYJ"], ["RB","Jahmyr Gibbs","RB","DET"],
+        ["WR","Justin Jefferson","WR","MIN"], ["WR","Ja'Marr Chase","WR","CIN"],
+        ["TE","Brock Bowers","TE","LV"], ["FLEX","Amon-Ra St. Brown","WR","DET"],
+        ["K","Brandon Aubrey","K","DAL"], ["DEF","Dallas","DEF","DAL"]
+      ],
+      bench: [["BN","Trey McBride","TE","ARI"]] },
+    { name: "Team 3", mgr: null, rec: "0-0", pf: 0, pa: 0, mine: false, starters: [], bench: [] }
+  ];
+
+  var SCORING = [
+    ["Passing yards", "0.04"], ["Passing TD", "4"], ["Interception thrown", "-2"],
+    ["Rushing yards", "0.1"], ["Rushing TD", "6"], ["Reception", "1"],
+    ["Receiving yards", "0.1"], ["Receiving TD", "6"], ["Fumble lost", "-2"],
+    ["Sack", "1"], ["Interception", "2"], ["D/ST TD", "6"]
+  ];
+
+  var BACKTEST = [
+    ["QB", 5.98, 7.47, 6.14], ["RB", 4.97, 5.98, 5.00],
+    ["WR", 5.03, 6.41, 5.03], ["TE", 3.96, 5.17, 3.98], ["All", 4.90, 6.17, 4.94]
+  ];
+
+  function el(tag, cls, text) {
+    var n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (text != null) n.textContent = text;
+    return n;
+  }
+
+  function confClass(c) { return c >= .66 ? "hi" : c >= .4 ? "mid" : "lo"; }
+
+  function playerRow(entry) {
+    var slot = entry[0], name = entry[1], pos = entry[2], team = entry[3], inj = entry[4];
+    var row = el("div", "row");
+    row.appendChild(el("span", "slot", LABEL[slot] || slot));
+    row.appendChild(el("span", "pos " + pos, pos === "DEF" ? "DST" : pos));
+    row.appendChild(el("span", "pname", name));
+    if (inj) row.appendChild(el("span", "tag q", "Q"));
+    row.appendChild(el("span", "nfl", team));
+
+    var p = P[name];
+    var box = el("span", "proj");
+    if (p) {
+      var v = el("span", "p tnum", p[0].toFixed(1));
+      var band = el("span", "band tnum", p[1].toFixed(0) + "–" + p[2].toFixed(0));
+      box.title = "Floor " + p[1].toFixed(1) + " · ceiling " + p[2].toFixed(1) +
+                  " · confidence " + Math.round(p[3] * 100) + "%";
+      box.appendChild(band); box.appendChild(v);
+      box.appendChild(el("span", "conf " + confClass(p[3])));
+    } else {
+      box.appendChild(el("span", "none", "—"));
+      box.title = "No projection: the model covers QB, RB, WR and TE only.";
+    }
+    row.appendChild(box);
+    return row;
+  }
+
+  function total(team) {
+    return team.starters.reduce(function (s, e) { return s + (P[e[1]] ? P[e[1]][0] : 0); }, 0);
+  }
+
+  var teamsEl = document.getElementById("teams");
+  TEAMS.forEach(function (t, i) {
+    var wrap = el("div", "team" + (t.mine ? " mine" : ""));
+    var head = el("button", "team-head");
+    head.setAttribute("aria-expanded", String(t.mine));
+
+    var left = el("div");
+    var nameLine = el("div", "team-name");
+    nameLine.appendChild(el("strong", null, t.name));
+    if (t.mine) {
+      var b = el("span", "chip");
+      b.style.padding = "1px 8px"; b.style.fontSize = "10.5px";
+      b.appendChild(el("b", null, "My team"));
+      nameLine.appendChild(b);
+    }
+    left.appendChild(nameLine);
+    left.appendChild(el("div", "team-meta",
+      (t.mgr || "Unclaimed") + " · " + t.rec + " · " + t.pf.toFixed(2) + " PF · " + t.pa.toFixed(2) + " PA"));
+    head.appendChild(left);
+
+    var proj = el("div", "team-proj");
+    var sum = total(t);
+    proj.appendChild(el("div", "n tnum", sum ? sum.toFixed(1) : "—"));
+    proj.appendChild(el("div", "l", "projected"));
+    head.appendChild(proj);
+    head.appendChild(el("span", "caret", "›"));
+
+    var body = el("div", "roster");
+    if (!t.starters.length) {
+      var empty = el("p", null, "No players on this roster yet.");
+      empty.style.cssText = "margin:12px 15px;font-size:12.5px;color:var(--muted)";
+      body.appendChild(empty);
+    } else {
+      body.appendChild(el("div", "sect", "Starters"));
+      t.starters.forEach(function (e) { body.appendChild(playerRow(e)); });
+      if (t.bench.length) {
+        body.appendChild(el("div", "sect", "Bench"));
+        t.bench.forEach(function (e) { body.appendChild(playerRow(e)); });
+      }
+    }
+    body.hidden = !t.mine;
+
+    head.addEventListener("click", function () {
+      var open = head.getAttribute("aria-expanded") === "true";
+      head.setAttribute("aria-expanded", String(!open));
+      body.hidden = open;
+    });
+
+    wrap.appendChild(head); wrap.appendChild(body);
+    teamsEl.appendChild(wrap);
+  });
+
+  var slotsEl = document.getElementById("slots");
+  SLOTS.forEach(function (s) {
+    var starter = s !== "BN" && s !== "IR";
+    slotsEl.appendChild(el("span", "slotpill" + (starter ? " start" : ""), LABEL[s] || s));
+  });
+
+  var scoringEl = document.getElementById("scoring");
+  SCORING.forEach(function (pair) {
+    var d = el("div");
+    d.appendChild(el("dt", null, pair[0]));
+    d.appendChild(el("dd", "mono tnum", pair[1]));
+    scoringEl.appendChild(d);
+  });
+
+  var btEl = document.getElementById("backtest");
+  BACKTEST.forEach(function (r) {
+    var tr = el("tr");
+    if (r[0] === "All") tr.className = "total";
+    tr.appendChild(el("td", null, r[0]));
+    var best = Math.min(r[1], r[2], r[3]);
+    [r[1], r[2], r[3]].forEach(function (v) {
+      tr.appendChild(el("td", "tnum" + (v === best ? " best" : ""), v.toFixed(2)));
+    });
+    btEl.appendChild(tr);
+  });
+
+  // Scripted transcripts. Each mirrors what the tool layer actually returns.
+  var QA = [
+    { q: "Who's projected highest on my team?",
+      a: ["Rashee Rice, at 21.9 points — floor 17.5, ceiling 26.4, 78% confidence.",
+          "Derrick Henry is next at 20.0 with a much tighter band (16.8–23.2). Rice has the higher ceiling; Henry is the safer floor."],
+      tool: "get_projections", note: "team=me → 9 starters, 2 bench" },
+    { q: "What are the scoring settings?",
+      a: ["Full PPR — 1 point per reception, 0.1 per receiving and rushing yard, 6 per TD, 4 per passing TD, −2 per interception and fumble lost.",
+          "Roster is 9 starters: QB, 2 RB, 2 WR, TE, FLEX, K, D/ST, with 6 bench and an IR spot."],
+      tool: "get_league_info", note: "12 scoring rules, 16 roster slots" },
+    { q: "Who should I start at flex?",
+      a: ["The start/sit optimizer isn't built yet — that's Phase 3, so I won't guess at it.",
+          "What I can tell you is what's projected. Derrick Henry is in your FLEX at 20.0 (16.8–23.2). On your bench, Chuba Hubbard projects 17.3 with a wider band (11.7–22.9). Henry is ahead on both the median and the floor, so nothing here argues for a change."],
+      tool: "get_projections", note: "starters + bench compared" },
+    { q: "Is Kelce hurt?",
+      a: ["Travis Kelce is listed Questionable. He's your starting TE, projected 12.4 with a wide band — floor 6.1, ceiling 18.7.",
+          "The Questionable tag already took 15% off that number and lowered his confidence to 87%."],
+      tool: "find_player", note: 'name="Kelce" → 1 match, rostered by tech rejects' }
+  ];
+
+  var logEl = document.getElementById("chatlog");
+  var asksEl = document.getElementById("asks");
+
+  function say(item, btn) {
+    var u = el("div", "msg u");
+    u.appendChild(el("p", null, item.q));
+    logEl.appendChild(u);
+
+    var a = el("div", "msg a");
+    item.a.forEach(function (para) { a.appendChild(el("p", null, para)); });
+    var chip = el("div", "toolchip");
+    var code = el("code", null, item.tool);
+    chip.appendChild(document.createTextNode("called "));
+    chip.appendChild(code);
+    chip.appendChild(document.createTextNode(" — " + item.note));
+    a.appendChild(chip);
+    logEl.appendChild(a);
+
+    btn.disabled = true;
+    a.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }
+
+  QA.forEach(function (item, i) {
+    var b = el("button", "ask", item.q);
+    b.addEventListener("click", function () { say(item, b); });
+    asksEl.appendChild(b);
+    if (i === 0) say(item, b); // open in a working state, not an empty shell
+  });
+
+  var tabs = Array.prototype.slice.call(document.querySelectorAll(".tab"));
+  tabs.forEach(function (tab) {
+    tab.addEventListener("click", function () {
+      tabs.forEach(function (t) {
+        var on = t === tab;
+        t.setAttribute("aria-selected", String(on));
+        document.getElementById(t.getAttribute("aria-controls")).hidden = !on;
+      });
+    });
+  });
+})();
+</script>
