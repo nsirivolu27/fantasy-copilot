@@ -1,0 +1,91 @@
+import { sleeperGet } from "./client";
+import {
+  SleeperStateSchema,
+  normalizeLeague,
+  normalizePlayer,
+  normalizeRosters,
+  normalizeTeams,
+} from "./normalize";
+import {
+  NotImplementedError,
+  PlatformError,
+  type NormalizedLeague,
+  type NormalizedMatchup,
+  type NormalizedPlayer,
+  type NormalizedRoster,
+  type NormalizedTeam,
+  type NormalizedTransaction,
+  type PlatformAdapter,
+} from "../types";
+
+/**
+ * Sleeper implementation of PlatformAdapter.
+ * Read-only, no API key, no auth. Base URL: https://api.sleeper.app/v1
+ */
+export class SleeperAdapter implements PlatformAdapter {
+  readonly platform = "sleeper" as const;
+
+  /** Current season and week, straight from Sleeper. Never hardcoded. */
+  async getNflState(): Promise<{ season: string; week: number; seasonType?: string }> {
+    const raw = await sleeperGet<unknown>("/state/nfl");
+    const parsed = SleeperStateSchema.safeParse(raw);
+    if (!parsed.success) {
+      throw new PlatformError("Sleeper's /state/nfl response was not in the expected shape.", "bad_shape");
+    }
+    const s = parsed.data;
+    // display_week is what the app should show; week is the scoring week.
+    const week = Number(s.display_week ?? s.week ?? 0);
+    return { season: s.season, week, seasonType: s.season_type };
+  }
+
+  async getLeague(leagueId: string): Promise<NormalizedLeague> {
+    const [raw, state] = await Promise.all([
+      sleeperGet<unknown>(`/league/${encodeURIComponent(leagueId)}`),
+      this.getNflState(),
+    ]);
+    return normalizeLeague(raw, state.week, state.seasonType);
+  }
+
+  async getTeams(leagueId: string): Promise<NormalizedTeam[]> {
+    const [rosters, users] = await Promise.all([
+      sleeperGet<unknown[]>(`/league/${encodeURIComponent(leagueId)}/rosters`),
+      sleeperGet<unknown[]>(`/league/${encodeURIComponent(leagueId)}/users`),
+    ]);
+    return normalizeTeams(rosters ?? [], users ?? []);
+  }
+
+  async getRosters(leagueId: string): Promise<NormalizedRoster[]> {
+    const [rosters, league] = await Promise.all([
+      sleeperGet<unknown[]>(`/league/${encodeURIComponent(leagueId)}/rosters`),
+      this.getLeague(leagueId),
+    ]);
+    return normalizeRosters(rosters ?? [], league.rosterSlots);
+  }
+
+  /**
+   * Fetches metadata for specific players from the full dictionary.
+   * Callers should prefer the cached path in playerCache.ts — this exists so
+   * the adapter interface is complete and testable on its own.
+   */
+  async getPlayers(platformPlayerIds: string[]): Promise<NormalizedPlayer[]> {
+    if (platformPlayerIds.length === 0) return [];
+    const dict = await sleeperGet<Record<string, unknown>>("/players/nfl", { timeoutMs: 60_000 });
+    return platformPlayerIds
+      .filter((id) => dict?.[id] != null)
+      .map((id) => normalizePlayer(id, dict[id]));
+  }
+
+  // ---- Declared now, implemented in later phases -------------------------
+
+  async getMatchups(_leagueId: string, _week: number): Promise<NormalizedMatchup[]> {
+    throw new NotImplementedError("getMatchups");
+  }
+
+  async getTransactions(_leagueId: string, _week: number): Promise<NormalizedTransaction[]> {
+    throw new NotImplementedError("getTransactions");
+  }
+
+  async getFreeAgents(_leagueId: string): Promise<NormalizedPlayer[]> {
+    throw new NotImplementedError("getFreeAgents");
+  }
+}

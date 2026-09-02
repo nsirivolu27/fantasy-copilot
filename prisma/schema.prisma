@@ -1,0 +1,127 @@
+// Fantasy Copilot — Phase 1 schema.
+//
+// Datasource note: SQLite is the default so the app runs with no DB setup.
+// Prisma's SQLite connector has no native Json column type, so JSON payloads
+// (scoring settings, roster slots, platform IDs) are stored as TEXT and read
+// through the typed helpers in src/lib/json.ts. Those same helpers work
+// unchanged on Postgres, so switching is a one-line provider change here.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite" // change to "postgresql" for Postgres
+  url      = env("DATABASE_URL")
+}
+
+model League {
+  id               String  @id @default(cuid())
+  platform         String // "sleeper" | "espn" | "manual"
+  platformLeagueId String
+  sport            String  @default("football")
+  season           String
+  name             String
+  teamCount        Int
+  currentWeek      Int     @default(0)
+  seasonState      String? // "pre_draft" | "drafting" | "in_season" | "complete"
+
+  // JSON payloads (TEXT on SQLite, see note above)
+  scoringSettingsJson String @default("{}")
+  rosterSlotsJson     String @default("[]")
+
+  waiverType   String? // "faab" | "rolling"
+  waiverBudget Int?
+  isDynasty    Boolean @default(false)
+  isKeeper     Boolean @default(false)
+
+  // Sync bookkeeping so the UI can show stale data honestly
+  syncStatus    String    @default("never") // never | ok | stale | error
+  lastSyncedAt  DateTime?
+  lastSyncError String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  teams Team[]
+
+  @@unique([platform, platformLeagueId, season])
+}
+
+model Team {
+  id             String @id @default(cuid())
+  leagueId       String
+  league         League @relation(fields: [leagueId], references: [id], onDelete: Cascade)
+  platformTeamId String
+
+  name      String
+  ownerName String?
+  avatar    String?
+
+  wins          Int   @default(0)
+  losses        Int   @default(0)
+  ties          Int   @default(0)
+  pointsFor     Float @default(0)
+  pointsAgainst Float @default(0)
+
+  waiverBudgetUsed Int?
+  isMine           Boolean @default(false)
+
+  rosterSpots RosterSpot[]
+
+  @@unique([leagueId, platformTeamId])
+}
+
+model Player {
+  id String @id @default(cuid())
+
+  // Canonical cross-platform identity. sleeperId is unique when present so
+  // repeat syncs update rather than duplicate.
+  sleeperId       String? @unique
+  platformIdsJson String  @default("{}")
+
+  fullName     String
+  position     String?
+  nflTeam      String?
+  age          Int?
+  yearsExp     Int?
+  injuryStatus String?
+  injuryNote   String?
+  byeWeek      Int?
+
+  updatedAt DateTime @updatedAt @default(now())
+
+  rosterSpots RosterSpot[]
+
+  @@index([position])
+}
+
+model RosterSpot {
+  id       String @id @default(cuid())
+  teamId   String
+  team     Team   @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  playerId String
+  player   Player @relation(fields: [playerId], references: [id], onDelete: Cascade)
+
+  slot        String // "QB" | "RB" | "FLEX" | "BN" | "IR" | "TAXI" ...
+  slotIndex   Int? // position within the starting lineup, null for bench
+  isStarter   Boolean @default(false)
+  isProtected Boolean @default(false) // used by later phases; never auto-dropped
+
+  @@unique([teamId, playerId])
+  @@index([teamId])
+}
+
+// Simple key/value store: selected league, which team is mine, etc.
+model Setting {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt @default(now())
+}
+
+// Tracks the ~5MB Sleeper player dictionary so we fetch it at most once a day.
+model PlayerCacheMeta {
+  id          String   @id @default("sleeper-nfl")
+  fetchedAt   DateTime
+  playerCount Int      @default(0)
+}

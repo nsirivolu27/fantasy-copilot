@@ -1,0 +1,29 @@
+@import "tailwindcss";
+
+/* Dark by default, mobile-first. One place for the palette. */
+:root {
+  color-scheme: dark;
+  --bg: #0a0a0b;
+  --panel: #121214;
+  --panel-2: #17171a;
+  --border: #26262b;
+  --text: #ededf0;
+  --muted: #9a9aa4;
+  --accent: #22c55e;
+}
+
+html, body {
+  background: var(--bg);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+/* Respect users who prefer light, without building a full second theme:
+   we keep the dark surface but soften contrast slightly. */
+@media (prefers-color-scheme: light) {
+  :root { --bg: #0e0e10; }
+}
