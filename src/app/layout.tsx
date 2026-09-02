@@ -33,6 +33,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 Chat
               </Link>
               <Link
+                href="/model"
+                className="rounded-md px-3 py-1.5 text-[var(--muted)] transition hover:bg-white/5 hover:text-white"
+              >
+                Model
+              </Link>
+              <Link
                 href="/settings"
                 className="rounded-md px-3 py-1.5 text-[var(--muted)] transition hover:bg-white/5 hover:text-white"
               >

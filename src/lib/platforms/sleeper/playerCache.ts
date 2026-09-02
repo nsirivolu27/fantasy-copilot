@@ -61,6 +61,7 @@ export async function upsertPlayers(players: NormalizedPlayer[]): Promise<void> 
           where: { sleeperId: p.platformPlayerId },
           create: {
             sleeperId: p.platformPlayerId,
+            gsisId: p.gsisId,
             platformIdsJson: JSON.stringify({ sleeper: p.platformPlayerId }),
             fullName: p.fullName,
             position: p.position,
@@ -71,6 +72,7 @@ export async function upsertPlayers(players: NormalizedPlayer[]): Promise<void> 
             injuryNote: p.injuryNote,
           },
           update: {
+            gsisId: p.gsisId,
             fullName: p.fullName,
             position: p.position,
             nflTeam: p.nflTeam,

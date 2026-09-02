@@ -233,6 +233,74 @@ export const tools: FantasyTool[] = [
   },
 
   {
+    name: "get_projections",
+    title: "Get projections",
+    description:
+      "Week projections for a team's players: projected points, floor, ceiling, confidence and the reasoning behind each. Use for 'how many points will X score' and to compare players. Returns nothing if projections haven't been generated yet — say so rather than guessing.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        team: { type: "string", description: "Team name, manager name, or 'me'. Defaults to the user's team." },
+        week: { type: "number", description: "Week number. Defaults to the league's current week." },
+      },
+    },
+    readOnly: true,
+    handler: async (input, ctx) => {
+      const league = await loadLeague(ctx.leagueId);
+      const team = await findTeam(ctx.leagueId, str(input.team) || "me");
+      if (!team) return { summary: "No matching team.", data: null };
+      const week = typeof input.week === "number" ? input.week : league.currentWeek;
+
+      const spots = await prisma.rosterSpot.findMany({
+        where: { teamId: team.id },
+        include: { player: true },
+      });
+      const projections = await prisma.projection.findMany({
+        where: {
+          leagueId: ctx.leagueId,
+          week,
+          season: league.season,
+          playerId: { in: spots.map((s) => s.playerId) },
+        },
+      });
+      if (projections.length === 0) {
+        return {
+          summary: `No projections exist for week ${week} yet. They're generated from Settings → Refresh projections. Do not estimate points without them.`,
+          data: [],
+        };
+      }
+      const byPlayer = new Map(projections.map((p) => [p.playerId, p]));
+      const data = spots
+        .map((s) => {
+          const p = byPlayer.get(s.playerId);
+          if (!p) return null;
+          return {
+            player: s.player.fullName,
+            position: s.player.position,
+            isStarter: s.isStarter,
+            projectedPoints: p.projectedPoints,
+            floor: p.floor,
+            ceiling: p.ceiling,
+            confidence: p.confidence,
+            reasoning: parseJson<string[]>(p.reasoningJson, []),
+          };
+        })
+        .filter((x): x is NonNullable<typeof x> => x !== null)
+        .sort((a, b) => b.projectedPoints - a.projectedPoints);
+
+      return {
+        summary: `Week ${week} projections for ${team.name} (model is only ~0.7% better than a season average — treat as a rough guide):\n${data
+          .map(
+            (d) =>
+              `${d.player} (${d.position ?? "?"}${d.isStarter ? ", starting" : ", bench"}): ${d.projectedPoints.toFixed(1)} pts, floor ${d.floor.toFixed(1)}, ceiling ${d.ceiling.toFixed(1)}, ${(d.confidence * 100).toFixed(0)}% confidence`,
+          )
+          .join("\n")}`,
+        data,
+      };
+    },
+  },
+
+  {
     name: "search_league",
     title: "Search league data",
     description:

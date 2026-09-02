@@ -59,6 +59,12 @@ export default async function LeaguePage() {
     },
   });
 
+  // Projections for the current week, keyed by player.
+  const projectionRows = await prisma.projection.findMany({
+    where: { leagueId: league.id, week: league.currentWeek, season: league.season },
+  });
+  const projectionByPlayer = new Map(projectionRows.map((p) => [p.playerId, p]));
+
   const starterSlots = slots.filter((s) => s.isStarter);
   const benchSlots = slots.filter((s) => !s.isStarter);
   const scoringKeys = Object.keys(scoring).sort();
@@ -73,6 +79,10 @@ export default async function LeaguePage() {
     nflTeam: spot.player.nflTeam,
     injuryStatus: spot.player.injuryStatus,
     positionColor: sport.positionColor(spot.player.position),
+    projectedPoints: projectionByPlayer.get(spot.player.id)?.projectedPoints ?? null,
+    floor: projectionByPlayer.get(spot.player.id)?.floor ?? null,
+    ceiling: projectionByPlayer.get(spot.player.id)?.ceiling ?? null,
+    confidence: projectionByPlayer.get(spot.player.id)?.confidence ?? null,
   });
 
   return (
@@ -170,7 +180,18 @@ export default async function LeaguePage() {
       </Card>
 
       <div>
-        <h2 className="mb-2 text-sm font-semibold">Teams ({teams.length})</h2>
+        <div className="mb-2 flex items-baseline justify-between">
+          <h2 className="text-sm font-semibold">Teams ({teams.length})</h2>
+          {projectionRows.length ? (
+            <p className="text-[11px] text-[var(--muted)]">
+              Week {league.currentWeek} projections · {projectionRows[0].modelVersion}
+            </p>
+          ) : (
+            <Link href="/settings" className="text-[11px] text-[var(--muted)] underline">
+              Add projections
+            </Link>
+          )}
+        </div>
         {teams.length === 0 ? (
           <EmptyState
             title="No teams stored"
@@ -189,6 +210,16 @@ export default async function LeaguePage() {
                 isMine={t.isMine}
                 starters={t.rosterSpots.filter((s) => s.isStarter).map(toRow)}
                 bench={t.rosterSpots.filter((s) => !s.isStarter).map(toRow)}
+                projectedTotal={
+                  projectionRows.length
+                    ? t.rosterSpots
+                        .filter((s) => s.isStarter)
+                        .reduce(
+                          (sum, s) => sum + (projectionByPlayer.get(s.player.id)?.projectedPoints ?? 0),
+                          0,
+                        )
+                    : null
+                }
               />
             ))}
           </div>

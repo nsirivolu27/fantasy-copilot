@@ -48,6 +48,8 @@ export interface NormalizedTeam {
 
 export interface NormalizedPlayer {
   platformPlayerId: string;
+  /** NFL GSIS id, when the platform supplies it. Joins to nflverse stats. */
+  gsisId?: string;
   fullName: string;
   position?: string;
   nflTeam?: string;

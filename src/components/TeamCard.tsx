@@ -13,6 +13,10 @@ export interface RosterRow {
   nflTeam?: string | null;
   injuryStatus?: string | null;
   positionColor: string;
+  projectedPoints?: number | null;
+  floor?: number | null;
+  ceiling?: number | null;
+  confidence?: number | null;
 }
 
 export interface TeamCardProps {
@@ -24,6 +28,7 @@ export interface TeamCardProps {
   isMine: boolean;
   starters: RosterRow[];
   bench: RosterRow[];
+  projectedTotal?: number | null;
 }
 
 export function TeamCard(props: TeamCardProps) {
@@ -55,7 +60,16 @@ export function TeamCard(props: TeamCardProps) {
             {props.pointsAgainst.toFixed(2)} PA
           </p>
         </div>
-        <span className="shrink-0 text-xs text-[var(--muted)]">{total}</span>
+        {props.projectedTotal != null ? (
+          <span
+            className="shrink-0 text-xs text-[var(--muted)]"
+            title="Projected points from the starting lineup"
+          >
+            {props.projectedTotal.toFixed(1)} proj
+          </span>
+        ) : (
+          <span className="shrink-0 text-xs text-[var(--muted)]">{total}</span>
+        )}
         <span
           className={`shrink-0 text-[var(--muted)] transition-transform ${open ? "rotate-90" : ""}`}
           aria-hidden
@@ -102,9 +116,37 @@ function RosterSection({ label, rows }: { label: string; rows: RosterRow[] }) {
                 {r.injuryStatus}
               </Badge>
             ) : null}
-            <span className="w-9 shrink-0 text-right text-[11px] text-[var(--muted)]">
+            <span className="w-8 shrink-0 text-right text-[11px] text-[var(--muted)]">
               {r.nflTeam ?? "FA"}
             </span>
+            {r.projectedPoints != null ? (
+              <span
+                className="w-14 shrink-0 text-right"
+                title={
+                  r.floor != null && r.ceiling != null
+                    ? `Floor ${r.floor.toFixed(1)} — ceiling ${r.ceiling.toFixed(1)}`
+                    : undefined
+                }
+              >
+                <span className="text-[13px] font-semibold tabular-nums">
+                  {r.projectedPoints.toFixed(1)}
+                </span>
+                {r.confidence != null ? (
+                  <span
+                    className={`ml-1 text-[10px] ${
+                      r.confidence >= 0.66
+                        ? "text-emerald-400"
+                        : r.confidence >= 0.4
+                          ? "text-amber-400"
+                          : "text-zinc-500"
+                    }`}
+                    title={`Confidence ${(r.confidence * 100).toFixed(0)}%`}
+                  >
+                    ●
+                  </span>
+                ) : null}
+              </span>
+            ) : null}
           </li>
         ))}
       </ul>

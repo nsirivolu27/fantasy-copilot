@@ -81,6 +81,9 @@ model Player {
   // Canonical cross-platform identity. sleeperId is unique when present so
   // repeat syncs update rather than duplicate.
   sleeperId       String? @unique
+  /// nflverse/NFL GSIS id (e.g. 00-0036900). Sleeper's dictionary supplies it,
+  /// which lets stats join on an id instead of fuzzy name matching.
+  gsisId          String? @unique
   platformIdsJson String  @default("{}")
 
   fullName     String
@@ -95,8 +98,58 @@ model Player {
   updatedAt DateTime @updatedAt @default(now())
 
   rosterSpots RosterSpot[]
+  weeklyStats WeeklyStat[]
+  projections Projection[]
 
   @@index([position])
+  @@index([fullName])
+}
+
+model WeeklyStat {
+  id       String @id @default(cuid())
+  playerId String
+  player   Player @relation(fields: [playerId], references: [id], onDelete: Cascade)
+
+  season       String
+  week         Int
+  opponentTeam String?
+  /// Full nflverse row, so new features can be used without a re-ingest.
+  statLineJson String  @default("{}")
+
+  // Denormalized opportunity features — what actually predicts fantasy output.
+  targets         Int?
+  targetShare     Float?
+  airYardsShare   Float?
+  wopr            Float?
+  carries         Int?
+  receptions      Int?
+  fantasyPointsPpr Float?
+
+  @@unique([playerId, season, week])
+  @@index([season, week])
+}
+
+model Projection {
+  id       String @id @default(cuid())
+  playerId String
+  player   Player @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  leagueId String
+
+  season          String
+  week            Int
+  projectedPoints Float
+  floor           Float
+  ceiling         Float
+  /// 0..1 — sample size, role stability and injury certainty.
+  confidence      Float
+  modelVersion    String
+  /// JSON array of short strings explaining the number.
+  reasoningJson   String @default("[]")
+
+  createdAt DateTime @default(now())
+
+  @@unique([playerId, leagueId, season, week])
+  @@index([leagueId, week])
 }
 
 model RosterSpot {

@@ -4,6 +4,7 @@ import { setMyTeamAction } from "@/app/actions";
 import { Badge, Banner, Card, CardHeader, Stat } from "@/components/ui";
 import { SyncForm } from "@/components/SyncForm";
 import { ProviderSettings } from "@/components/ProviderSettings";
+import { ProjectionForm } from "@/components/ProjectionForm";
 
 export const dynamic = "force-dynamic";
 
@@ -128,6 +129,13 @@ export default async function SettingsPage() {
               ))}
             </ul>
           )}
+        </div>
+      </Card>
+
+      <Card>
+        <CardHeader title="Projections" subtitle="Free nflverse data — no key required" />
+        <div className="p-4">
+          <ProjectionForm />
         </div>
       </Card>
 

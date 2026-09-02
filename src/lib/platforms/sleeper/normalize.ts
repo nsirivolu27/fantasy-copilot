@@ -185,6 +185,7 @@ export function normalizePlayer(id: string, raw: unknown): NormalizedPlayer {
 
   return {
     platformPlayerId: id,
+    gsisId: typeof p.gsis_id === "string" && p.gsis_id ? p.gsis_id : undefined,
     // Team defenses have no name fields — their ID is the team code ("SF").
     fullName: full || (typeof p.team === "string" ? `${p.team} Defense` : `Player ${id}`),
     position: typeof p.position === "string" ? p.position : undefined,

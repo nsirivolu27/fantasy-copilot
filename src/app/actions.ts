@@ -6,6 +6,9 @@ import { SETTING_KEYS, setSetting } from "@/lib/settings";
 import { syncLeague } from "@/lib/sync/syncLeague";
 import { chat } from "@/lib/llm/providers";
 import { invalidateLeagueIndex } from "@/lib/rag";
+import { ingestSeasonStats } from "@/lib/data/ingest";
+import { runProjections } from "@/lib/projections/run";
+import { getActiveLeague } from "@/lib/settings";
 import type { PlatformId } from "@/lib/platforms";
 
 export interface SyncFormState {
@@ -146,4 +149,46 @@ export async function testProviderAction(formData: FormData): Promise<void> {
     data: { lastTestedAt: new Date(), lastTestOk: ok, lastTestNote: note },
   });
   revalidatePath("/settings");
+}
+
+// ─── Stats + projections ─────────────────────────────────────────────────────
+
+export interface ProjectionFormState {
+  status: "idle" | "ok" | "error";
+  message?: string;
+}
+
+/** Pulls the season's nflverse stats, then projects every rostered player. */
+export async function refreshProjectionsAction(
+  _prev: ProjectionFormState,
+  _formData: FormData,
+): Promise<ProjectionFormState> {
+  const league = await getActiveLeague();
+  if (!league) return { status: "error", message: "Sync a league first." };
+
+  try {
+    const ingest = await ingestSeasonStats(league.season);
+    const run = await runProjections(league.id);
+    invalidateLeagueIndex(league.id);
+    revalidatePath("/");
+    revalidatePath("/chat");
+
+    const parts = [
+      `Ingested ${ingest.rowsStored} stat rows across ${ingest.weeks.length} weeks.`,
+      `Projected ${run.playersProjected} players for week ${run.week} (${run.modelVersion}).`,
+    ];
+    if (run.skippedNoStats > 0) {
+      parts.push(`${run.skippedNoStats} had no game history and used replacement level.`);
+    }
+    if (run.unsupportedScoringKeys.length > 0) {
+      parts.push(
+        `Scoring rules not computable from skill-position data: ${run.unsupportedScoringKeys.join(", ")}.`,
+      );
+    }
+    return { status: "ok", message: parts.join(" ") };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Projection run failed.";
+    console.error("[projections]", message);
+    return { status: "error", message };
+  }
 }
