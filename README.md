@@ -21,9 +21,9 @@ Built on free, public data. **No paid APIs. No API keys. No accounts.**
 
 **[Live interactive preview →](https://claude.ai/code/artifact/7799e1d0-791a-424e-b213-dfa2ecf44532)** — the interface with real fixture data and real model output. Source in [`demo/`](./demo).
 
-> **Status: Phases 1, 2, 3, 5, 8, 9 and 10.** League sync, projections backtested on real
-> nflverse data, a start/sit optimizer, a trade engine, an MCP server, retrieval and grounded
-> chat all work end to end. The app is deployable today. Waivers and streaming are next.
+> **Status: Phases 1, 2, 3, 4, 5, 8, 9 and 10.** League sync, projections backtested on real
+> nflverse data, a start/sit optimizer, waivers and streaming, a trade engine, an MCP server,
+> retrieval and grounded chat all work end to end. The league hub is next.
 
 ---
 
@@ -38,9 +38,9 @@ Built on free, public data. **No paid APIs. No API keys. No accounts.**
 | 9 | League chat, grounded in tools and retrieval | ✅ Done |
 | 2 | nflverse ingest, player resolution, projection model, backtest | ✅ Done |
 | 3 | Start/sit optimizer, bye and injury alerts | ✅ Done |
-| 4 | Waiver targets, FAAB bids, streaming planner | ⬜ Next |
+| 4 | Waiver targets, FAAB bids, streaming planner | ✅ Done |
 | 5 | Trade engine, value providers, "find me a trade" | ✅ Done |
-| 6 | League hub: power rankings, playoff odds, weekly digest | ⬜ |
+| 6 | League hub: power rankings, playoff odds, weekly digest | ⬜ Next |
 | 7 | ESPN + manual/CSV adapters | ⬜ |
 | 10 | MCP server — query your league from any AI client | ✅ Done |
 | 11 | Decision Leverage (Δ win%) + published calibration | ⬜ |
@@ -120,6 +120,29 @@ worth. Three decisions shape it:
 The slot-filling order matters too: the optimizer fills the most restrictive slots first, which
 is the fix for the classic FLEX bug where a naive pass hands your best RB to the FLEX and leaves
 RB2 empty.
+
+## Waivers and streaming
+
+`/waivers` ranks free agents by **what each adds to your starting lineup**, not by raw
+projection. A 12-point WR is a big add for a team starting a 6-point WR and worth nothing to a
+team starting three better ones — measuring the lineup delta answers the question you actually
+have. Free agents have no stored projections, so they're projected on the fly from their nflverse
+history using your league's scoring.
+
+**FAAB bids** scale with three things: how much the add improves your lineup, how many weeks are
+left to enjoy it, and how much budget the rest of the league still holds. A big gain in week 14 is
+worth less than the same gain in week 3, and a league that has already spent its money is one you
+can win cheaply. Rolling-priority leagues get "worth a claim: yes/no" instead — never a dollar
+figure for a league with no budget.
+
+**Drop candidates** are ranked by what the lineup loses, which is not the same as lowest
+projection: a backup QB with nobody behind him can cost more than a spare RB in a deep room.
+
+`/streaming` plans QB/TE/K/DST three weeks ahead, colouring each matchup by how generous that
+defense has been to the position this season.
+
+Sleeper's trending-add counts appear beside the ranking, clearly labelled as market hype. They are
+never part of the ranking itself — the point is to see when the crowd and the model disagree.
 
 ## The trade engine
 

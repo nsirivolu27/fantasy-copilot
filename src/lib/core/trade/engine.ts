@@ -442,3 +442,189 @@ function buildReason(
   }
   return `${incoming.name} projects ${gain.toFixed(1)} more than ${outgoing.name}.`;
 }
+
+// ── Waivers and drops ───────────────────────────────────────────────────────
+
+export interface AdditionRanking {
+  player: LineupPlayer;
+  /** Weekly starting-lineup points gained by adding this player. */
+  lineupGain: number;
+  /** Who this player would displace from the lineup, if anyone. */
+  displaces: LineupPlayer | null;
+  /** True when the player is an upgrade over what the team currently starts. */
+  cracksLineup: boolean;
+}
+
+/**
+ * Ranks free agents by what they'd add to THIS roster's starting lineup.
+ *
+ * Ranking by raw projection is the common mistake: a 12-point WR is a big add
+ * for a team starting a 6-point WR and worth nothing to a team starting three
+ * better ones. Measuring the lineup delta answers the question the manager
+ * actually has.
+ */
+export function rankAdditions(
+  roster: LineupPlayer[],
+  slots: LineupSlot[],
+  candidates: LineupPlayer[],
+): AdditionRanking[] {
+  const before = optimizeLineup(roster, slots);
+  const startingIds = new Set(
+    before.assignments.map((a) => a.player?.playerId).filter((id): id is string => id != null),
+  );
+
+  return candidates
+    .map((candidate) => {
+      const after = optimizeLineup([...roster, candidate], slots);
+      const nowStarting = new Set(
+        after.assignments.map((a) => a.player?.playerId).filter((id): id is string => id != null),
+      );
+
+      // Whoever was starting before and isn't now is the player displaced.
+      const displacedId = [...startingIds].find((id) => !nowStarting.has(id)) ?? null;
+      const displaces = displacedId ? (roster.find((p) => p.playerId === displacedId) ?? null) : null;
+
+      return {
+        player: candidate,
+        lineupGain: round2(after.total - before.total),
+        displaces,
+        cracksLineup: nowStarting.has(candidate.playerId),
+      };
+    })
+    .sort(
+      (a, b) =>
+        b.lineupGain - a.lineupGain ||
+        b.player.projectedPoints - a.player.projectedPoints ||
+        a.player.name.localeCompare(b.player.name),
+    );
+}
+
+export interface DropRanking {
+  player: LineupPlayer;
+  /** Weekly points the lineup loses if this player is dropped. */
+  lineupCost: number;
+  isProtected: boolean;
+}
+
+/**
+ * Ranks a roster from most to least droppable, by what the lineup loses.
+ * Protected players are ranked last and flagged, never silently excluded —
+ * the user should see that the app knows about them.
+ */
+export function rankDrops(
+  roster: LineupPlayer[],
+  slots: LineupSlot[],
+  protectedIds: string[] = [],
+): DropRanking[] {
+  const guarded = new Set(protectedIds);
+  const before = optimizeLineup(roster, slots).total;
+
+  return roster
+    .map((player) => {
+      const after = optimizeLineup(
+        roster.filter((p) => p.playerId !== player.playerId),
+        slots,
+      ).total;
+      return {
+        player,
+        lineupCost: round2(before - after),
+        isProtected: guarded.has(player.playerId),
+      };
+    })
+    .sort(
+      (a, b) =>
+        Number(a.isProtected) - Number(b.isProtected) ||
+        a.lineupCost - b.lineupCost ||
+        a.player.projectedPoints - b.player.projectedPoints,
+    );
+}
+
+export interface FaabAdvice {
+  /** Recommended bid in dollars, or null when the league has no budget. */
+  bid: number | null;
+  /** Bid as a share of the team's remaining budget. */
+  percentOfRemaining: number | null;
+  /** For rolling-priority leagues: is this worth the claim? */
+  worthTheClaim: boolean;
+  reasoning: string[];
+}
+
+/**
+ * FAAB guidance.
+ *
+ * Bids scale with three things: how much the add improves the lineup, how many
+ * weeks are left to enjoy that improvement, and how much budget the rest of
+ * the league still has to outbid you with. A big gain in week 14 is worth less
+ * than the same gain in week 3, and a league that has already spent its money
+ * is a league you can win cheaply.
+ */
+export function recommendFaabBid(args: {
+  lineupGain: number;
+  budgetRemaining: number | null;
+  weeksRemaining: number;
+  /** Average budget left across the other teams, if known. */
+  leagueAverageRemaining?: number | null;
+}): FaabAdvice {
+  const reasoning: string[] = [];
+  const gain = Math.max(0, args.lineupGain);
+
+  // A sub-point weekly gain is noise, the same threshold the lineup advice uses.
+  const worthTheClaim = gain >= COIN_FLIP_THRESHOLD;
+
+  if (args.budgetRemaining == null) {
+    reasoning.push(
+      worthTheClaim
+        ? `Adds ${gain.toFixed(1)} points a week to your starting lineup — worth using your waiver claim.`
+        : `Only ${gain.toFixed(1)} points a week. Not worth burning a claim; you can likely get him later.`,
+    );
+    return { bid: null, percentOfRemaining: null, worthTheClaim, reasoning };
+  }
+
+  if (args.budgetRemaining <= 0) {
+    reasoning.push("No FAAB budget left, so this is a free-agent pickup rather than a bid.");
+    return { bid: 0, percentOfRemaining: 0, worthTheClaim, reasoning };
+  }
+
+  if (!worthTheClaim) {
+    reasoning.push(
+      `Adds only ${gain.toFixed(1)} points a week to your lineup. Bid the minimum or pass.`,
+    );
+    return { bid: 1, percentOfRemaining: round2(100 / args.budgetRemaining), worthTheClaim, reasoning };
+  }
+
+  // Base: roughly 3% of remaining budget per weekly point added, so a 5-point
+  // upgrade is a ~15% bid. Deliberately conservative — most FAAB is wasted on
+  // week-to-week churn, and running out of budget in November is a real cost.
+  let share = Math.min(0.6, gain * 0.03);
+  reasoning.push(
+    `Adds ${gain.toFixed(1)} points a week to your starting lineup — the basis for a ${(share * 100).toFixed(0)}% bid.`,
+  );
+
+  // Season timing: the same weekly gain is worth less with fewer weeks to use it.
+  const seasonFactor = Math.min(1, Math.max(0.35, args.weeksRemaining / 12));
+  if (seasonFactor < 1) {
+    share *= seasonFactor;
+    reasoning.push(
+      `${args.weeksRemaining} weeks left, so the bid is scaled down to ${(share * 100).toFixed(0)}%.`,
+    );
+  }
+
+  // Competition: if others are broke, you don't need to pay up.
+  if (args.leagueAverageRemaining != null && args.leagueAverageRemaining >= 0) {
+    if (args.leagueAverageRemaining < args.budgetRemaining * 0.5) {
+      share *= 0.75;
+      reasoning.push("The rest of the league is low on budget, so you can win this cheaper.");
+    } else if (args.leagueAverageRemaining > args.budgetRemaining * 1.5) {
+      share *= 1.25;
+      reasoning.push("Others hold more budget than you, so bid up or expect to be outbid.");
+    }
+  }
+
+  const bid = Math.max(1, Math.round(args.budgetRemaining * share));
+  return {
+    bid,
+    percentOfRemaining: round2((bid / args.budgetRemaining) * 100),
+    worthTheClaim,
+    reasoning,
+  };
+}

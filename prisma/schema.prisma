@@ -280,3 +280,16 @@ model ValueProviderConfig {
   isDefault Boolean  @default(false)
   createdAt DateTime @default(now())
 }
+
+/// NFL schedule, from nflverse. Powers bye weeks and the streaming planner.
+model Game {
+  id       String @id @default(cuid())
+  season   String
+  week     Int
+  gameType String @default("REG")
+  homeTeam String
+  awayTeam String
+
+  @@unique([season, week, homeTeam, awayTeam])
+  @@index([season, week])
+}

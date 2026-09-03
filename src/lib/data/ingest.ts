@@ -84,12 +84,35 @@ export async function ingestSeasonStats(season: string): Promise<IngestResult> {
  * Best effort: a failure here must never break a stats ingest.
  */
 export async function ingestByeWeeks(season: string): Promise<{
+  gamesStored: number;
   teamsResolved: number;
   playersUpdated: number;
   anomalies: string[];
 }> {
   const games = await fetchSchedule();
   const { byeByTeam, anomalies } = deriveByeWeeks(games, season);
+
+  // Persist this season's schedule so the streaming planner can look ahead.
+  const seasonGames = games.filter((g) => g.season === season && g.gameType === "REG");
+  const CHUNK = 100;
+  for (let i = 0; i < seasonGames.length; i += CHUNK) {
+    await prisma.$transaction(
+      seasonGames.slice(i, i + CHUNK).map((g) =>
+        prisma.game.upsert({
+          where: {
+            season_week_homeTeam_awayTeam: {
+              season: g.season,
+              week: g.week,
+              homeTeam: g.homeTeam,
+              awayTeam: g.awayTeam,
+            },
+          },
+          create: { season: g.season, week: g.week, gameType: g.gameType, homeTeam: g.homeTeam, awayTeam: g.awayTeam },
+          update: {},
+        }),
+      ),
+    );
+  }
 
   let playersUpdated = 0;
   for (const [team, week] of Object.entries(byeByTeam)) {
@@ -101,6 +124,7 @@ export async function ingestByeWeeks(season: string): Promise<{
   }
 
   return {
+    gamesStored: seasonGames.length,
     teamsResolved: Object.keys(byeByTeam).length,
     playersUpdated,
     anomalies: anomalies.map((a) => `${a.team}: off in weeks ${a.weeks.join(", ")}`),

@@ -75,7 +75,7 @@ export class SleeperAdapter implements PlatformAdapter {
       .map((id) => normalizePlayer(id, dict[id]));
   }
 
-  // ---- Declared now, implemented in later phases -------------------------
+  // ---- Declared now, implemented in a later phase -------------------------
 
   async getMatchups(_leagueId: string, _week: number): Promise<NormalizedMatchup[]> {
     throw new NotImplementedError("getMatchups");
@@ -85,7 +85,38 @@ export class SleeperAdapter implements PlatformAdapter {
     throw new NotImplementedError("getTransactions");
   }
 
-  async getFreeAgents(_leagueId: string): Promise<NormalizedPlayer[]> {
-    throw new NotImplementedError("getFreeAgents");
+  /**
+   * Everyone at a fantasy position who isn't on a roster in this league.
+   *
+   * The dictionary is large, so this filters hard: rostered players out, then
+   * only players with an NFL team (free agents in real life are not fantasy
+   * options) at a position the league actually starts.
+   */
+  async getFreeAgents(leagueId: string): Promise<NormalizedPlayer[]> {
+    const [rosters, dict] = await Promise.all([
+      sleeperGet<unknown[]>(`/league/${encodeURIComponent(leagueId)}/rosters`),
+      sleeperGet<Record<string, unknown>>("/players/nfl", { timeoutMs: 60_000 }),
+    ]);
+
+    const rostered = new Set<string>();
+    for (const raw of rosters ?? []) {
+      const players = (raw as { players?: string[] | null })?.players ?? [];
+      for (const id of players) if (id) rostered.add(id);
+    }
+
+    const FANTASY_POSITIONS = new Set(["QB", "RB", "WR", "TE", "K", "DEF"]);
+    const out: NormalizedPlayer[] = [];
+
+    for (const [id, raw] of Object.entries(dict ?? {})) {
+      if (rostered.has(id)) continue;
+      const record = raw as Record<string, unknown>;
+      const position = typeof record.position === "string" ? record.position : "";
+      if (!FANTASY_POSITIONS.has(position)) continue;
+      // No NFL team means not on a roster in real life either.
+      if (!record.team) continue;
+      out.push(normalizePlayer(id, raw));
+    }
+
+    return out;
   }
 }

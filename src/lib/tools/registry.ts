@@ -4,6 +4,7 @@ import { getSportModule } from "@/lib/sports";
 import { retrieve } from "@/lib/rag";
 import { bestLineup, evaluate, findTrades } from "@/lib/trade/service";
 import { getStartSitAdvice } from "@/lib/lineup/service";
+import { getStreamers, getWaiverReport } from "@/lib/waivers/service";
 import { VERDICT_LABEL } from "@/lib/core";
 import type { NormalizedSlot } from "@/lib/platforms/types";
 
@@ -367,6 +368,103 @@ export const tools: FantasyTool[] = [
         lines.push(`${c.slot}: ${c.out?.name} vs ${c.in.name} is a coin flip (${c.gain.toFixed(1)} apart) — say so rather than picking confidently.`);
       }
       return { summary: lines.join("\n"), data: advice };
+    },
+  },
+
+  {
+    name: "get_waiver_targets",
+    title: "Waiver targets",
+    description:
+      "Free agents ranked by how much each would add to the asking team's starting lineup, with a FAAB bid or claim recommendation. Use for 'who should I pick up', 'who's on waivers', 'what should I bid'.",
+    inputSchema: {
+      type: "object",
+      properties: { team: { type: "string", description: "Team name, manager name, or 'me'." } },
+    },
+    readOnly: true,
+    handler: async (input, ctx) => {
+      const team = await findTeam(ctx.leagueId, str(input.team) || "me");
+      const report = await getWaiverReport(ctx.leagueId, team?.id);
+      if (!report) return { summary: "No team is marked as the user's, and none was named.", data: null };
+      if (report.targets.length === 0) {
+        return {
+          summary: `Nothing on waivers improves ${report.teamName}'s starting lineup right now. That is a real answer, not missing data — say so rather than suggesting a name.`,
+          data: report,
+        };
+      }
+      const lines = report.targets.slice(0, 8).map((t) => {
+        const bid =
+          report.waiverType === "faab" && t.faab.bid != null
+            ? `bid $${t.faab.bid}`
+            : t.faab.worthTheClaim
+              ? "worth a claim"
+              : "not worth a claim";
+        return `${t.ranking.player.name} (${t.ranking.player.position}): +${t.ranking.lineupGain.toFixed(1)}/wk, projects ${t.ranking.player.projectedPoints.toFixed(1)}, ${bid}${t.ranking.displaces ? `, replaces ${t.ranking.displaces.name}` : ""}`;
+      });
+      return {
+        summary: `${report.teamName}, week ${report.week}${report.budgetRemaining != null ? ` ($${report.budgetRemaining} FAAB left)` : ""}:\n${lines.join("\n")}`,
+        data: report,
+      };
+    },
+  },
+
+  {
+    name: "get_drop_candidates",
+    title: "Drop candidates",
+    description:
+      "The asking team's roster ranked from most to least droppable, by what the starting lineup would lose. Protected players are flagged.",
+    inputSchema: {
+      type: "object",
+      properties: { team: { type: "string", description: "Team name, manager name, or 'me'." } },
+    },
+    readOnly: true,
+    handler: async (input, ctx) => {
+      const team = await findTeam(ctx.leagueId, str(input.team) || "me");
+      const report = await getWaiverReport(ctx.leagueId, team?.id);
+      if (!report) return { summary: "No matching team.", data: null };
+      return {
+        summary: report.drops
+          .map(
+            (d) =>
+              `${d.player.name} (${d.player.position}): dropping costs ${d.lineupCost.toFixed(1)}/wk${d.isProtected ? " — PROTECTED, do not suggest dropping" : ""}`,
+          )
+          .join("\n"),
+        data: report.drops,
+      };
+    },
+  },
+
+  {
+    name: "get_streamers",
+    title: "Streaming options",
+    description:
+      "Best available QB/TE/K/DST streams with their next three matchups and how generous each defense has been. Use for 'who should I stream', 'best defense this week', 'who do I pick up at kicker'.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        position: { type: "string", description: "QB, TE, K or DEF. Omit for all four." },
+      },
+    },
+    readOnly: true,
+    handler: async (input, ctx) => {
+      const wanted = str(input.position).toUpperCase();
+      const positions = ["QB", "TE", "K", "DEF"].includes(wanted) ? [wanted] : ["QB", "TE", "K", "DEF"];
+      const result = await getStreamers(ctx.leagueId, positions);
+
+      const lines: string[] = [];
+      for (const position of positions) {
+        const options = result.byPosition[position] ?? [];
+        if (options.length === 0) {
+          lines.push(`${position}: no streaming data yet — stats and schedule need to be ingested.`);
+          continue;
+        }
+        for (const o of options.slice(0, 4)) {
+          const path = o.schedule
+            .map((s) => `wk${s.week} ${s.opponent ?? "BYE"}${s.multiplier ? ` (${s.multiplier.toFixed(2)}x)` : ""}`)
+            .join(", ");
+          lines.push(`${position} ${o.name} (${o.nflTeam}): projects ${o.projectedPoints.toFixed(1)}; ${path}`);
+        }
+      }
+      return { summary: `Week ${result.week} streaming options:\n${lines.join("\n")}`, data: result };
     },
   },
 

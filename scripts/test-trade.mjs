@@ -10,6 +10,9 @@ import {
   verdictFor,
   adviseLineup,
   COIN_FLIP_THRESHOLD,
+  rankAdditions,
+  rankDrops,
+  recommendFaabBid,
 } from "../src/lib/core/trade/engine.ts";
 import {
   pointsAboveReplacementProvider,
@@ -340,6 +343,107 @@ await test("a missing projection is surfaced rather than treated as zero points"
   );
   const advice = adviseLineup({ roster, currentStarterIds: CURRENT, slots: SLOTS });
   assert.ok(advice.alerts.some((a) => /No projection/i.test(a.message)));
+});
+
+// ── Waivers ──────────────────────────────────────────────────────────────────
+
+const thinAtWr = [
+  p("qb", "QB One", "QB", 20),
+  p("rb1", "RB One", "RB", 18), p("rb2", "RB Two", "RB", 15),
+  p("wr1", "WR One", "WR", 13), p("wr2", "WR Two", "WR", 5),
+  p("te1", "TE One", "TE", 9), p("k1", "K One", "K", 8), p("d1", "D One", "DEF", 7),
+  p("flex", "Flex Guy", "RB", 11),
+];
+
+await test("free agents are ranked by lineup gain, not raw projection", () => {
+  const ranked = rankAdditions(thinAtWr, SLOTS, [
+    p("fa-wr", "Free WR", "WR", 11),   // replaces the 5-point WR2: +6
+    p("fa-rb", "Free RB", "RB", 12),   // can't crack an RB room of 18/15/11: +1
+  ]);
+  assert.equal(ranked[0].player.playerId, "fa-wr");
+  assert.equal(ranked[0].lineupGain, 6);
+  assert.ok(
+    ranked[0].lineupGain > ranked[1].lineupGain,
+    "the lower-projected WR must outrank the higher-projected RB for THIS roster",
+  );
+});
+
+await test("a free agent who can't crack the lineup is worth zero, not his projection", () => {
+  const [ranked] = rankAdditions(thinAtWr, SLOTS, [p("scrub", "Bench Fodder", "RB", 9)]);
+  assert.equal(ranked.lineupGain, 0);
+  assert.equal(ranked.cracksLineup, false);
+});
+
+await test("an addition reports who it displaces", () => {
+  const [ranked] = rankAdditions(thinAtWr, SLOTS, [p("fa-wr", "Free WR", "WR", 11)]);
+  assert.equal(ranked.cracksLineup, true);
+  assert.equal(ranked.displaces.playerId, "wr2");
+});
+
+await test("drop candidates are ranked by what the lineup loses, not by projection", () => {
+  const drops = rankDrops(thinAtWr, SLOTS);
+  // Cheapest to lose is the 5-point WR. Dearest is the QB — not the highest
+  // projected player, but the one with no replacement behind him, which is
+  // exactly the distinction raw projections miss.
+  assert.equal(drops[0].player.playerId, "wr2");
+  assert.equal(drops[0].lineupCost, 5);
+  assert.equal(drops[drops.length - 1].player.playerId, "qb");
+  assert.equal(drops[drops.length - 1].lineupCost, 20);
+
+  const rb1 = drops.find((d) => d.player.playerId === "rb1");
+  assert.equal(rb1.lineupCost, 18, "an 18-point RB with depth behind him costs less than the QB");
+});
+
+await test("protected players sort last and are flagged, never hidden", () => {
+  const drops = rankDrops(thinAtWr, SLOTS, ["wr2"]);
+  const wr2 = drops.find((d) => d.player.playerId === "wr2");
+  assert.equal(wr2.isProtected, true);
+  assert.ok(drops.indexOf(wr2) > 0, "a protected player must not be the top drop suggestion");
+  assert.equal(drops.length, thinAtWr.length, "protected players stay in the list");
+});
+
+// ── FAAB ─────────────────────────────────────────────────────────────────────
+
+await test("a bigger lineup gain earns a bigger bid", () => {
+  const small = recommendFaabBid({ lineupGain: 2, budgetRemaining: 100, weeksRemaining: 12 });
+  const big = recommendFaabBid({ lineupGain: 8, budgetRemaining: 100, weeksRemaining: 12 });
+  assert.ok(big.bid > small.bid, `${big.bid} should exceed ${small.bid}`);
+  assert.ok(big.bid <= 100);
+});
+
+await test("the same gain is worth less late in the season", () => {
+  const early = recommendFaabBid({ lineupGain: 6, budgetRemaining: 100, weeksRemaining: 12 });
+  const late = recommendFaabBid({ lineupGain: 6, budgetRemaining: 100, weeksRemaining: 3 });
+  assert.ok(late.bid < early.bid, `${late.bid} should be under ${early.bid}`);
+  assert.match(late.reasoning.join(" "), /weeks left/i);
+});
+
+await test("a broke league means a cheaper winning bid", () => {
+  const rich = recommendFaabBid({ lineupGain: 6, budgetRemaining: 100, weeksRemaining: 12, leagueAverageRemaining: 90 });
+  const broke = recommendFaabBid({ lineupGain: 6, budgetRemaining: 100, weeksRemaining: 12, leagueAverageRemaining: 10 });
+  assert.ok(broke.bid < rich.bid);
+  assert.match(broke.reasoning.join(" "), /cheaper/i);
+});
+
+await test("a noise-level gain is a minimum bid, not a real one", () => {
+  const advice = recommendFaabBid({ lineupGain: 0.4, budgetRemaining: 100, weeksRemaining: 12 });
+  assert.equal(advice.worthTheClaim, false);
+  assert.equal(advice.bid, 1);
+  assert.match(advice.reasoning.join(" "), /minimum or pass/i);
+});
+
+await test("a rolling-priority league gets a yes/no, never a dollar figure", () => {
+  const advice = recommendFaabBid({ lineupGain: 6, budgetRemaining: null, weeksRemaining: 12 });
+  assert.equal(advice.bid, null);
+  assert.equal(advice.percentOfRemaining, null);
+  assert.equal(advice.worthTheClaim, true);
+  assert.match(advice.reasoning.join(" "), /waiver claim/i);
+});
+
+await test("an exhausted budget is reported rather than producing a bid of 1", () => {
+  const advice = recommendFaabBid({ lineupGain: 6, budgetRemaining: 0, weeksRemaining: 12 });
+  assert.equal(advice.bid, 0);
+  assert.match(advice.reasoning.join(" "), /No FAAB budget left/i);
 });
 
 console.log(`\n${passed} passing\n`);

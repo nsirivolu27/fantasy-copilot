@@ -21,6 +21,38 @@ async function buildHandler() {
   };
 
   return createMcpHandler((server) => {
+    // ── Resources: things a client should be able to read without a tool call
+    for (const resource of MCP_RESOURCES) {
+      server.registerResource?.(
+        resource.name,
+        resource.uri,
+        { title: resource.title, description: resource.description, mimeType: "application/json" },
+        async () => {
+          const league = await getActiveLeague();
+          if (!league) {
+            return { contents: [{ uri: resource.uri, text: "No league is synced yet." }] };
+          }
+          const result = await runTool(resource.tool, resource.input ?? {}, { leagueId: league.id });
+          return {
+            contents: [
+              { uri: resource.uri, mimeType: "application/json", text: JSON.stringify(result.data ?? {}, null, 2) },
+            ],
+          };
+        },
+      );
+    }
+
+    // ── Prompts: reusable templates, which show up as slash commands
+    for (const prompt of MCP_PROMPTS) {
+      server.registerPrompt?.(
+        prompt.name,
+        { title: prompt.title, description: prompt.description, argsSchema: {} },
+        async () => ({
+          messages: [{ role: "user", content: { type: "text", text: prompt.text } }],
+        }),
+      );
+    }
+
     for (const tool of tools) {
       server.registerTool(
         tool.name,
@@ -57,7 +89,72 @@ interface McpServerLike {
     config: Record<string, unknown>,
     handler: (input: Record<string, unknown>) => Promise<unknown>,
   ) => void;
+  /** Optional: older SDK versions may not expose these. */
+  registerResource?: (
+    name: string,
+    uri: string,
+    config: Record<string, unknown>,
+    handler: () => Promise<unknown>,
+  ) => void;
+  registerPrompt?: (
+    name: string,
+    config: Record<string, unknown>,
+    handler: () => Promise<unknown>,
+  ) => void;
 }
+
+/**
+ * Resources are read-only views a client can pull without deciding to call a
+ * tool. Each one delegates to the same registry, so there is still one list.
+ */
+const MCP_RESOURCES = [
+  {
+    name: "league-settings",
+    uri: "league://settings",
+    title: "League settings",
+    description: "Scoring, roster slots, waiver type, season and current week.",
+    tool: "get_league_info",
+    input: {},
+  },
+  {
+    name: "standings",
+    uri: "league://standings",
+    title: "Standings",
+    description: "Every team with record and points.",
+    tool: "list_teams",
+    input: {},
+  },
+  {
+    name: "my-roster",
+    uri: "roster://me",
+    title: "My roster",
+    description: "The user's own roster with projections.",
+    tool: "get_roster",
+    input: { team: "me" },
+  },
+];
+
+/** Prompt templates. In Claude Desktop these appear as slash commands. */
+const MCP_PROMPTS = [
+  {
+    name: "weekly_check_in",
+    title: "Weekly check-in",
+    description: "Full read on my team this week: lineup, waivers, problems.",
+    text: "Check in on my fantasy team for this week. Use start_sit_advice for the lineup, get_waiver_targets for pickups, and flag any injury or bye problems. Lead with anything that needs action today, and say plainly if nothing does.",
+  },
+  {
+    name: "trade_review",
+    title: "Review a trade",
+    description: "Evaluate a specific trade for both sides.",
+    text: "I want to evaluate a trade. Ask me which players are moving in each direction if I haven't said, then use evaluate_trade and give me the verdict for BOTH sides honestly — including whether the other manager would actually accept it.",
+  },
+  {
+    name: "waiver_plan",
+    title: "Waiver plan",
+    description: "Who to add, who to drop, what to bid.",
+    text: "Build my waiver plan for this week. Use get_waiver_targets and get_drop_candidates. Give me a ranked shortlist with bids, say who to drop for each, and tell me if nothing is worth claiming.",
+  },
+];
 
 let cached: ((req: Request) => Promise<Response>) | null = null;
 

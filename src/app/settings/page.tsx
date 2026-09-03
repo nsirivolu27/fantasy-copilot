@@ -5,6 +5,8 @@ import { Badge, Banner, Card, CardHeader, Stat } from "@/components/ui";
 import { SyncForm } from "@/components/SyncForm";
 import { ProviderSettings } from "@/components/ProviderSettings";
 import { ProjectionForm } from "@/components/ProjectionForm";
+import { McpSettings } from "@/components/McpSettings";
+import { parseJson } from "@/lib/json";
 
 export const dynamic = "force-dynamic";
 
@@ -16,6 +18,17 @@ export default async function SettingsPage() {
         orderBy: [{ wins: "desc" }, { pointsFor: "desc" }],
       })
     : [];
+
+  const apiKeys = await prisma.apiKey.findMany({ orderBy: { createdAt: "desc" } });
+  const keyRows = apiKeys.map((k) => ({
+    id: k.id,
+    label: k.label,
+    prefix: k.prefix,
+    scopes: parseJson<string[]>(k.scopesJson, []),
+    lastUsedAt: k.lastUsedAt,
+    revokedAt: k.revokedAt,
+    createdAt: k.createdAt,
+  }));
 
   const statusTone =
     league?.syncStatus === "ok" ? "success" : league?.syncStatus === "stale" ? "warn" : "info";
@@ -140,6 +153,8 @@ export default async function SettingsPage() {
       </Card>
 
       <ProviderSettings />
+
+      <McpSettings keys={keyRows} baseUrl={process.env.APP_URL ?? "http://localhost:3000"} />
 
       <Card>
         <CardHeader title="How this works" />

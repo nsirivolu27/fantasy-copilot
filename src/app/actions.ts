@@ -5,6 +5,7 @@ import { prisma } from "@/lib/db";
 import { SETTING_KEYS, setSetting } from "@/lib/settings";
 import { syncLeague } from "@/lib/sync/syncLeague";
 import { chat } from "@/lib/llm/providers";
+import { ALL_SCOPES, generateApiKey } from "@/lib/api/auth";
 import { invalidateLeagueIndex } from "@/lib/rag";
 import { ingestByeWeeks, ingestSeasonStats } from "@/lib/data/ingest";
 import { runProjections } from "@/lib/projections/run";
@@ -208,4 +209,39 @@ export async function refreshProjectionsAction(
     console.error("[projections]", message);
     return { status: "error", message };
   }
+}
+
+// ─── API keys (MCP access) ───────────────────────────────────────────────────
+
+export interface ApiKeyFormState {
+  status: "idle" | "created" | "error";
+  /** Shown exactly once. Never stored, never retrievable again. */
+  plaintext?: string;
+  message?: string;
+}
+
+export async function createApiKeyAction(
+  _prev: ApiKeyFormState,
+  formData: FormData,
+): Promise<ApiKeyFormState> {
+  const label = formData.get("label")?.toString().trim() || "MCP client";
+  const scopes = ALL_SCOPES.filter((s) => formData.get(`scope:${s}`) === "on");
+  if (scopes.length === 0) {
+    return { status: "error", message: "Pick at least one scope." };
+  }
+
+  const { plaintext, hash, prefix } = generateApiKey();
+  await prisma.apiKey.create({
+    data: { label, hash, prefix, scopesJson: JSON.stringify(scopes) },
+  });
+
+  revalidatePath("/settings");
+  return { status: "created", plaintext, message: `Key "${label}" created with ${scopes.join(", ")}.` };
+}
+
+export async function revokeApiKeyAction(formData: FormData): Promise<void> {
+  const id = formData.get("keyId")?.toString();
+  if (!id) return;
+  await prisma.apiKey.update({ where: { id }, data: { revokedAt: new Date() } });
+  revalidatePath("/settings");
 }
