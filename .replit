@@ -1,0 +1,30 @@
+# Fantasy Copilot on Replit.
+#
+# Import this repo, press Run. The run command creates the database schema
+# first (idempotent, so it's safe on every boot) and then starts Next.
+#
+# Dev uses SQLite by default — zero setup. Before deploying, create a Replit
+# Postgres database and DATABASE_URL is injected automatically; the Prisma
+# provider switches on the URL scheme, so no schema edit is needed.
+
+modules = ["nodejs-22"]
+run = "npm run replit"
+entrypoint = "src/app/page.tsx"
+
+hidden = [".next", "node_modules", "prisma/generated-schema.prisma", "prisma/dev.db"]
+
+[nix]
+channel = "stable-24_11"
+
+[env]
+DATABASE_URL = "file:./prisma/dev.db"
+NEXT_TELEMETRY_DISABLED = "1"
+
+[deployment]
+deploymentTarget = "autoscale"
+build = ["npm", "run", "build"]
+run = ["npm", "run", "start"]
+
+[[ports]]
+localPort = 3000
+externalPort = 80

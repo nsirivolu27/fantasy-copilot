@@ -96,10 +96,11 @@ more useful than one that's confidently wrong.
 
 ---
 
-## Deploying
+## Running it
 
-`docker compose up -d`, or push to Vercel with a free Neon database — about five minutes
-either way. Full instructions, environment variables and the serverless caveats are in
+Import into **Replit** and press Run — the committed `.replit` creates the schema and starts the
+server ([REPLIT.md](./REPLIT.md)). Or `docker compose up -d` locally, or push to Vercel with a
+free Neon database. Environment variables and the serverless caveats are in
 [DEPLOYING.md](./DEPLOYING.md).
 
 ## Start/sit

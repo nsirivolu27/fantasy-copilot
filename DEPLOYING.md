@@ -13,7 +13,17 @@ Whichever you pick, set these:
 
 ---
 
-## 1. Vercel + Neon — about 5 minutes, free tier
+## 1. Replit — import and press Run
+
+Fastest path from zero to a running app: Node, a database and network in one place. Full
+walkthrough in [REPLIT.md](./REPLIT.md).
+
+Import the repo, press Run, and the committed `.replit` handles the rest. Switch to a Replit
+Postgres database before deploying, since autoscale deployments don't keep a filesystem.
+
+---
+
+## 2. Vercel + Neon — about 5 minutes, free tier
 
 1. Push the repo to GitHub.
 2. Create a free Postgres database at [neon.tech](https://neon.tech) (or use Vercel Postgres)
@@ -39,7 +49,7 @@ corpus ever gets large, move it to a table.
 
 ---
 
-## 2. Docker — one command, runs anywhere
+## 3. Docker — one command, runs anywhere
 
 ```bash
 docker compose up -d
@@ -60,7 +70,7 @@ The image is a standalone Next.js build with a `/api/health` healthcheck baked i
 
 ---
 
-## 3. Railway / Render / Fly — a long-running Node server
+## 4. Railway / Render / Fly — a long-running Node server
 
 These run the app as a normal server, which suits it better than serverless: the retrieval
 index stays warm and there's no connection-pooling caveat.

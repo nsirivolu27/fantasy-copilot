@@ -29,7 +29,7 @@
     "prisma:schema": "node scripts/prisma-schema.mjs",
     "dev": "npm run prisma:schema && next dev",
     "build": "npm run prisma:schema && prisma generate --schema=prisma/generated-schema.prisma && next build",
-    "start": "next start",
+    "start": "next start -H 0.0.0.0 -p ${PORT:-3000}",
     "lint": "next lint",
     "db:push": "npm run prisma:schema && prisma db push --schema=prisma/generated-schema.prisma",
     "db:studio": "npm run prisma:schema && prisma studio --schema=prisma/generated-schema.prisma",
@@ -43,7 +43,8 @@
     "backtest": "node --experimental-strip-types scripts/backtest.mjs",
     "test:trade": "node --experimental-strip-types scripts/test-trade.mjs",
     "test:boundaries": "node --experimental-strip-types scripts/test-boundaries.mjs",
-    "test:schedule": "node --experimental-strip-types scripts/test-schedule.mjs"
+    "test:schedule": "node --experimental-strip-types scripts/test-schedule.mjs",
+    "replit": "npm run db:push && next dev -H 0.0.0.0 -p ${PORT:-3000}"
   },
   "dependencies": {
     "@prisma/client": "^6.5.0",
