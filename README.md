@@ -4,28 +4,97 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 [![PRs welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](./CONTRIBUTING.md)
 
-A free, self-hosted companion for your fantasy football league. Sync your league, then get
-help with the decisions that actually matter: **start/sit, waivers, streaming and trades**: each with reasoning you can read and disagree with.
+A free, self-hosted companion for your fantasy football league. Sync from Sleeper, then get help
+with the decisions that matter: **start/sit, waivers, streaming and trades**, each with reasoning
+you can read and disagree with.
 
-Built on free, public data. **No paid APIs. No API keys. No accounts.**
+Free public data only. **No paid APIs, no API keys, no accounts.**
 
-- **Platform-agnostic**: Sleeper today, ESPN and manual/CSV next, everything behind one
-  adapter interface so adding Yahoo is a single file.
-- **Format-agnostic**: scoring rules, roster slots, team count, season and week are all
-  read from your league. Half-PPR, superflex, dynasty, 10-team, 14-team: no code changes.
-- **Sport-agnostic by architecture**: football is built; basketball and baseball slot in
-  without touching the engine.
-- **Honest about itself**: projections ship with a confidence rating, and the model's
-  accuracy gets published, including the weeks it was wrong.
+## Run it
 
-**[Live interactive preview →](https://claude.ai/code/artifact/7799e1d0-791a-424e-b213-dfa2ecf44532)**: the interface with real fixture data and real model output. Source in [`demo/`](./demo).
+Pick one. All three take a few minutes.
 
-> **Status: Phases 1-6, 8, 9 and 10, ten of thirteen.** League sync, projections backtested on real
-> nflverse data, a start/sit optimizer, waivers and streaming, a trade engine, a league
-> hub with simulated win probabilities, an MCP server, retrieval and grounded chat all work end to
-> end. Decision leverage and the ESPN adapter are next.
+### Replit, no install
 
----
+[![Run on Replit](https://replit.com/badge/github/nsirivolu27/fantasy-copilot)](https://replit.com/new/github/nsirivolu27/fantasy-copilot)
+
+Click, then press Run. The committed `.replit` creates the database and starts the server.
+Details and the Postgres switch for deploying: [REPLIT.md](./REPLIT.md).
+
+### Docker, one command
+
+```bash
+git clone https://github.com/nsirivolu27/fantasy-copilot.git
+cd fantasy-copilot
+docker compose up -d
+```
+
+Postgres and the app both come up on http://localhost:3000.
+
+### Local Node
+
+```bash
+git clone https://github.com/nsirivolu27/fantasy-copilot.git
+cd fantasy-copilot
+npm install
+cp .env.example .env
+npm run db:push
+npm run dev
+```
+
+SQLite by default, so there is no database to set up.
+
+## First five minutes
+
+1. Open **Settings**, paste your Sleeper league ID, press **Sync league**.
+   It is the long number in your league URL: `sleeper.com/leagues/`**`<this number>`**`/team`
+2. Pick which synced team is yours.
+3. Press **Refresh projections**. This pulls a season of nflverse stats, derives bye weeks and
+   stores the schedule, which lights up `/lineup`, `/waivers` and `/streaming` at once.
+4. Optional: add a model under **AI model** to enable chat. Groq has a free tier.
+
+Check the format line on the league page. It should describe your league back to you, for example
+`12-team, PPR, 1QB, 1 flex`. That line drives every value in the app, so if it is wrong, say so
+before trusting anything else.
+
+**No league ID handy?** `SLEEPER_FIXTURES=1 npm run dev` and use league ID `1124839284756483920`.
+The whole sync path runs off `fixtures/`, no network needed.
+
+## What you get
+
+| Page | What it does |
+|---|---|
+| `/` | Your roster with projections, and the problems worth acting on today |
+| `/league` | Standings, power rankings, win probabilities, playoff odds, weekly digest |
+| `/lineup` | Current vs optimal lineup, what each change is worth, coin flips labelled |
+| `/waivers` | Free agents ranked by what they add to *your* lineup, with FAAB bids |
+| `/streaming` | QB/TE/K/DST planned three weeks ahead by matchup |
+| `/chat` | Ask about your league; answers grounded in tool calls, never invented |
+| `/model` | The projection model's real accuracy, including where it is weak |
+
+Plus an [MCP server](./MCP.md) so Claude Desktop or Cursor can query your league directly.
+
+### Works with any league format
+
+Nothing about scoring or roster shape is hardcoded. Scoring values, roster slots, team count,
+playoff settings and the current week all come from your league, and **replacement level is
+derived from them** rather than assumed. So a superflex league correctly makes quarterbacks
+scarce, a 14-team league values depth higher than a 10-team one, and TE premium changes tight end
+values, all with no configuration.
+
+## Deploying
+
+- **[REPLIT.md](./REPLIT.md)** for Replit
+- **[DEPLOYING.md](./DEPLOYING.md)** for Vercel, Docker, Railway, Render and Fly
+- **[AWS.md](./AWS.md)** for a production stack on AWS: Fargate, RDS, ECR, CDK in `infra/`,
+  suited to hosting this for other people
+
+## Tests
+
+```bash
+npm test        # 118 checks, no database and no network needed
+npm run backtest 2024   # measure the projection model against a real season
+```
 
 ## Roadmap
 
@@ -80,40 +149,6 @@ curl -L -o player_stats_2024.csv \
   https://github.com/nflverse/nflverse-data/releases/download/player_stats/player_stats_2024.csv
 npm run backtest 2024
 ```
-
-### Two ideas this project is actually about
-
-Most fantasy tools rank decisions by **projected points**. This one ranks them by
-**change in win probability**. A +2.0 point lineup swap in a game you'll win 88% of the
-time is worth roughly nothing; a −0.5 point swap toward a higher ceiling when you're a 25%
-underdog can be worth +6%. That's the call that wins seasons, and it's what the app is
-built around (Phase 11).
-
-And it publishes its own **calibration**: when the app says it's 70% confident, is it right
-70% of the time? Every recommendation is logged and graded afterward, and the curve is
-public. Nobody in consumer fantasy does this. A model that admits uncertainty honestly is
-more useful than one that's confidently wrong.
-
----
-
-## Design
-
-Light-first, with dark as an explicit override and a toggle in the header. No component names a
-colour, everything runs through semantic tokens and six tints, which is what makes the theme flip
-a palette change rather than a sweep. See [DESIGN.md](./DESIGN.md).
-
-## Running it
-
-Deploy to **AWS** with the CDK stack in [`infra/`](./infra), import into
-**Replit** and press Run, the committed `.replit` creates the schema and starts the
-server ([REPLIT.md](./REPLIT.md)). Or `docker compose up -d` locally, or push to Vercel with a
-free Neon database. Environment variables and the serverless caveats are in
-[DEPLOYING.md](./DEPLOYING.md).
-
-Hosting it for other people is a different question from deploying it. The app
-is built as one league, one operator, and
-[MULTI-TENANCY.md](./MULTI-TENANCY.md) sets out exactly what is missing and
-what it would take.
 
 ## Start/sit
 
@@ -197,87 +232,42 @@ The system prompt forbids stating any number that didn't come from a tool or the
 context, and forbids inventing projections or start/sit advice that the app hasn't built
 yet. Ask it who to start and it will tell you that isn't built, rather than guessing.
 
-### Bring your own model
+## Design
 
-Providers are database rows, not code, add one in Settings, no redeploy. Nearly every
-provider speaks the OpenAI chat-completions format, so one adapter plus a base URL covers
-**Groq, OpenRouter, Together, DeepSeek, Ollama, LM Studio and vLLM**; Anthropic gets its
-own branch. There is no SDK and no new dependency, it's about 300 readable lines of
-`fetch`.
-
-Groq's free tier is the recommended starting point. Ollama costs nothing and never leaves
-your machine.
-
-## Phase 1, the foundation
-
-Foundation + real Sleeper league sync. No projections, waivers, trades, chat, or MCP yet, those are later phases, and this phase deliberately stops here.
-
-## Run it
-
-```bash
-npm install
-cp .env.example .env
-npx prisma db push      # creates prisma/dev.db (SQLite, no setup required)
-npm run dev             # http://localhost:3000
-```
-
-Then open **Settings**: paste your Sleeper league ID, and press **Sync league**.
-The ID is the long number in your league's web URL:
-`sleeper.com/leagues/`**`<this number>`**`/team`
-
-### No league ID handy? Offline demo mode
-
-```bash
-SLEEPER_FIXTURES=1 npm run dev
-```
-
-Serves the JSON in `fixtures/` instead of calling Sleeper, so the whole sync-and-render
-flow works with no network. Use league ID `1124839284756483920` on the Settings page.
-
-### Tests
-
-```bash
-npm test
-```
-
-Twenty checks, no dependencies and no database needed: ten on the logic most likely to be
-silently wrong: lineup-slot assignment, empty
-starter slots, IR/taxi separation, Sleeper's split points fields, team-name fallbacks, and
-that nothing about the league format is hardcoded, plus ten on the retrieval layer,
-checking that a player question actually retrieves that player, that rare terms outrank
-common ones, and that a no-match query returns nothing rather than noise.
-
-## What Phase 1 does
-
-- Fetches the real league, users, rosters and NFL state from Sleeper (`/league/{id}`,
-  `/league/{id}/rosters`, `/league/{id}/users`, `/state/nfl`). No API key, no login.
-- Derives **season, current week, team count, scoring settings and roster slots from
-  Sleeper**: none of them are hardcoded anywhere.
-- Persists normalized rows: `League`, `Team`, `Player`, `RosterSpot`, `Setting`.
-- Renders league metadata, scoring rules, roster slots, and every team with an
-  expandable roster split into starters and bench/IR.
-- Lets you mark which team is yours (used by every later phase).
+Light-first, with dark as an explicit override and a toggle in the header. No component names a
+colour, everything runs through semantic tokens and six tints, which is what makes the theme flip
+a palette change rather than a sweep. See [DESIGN.md](./DESIGN.md).
 
 ## Architecture
 
 ```
-src/lib/platforms/     ← the adapter boundary
-  types.ts             normalized types + PlatformAdapter interface
-  index.ts             getAdapter(platform), the ONLY way app code gets an adapter
-  sleeper/
-    client.ts          fetch wrapper, timeouts, fixture mode
-    pure.ts            dependency-free logic (unit tested)
-    normalize.ts       zod validation + mapping to normalized types
-    adapter.ts         SleeperAdapter implements PlatformAdapter
-    playerCache.ts     ~5MB dictionary, refreshed at most once per 24h
-src/lib/sports/        ← sport registry; football-specific labels live here
-src/lib/sync/          ← syncLeague(): fetch-all-then-write, never partial
+src/lib/core/          pure domain layer, zero dependencies
+  trade/engine.ts      lineup optimizer, start/sit advice, trade evaluation,
+                       waiver ranking, FAAB bids, league format derivation
+  trade/value.ts       TradeValueProvider, built-in plus HTTP and CSV
+  league.ts            power rankings, matchup simulation, playoff odds
+  matchups.ts          defensive strength, upcoming opponents
+  schedule.ts          bye weeks derived from the schedule
+src/lib/platforms/     the adapter boundary; SleeperAdapter implements all of it
+src/lib/projections/   scoring (league aware), model v2, projection runs
+src/lib/rag/           BM25 index over documents built from the synced league
+src/lib/tools/         one registry, read by both chat and MCP
+src/lib/{lineup,waivers,league,trade}/service.ts   database to core bridges
+infra/                 AWS CDK stack
 ```
 
-**Nothing outside `src/lib/platforms/` imports `SleeperAdapter`.** Application code only
-knows the normalized types, so ESPN and manual/CSV adapters (Phase 7) drop in without the
-engine changing. `getMatchups`, `getTransactions` and `getFreeAgents` are declared on the
-interface now and throw `NotImplementedError` until their phases arrive.
+Two boundaries carry the weight.
+
+**Core is pure.** No Prisma, no Next, no React, no npm dependencies, and no relative imports
+between core modules, which is what lets each be unit tested with no build step.
+`npm run test:boundaries` fails the build if that slips.
+
+**Platforms are behind an adapter.** Nothing outside `src/lib/platforms/` imports
+`SleeperAdapter`; app code only knows the normalized types. ESPN and manual/CSV adapters drop in
+without the engine changing, and the test of that is whether adding one touches any file outside
+that folder.
+
+Contributor guide: [AGENTS.md](./AGENTS.md), which coding agents read automatically.
 
 ## Failure behavior
 
@@ -298,25 +288,14 @@ SQLite by default so it runs with zero setup. Prisma's SQLite connector has no n
 column type, so scoring settings, roster slots and platform IDs are stored as TEXT and read
 through the typed helpers in `src/lib/json.ts`.
 
-To switch to Postgres: set `DATABASE_URL` and change the `provider` in
-`prisma/schema.prisma` from `"sqlite"` to `"postgresql"`. Nothing else changes, the JSON
-helpers work identically on both.
-
-## Defaults vs. real data
-
-The only placeholders in the app are in `src/lib/defaults.ts` (12-team, PPR, "tech
-rejects"). They appear **only** on the empty state, are labelled `Default`, and are used in
-zero calculations. Synced data replaces them entirely.
-
-## Not in this phase
-
-No auth, payments, marketing pages, LLM features, projections, waivers, trades, or MCP.
-Next up is Phase 2: nflverse ingest, player resolution, and the projection model.
+Switching to Postgres is just setting `DATABASE_URL`. `scripts/prisma-schema.mjs` picks the
+provider from the URL scheme, so `file:` means SQLite and `postgresql://` means Postgres with no
+schema edit. The JSON helpers work identically on both.
 
 ## Contributing
 
 Issues, ideas and PRs welcome, see [CONTRIBUTING.md](./CONTRIBUTING.md) for setup, the
-checks CI runs, and the six constraints the project is built around.
+checks CI runs, and the twelve constraints the project is built around.
 
 ## License
 
