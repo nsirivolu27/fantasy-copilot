@@ -211,6 +211,16 @@ export async function syncLeague(platform: PlatformId, platformLeagueId: string)
     rosterSpotCount += spots.length;
   }
 
+  // Matchups are cheap and the league hub needs them; a failure here must not
+  // undo the roster sync we just completed.
+  try {
+    const { syncMatchups } = await import("@/lib/league/service");
+    await syncMatchups(saved.id, league.currentWeek);
+  } catch (err) {
+    warnings.push("Matchups could not be synced; the league hub will be missing this week.");
+    console.warn("[sync] matchups:", err instanceof Error ? err.message : err);
+  }
+
   return {
     ok: true,
     leagueId: saved.id,

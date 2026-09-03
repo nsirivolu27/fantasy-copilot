@@ -10,6 +10,7 @@ import { usePathname } from "next/navigation";
  */
 const LINKS = [
   { href: "/", label: "League" },
+  { href: "/league", label: "Hub" },
   { href: "/lineup", label: "Lineup" },
   { href: "/waivers", label: "Waivers" },
   { href: "/streaming", label: "Streaming" },

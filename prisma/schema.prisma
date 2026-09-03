@@ -293,3 +293,17 @@ model Game {
   @@unique([season, week, homeTeam, awayTeam])
   @@index([season, week])
 }
+
+/// Weekly head-to-head results, from the platform sync.
+model Matchup {
+  id       String @id @default(cuid())
+  leagueId String
+  week     Int
+  /// Teams sharing a platformMatchupId play each other.
+  platformMatchupId String
+  teamId   String
+  points   Float  @default(0)
+
+  @@unique([leagueId, week, teamId])
+  @@index([leagueId, week])
+}

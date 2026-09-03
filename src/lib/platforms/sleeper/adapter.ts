@@ -7,7 +7,6 @@ import {
   normalizeTeams,
 } from "./normalize";
 import {
-  NotImplementedError,
   PlatformError,
   type NormalizedLeague,
   type NormalizedMatchup,
@@ -77,12 +76,65 @@ export class SleeperAdapter implements PlatformAdapter {
 
   // ---- Declared now, implemented in a later phase -------------------------
 
-  async getMatchups(_leagueId: string, _week: number): Promise<NormalizedMatchup[]> {
-    throw new NotImplementedError("getMatchups");
+  /**
+   * Weekly matchups. Sleeper returns one row per roster; rows sharing a
+   * matchup_id are playing each other. A row with a null matchup_id is a team
+   * on bye in a league with an odd number of teams.
+   */
+  async getMatchups(leagueId: string, week: number): Promise<NormalizedMatchup[]> {
+    const rows = await sleeperGet<unknown[]>(
+      `/league/${encodeURIComponent(leagueId)}/matchups/${week}`,
+    );
+
+    const out: NormalizedMatchup[] = [];
+    for (const raw of rows ?? []) {
+      const row = raw as { roster_id?: number | string; matchup_id?: number | string; points?: number };
+      if (row.roster_id == null || row.matchup_id == null) continue;
+      const points = Number(row.points ?? 0);
+      out.push({
+        week,
+        platformTeamId: String(row.roster_id),
+        matchupId: String(row.matchup_id),
+        points: Number.isFinite(points) ? points : 0,
+      });
+    }
+    return out;
   }
 
-  async getTransactions(_leagueId: string, _week: number): Promise<NormalizedTransaction[]> {
-    throw new NotImplementedError("getTransactions");
+  /** Adds, drops and trades for one waiver round. Not yet surfaced in the UI. */
+  async getTransactions(leagueId: string, week: number): Promise<NormalizedTransaction[]> {
+    const rows = await sleeperGet<unknown[]>(
+      `/league/${encodeURIComponent(leagueId)}/transactions/${week}`,
+    );
+
+    const TYPES = new Set(["waiver", "free_agent", "trade", "commissioner"]);
+    return (rows ?? []).map((raw) => {
+      const row = raw as {
+        transaction_id?: string;
+        type?: string;
+        status?: string;
+        adds?: Record<string, number> | null;
+        drops?: Record<string, number> | null;
+        settings?: { waiver_bid?: number } | null;
+        created?: number;
+      };
+      const shape = (map: Record<string, number> | null | undefined) =>
+        Object.entries(map ?? {}).map(([platformPlayerId, rosterId]) => ({
+          platformPlayerId,
+          platformTeamId: String(rosterId),
+        }));
+
+      return {
+        platformTransactionId: row.transaction_id ?? "",
+        week,
+        type: (TYPES.has(row.type ?? "") ? row.type : "unknown") as NormalizedTransaction["type"],
+        status: row.status ?? "unknown",
+        adds: shape(row.adds),
+        drops: shape(row.drops),
+        faabSpent: row.settings?.waiver_bid,
+        createdAt: row.created ? new Date(row.created) : undefined,
+      };
+    });
   }
 
   /**

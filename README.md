@@ -21,9 +21,10 @@ Built on free, public data. **No paid APIs. No API keys. No accounts.**
 
 **[Live interactive preview →](https://claude.ai/code/artifact/7799e1d0-791a-424e-b213-dfa2ecf44532)** — the interface with real fixture data and real model output. Source in [`demo/`](./demo).
 
-> **Status: Phases 1, 2, 3, 4, 5, 8, 9 and 10.** League sync, projections backtested on real
-> nflverse data, a start/sit optimizer, waivers and streaming, a trade engine, an MCP server,
-> retrieval and grounded chat all work end to end. The league hub is next.
+> **Status: Phases 1–6, 8, 9 and 10 — ten of thirteen.** League sync, projections backtested on real
+> nflverse data, a start/sit optimizer, waivers and streaming, a trade engine, a league
+> hub with simulated win probabilities, an MCP server, retrieval and grounded chat all work end to
+> end. Decision leverage and the ESPN adapter are next.
 
 ---
 
@@ -40,10 +41,10 @@ Built on free, public data. **No paid APIs. No API keys. No accounts.**
 | 3 | Start/sit optimizer, bye and injury alerts | ✅ Done |
 | 4 | Waiver targets, FAAB bids, streaming planner | ✅ Done |
 | 5 | Trade engine, value providers, "find me a trade" | ✅ Done |
-| 6 | League hub: power rankings, playoff odds, weekly digest | ⬜ Next |
+| 6 | League hub: power rankings, playoff odds, weekly digest | ✅ Done |
 | 7 | ESPN + manual/CSV adapters | ⬜ |
 | 10 | MCP server — query your league from any AI client | ✅ Done |
-| 11 | Decision Leverage (Δ win%) + published calibration | ⬜ |
+| 11 | Decision Leverage (Δ win%) + published calibration | ⬜ Next |
 | 12 | Fitted projection model + season learning loop | ⬜ |
 | 13 | Polish | ⬜ |
 

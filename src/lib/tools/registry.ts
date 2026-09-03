@@ -5,6 +5,7 @@ import { retrieve } from "@/lib/rag";
 import { bestLineup, evaluate, findTrades } from "@/lib/trade/service";
 import { getStartSitAdvice } from "@/lib/lineup/service";
 import { getStreamers, getWaiverReport } from "@/lib/waivers/service";
+import { getLeagueHub } from "@/lib/league/service";
 import { VERDICT_LABEL } from "@/lib/core";
 import type { NormalizedSlot } from "@/lib/platforms/types";
 
@@ -545,6 +546,71 @@ export const tools: FantasyTool[] = [
           )
           .join("\n"),
         data: found,
+      };
+    },
+  },
+
+  {
+    name: "get_standings",
+    title: "Standings and power rankings",
+    description:
+      "Standings with power rankings, schedule luck and playoff odds. Use for 'who's the best team', 'am I making the playoffs', 'who's been lucky'.",
+    inputSchema: { type: "object", properties: {} },
+    readOnly: true,
+    handler: async (_input, ctx) => {
+      const hub = await getLeagueHub(ctx.leagueId);
+      if (!hub) return { summary: "No teams stored yet.", data: null };
+      return {
+        summary: hub.rankings
+          .map(
+            (t) =>
+              `${t.rank}. ${t.name} (${t.wins}-${t.losses}) — ${t.pointsFor.toFixed(0)} PF, power ${t.powerScore.toFixed(0)}, luck ${t.luck > 0 ? "+" : ""}${t.luck.toFixed(1)}, playoffs ${Math.round((hub.playoffOdds[t.teamId] ?? 0) * 100)}%`,
+          )
+          .join("\n"),
+        data: hub.rankings,
+      };
+    },
+  },
+
+  {
+    name: "simulate_matchup",
+    title: "This week's matchups",
+    description:
+      "Win probabilities for this week's head-to-heads, simulated from each starter's projection range. Use for 'am I winning this week' and 'what are my odds'.",
+    inputSchema: { type: "object", properties: {} },
+    readOnly: true,
+    handler: async (_input, ctx) => {
+      const hub = await getLeagueHub(ctx.leagueId);
+      if (!hub) return { summary: "No league data yet.", data: null };
+      if (hub.matchups.length === 0) {
+        return { summary: "No matchups are stored for this week. Run a sync from Settings.", data: [] };
+      }
+      return {
+        summary: hub.matchups
+          .map((m) =>
+            m.winProbability != null
+              ? `${m.home.name} ${Math.round(m.winProbability * 100)}% vs ${m.away.name} ${Math.round((1 - m.winProbability) * 100)}% (projected ${m.home.projected.toFixed(1)} — ${m.away.projected.toFixed(1)})`
+              : `${m.home.name} vs ${m.away.name} — no projections, so no odds`,
+          )
+          .join("\n"),
+        data: hub.matchups,
+      };
+    },
+  },
+
+  {
+    name: "get_weekly_digest",
+    title: "Weekly digest",
+    description:
+      "League recap: biggest blowout, closest game, luckiest and unluckiest teams. Use when asked to summarize the week or write something for the group chat.",
+    inputSchema: { type: "object", properties: {} },
+    readOnly: true,
+    handler: async (_input, ctx) => {
+      const hub = await getLeagueHub(ctx.leagueId);
+      if (!hub) return { summary: "No league data yet.", data: null };
+      return {
+        summary: hub.digest.map((d) => `${d.title}: ${d.detail}`).join("\n"),
+        data: hub.digest,
       };
     },
   },
