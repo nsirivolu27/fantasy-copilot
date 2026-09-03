@@ -123,20 +123,21 @@ npm run backtest 2024   # measure the projection model against a real season
 | Phase | What lands | Status |
 |---|---|---|
 | 1 | Foundation, adapter boundary, Sleeper league sync | ✅ Done |
-|, | Deployable: Postgres, Docker, health check, scheduled sync, site lock | ✅ Done |
-|, | Bye weeks derived from the nflverse schedule | ✅ Done |
-| 8 | Tool registry + retrieval layer + configurable LLM (any provider) | ✅ Done |
-| 9 | League chat, grounded in tools and retrieval | ✅ Done |
 | 2 | nflverse ingest, player resolution, projection model, backtest | ✅ Done |
 | 3 | Start/sit optimizer, bye and injury alerts | ✅ Done |
 | 4 | Waiver targets, FAAB bids, streaming planner | ✅ Done |
 | 5 | Trade engine, value providers, "find me a trade" | ✅ Done |
 | 6 | League hub: power rankings, playoff odds, weekly digest | ✅ Done |
 | 7 | ESPN + manual/CSV adapters | ⬜ |
+| 8 | Tool registry + retrieval layer + configurable LLM (any provider) | ✅ Done |
+| 9 | League chat, grounded in tools and retrieval | ✅ Done |
 | 10 | MCP server, query your league from any AI client | ✅ Done |
 | 11 | Decision Leverage (Δ win%) + published calibration | ⬜ Next |
 | 12 | Fitted projection model + season learning loop | ⬜ |
 | 13 | Polish | ⬜ |
+| Extra | Deployable: Postgres, Docker, health check, scheduled sync, site lock | ✅ Done |
+| Extra | Bye weeks derived from the nflverse schedule | ✅ Done |
+| Extra | Accounts: sign-up, sign-in, owner claim, invite codes | ✅ Done |
 
 ## 📉 What the backtest says
 

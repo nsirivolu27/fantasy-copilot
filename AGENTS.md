@@ -1,7 +1,9 @@
 # AGENTS.md
 
-Context for coding agents working in this repo (Codex reads this file automatically; it's
-equally useful for Claude Code or any other agent).
+Context for coding agents working in this repo.
+
+**This file is canonical.** Codex reads it automatically. `CLAUDE.md` and `.cursorrules` are
+shorter pointers to it, so the rules live in one place and cannot drift.
 
 ## What this is
 
@@ -9,7 +11,7 @@ equally useful for Claude Code or any other agent).
 Sleeper, projects players, and helps with start/sit, waivers, streaming and trades. There's a
 chat interface grounded in the league's real data and an MCP server exposing the same tools.
 
-**Ten of thirteen phases are built and 102 tests pass. Your job is to finish it, not redesign it.**
+**Nine of the thirteen phases are built and 133 tests pass. Your job is to finish it, not redesign it.**
 
 ## Commands
 
@@ -17,7 +19,7 @@ chat interface grounded in the league's real data and an MCP server exposing the
 npm install
 npm run db:push        # create/update the schema (idempotent)
 npm run dev            # http://localhost:3000
-npm test               # 102 checks, no database and no network needed
+npm test               # 133 checks, no database and no network needed
 npx tsc --noEmit       # typecheck
 npm run build          # full build
 npm run backtest 2024  # measure the projection model against real data

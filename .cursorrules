@@ -1,0 +1,39 @@
+# Fantasy Copilot, Cursor rules
+
+Read AGENTS.md first. It is the full brief: architecture, commands, testing conventions and the
+twelve rules this project is built around. CLAUDE.md is a shorter version of the same thing.
+
+This is an existing working repo, nine of the thirteen phases built, 133 tests passing.
+Finish it, do not redesign it.
+
+## Commands
+
+- `npm test` runs 133 checks with no database and no network
+- `npx tsc --noEmit` typechecks
+- `npm run build` builds
+- `npm run backtest 2024` measures the projection model against a real season
+- All three of test, typecheck and build must pass before anything is called done
+
+## Non-negotiable
+
+- `src/lib/core/` stays pure: no Prisma, no Next, no React, no npm dependencies, and no relative
+  imports between core modules. Each file stands alone so it can be unit tested with no build
+  step. `npm run test:boundaries` enforces it.
+- All decision logic lives in core, with tests. Services load rows and call core. Components
+  render.
+- Tools are defined once, in `src/lib/tools/registry.ts`. Chat and MCP both read that array.
+  Never create a second list.
+- The LLM explains, it never computes. No projection, rank or probability comes from a language
+  model.
+- Never write a raw colour utility. No `bg-white/5`, `text-black`, `bg-emerald-500/15`. Use a
+  design token, a `tone` prop, or a `.tint-*` class. See DESIGN.md.
+- Nothing about league format is hardcoded. Scoring, roster slots, team count, playoff settings
+  and replacement level all derive from the synced league.
+- No paid APIs and no required API keys. Free public data only.
+- Never claim accuracy you have not backtested.
+
+## Style
+
+Human readable, intern level. Clear names, comments only where the logic is not obvious. No
+clever metaprogramming. Do not add dependencies; this runs on Next, Prisma, Tailwind and zod
+deliberately.
