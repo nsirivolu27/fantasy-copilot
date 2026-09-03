@@ -42,7 +42,7 @@ export function McpSettings({ keys, baseUrl }: { keys: KeyRow[]; baseUrl: string
       />
       <div className="space-y-4 p-4">
         {state.status === "created" && state.plaintext ? (
-          <Banner tone="success" title="Copy this key now — it won't be shown again">
+          <Banner tone="good" title="Copy this key now — it won't be shown again">
             <code className="mt-1 block break-all rounded bg-[var(--panel-2)] p-2 font-mono text-xs">
               {state.plaintext}
             </code>
@@ -54,7 +54,7 @@ export function McpSettings({ keys, baseUrl }: { keys: KeyRow[]; baseUrl: string
         ) : null}
 
         {state.status === "error" ? (
-          <Banner tone="error" title="Couldn't create the key">
+          <Banner tone="bad" title="Couldn't create the key">
             {state.message}
           </Banner>
         ) : null}

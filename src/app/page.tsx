@@ -102,7 +102,7 @@ export default async function LeaguePage() {
       ) : null}
 
       {criticalAlerts.map((a, i) => (
-        <Banner key={i} tone="error" title={a.message}>
+        <Banner key={i} tone="bad" title={a.message}>
           <Link href="/lineup" className="underline">
             Fix it on the lineup page
           </Link>

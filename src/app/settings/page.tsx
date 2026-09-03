@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/db";
 import { getActiveLeague } from "@/lib/settings";
 import { setMyTeamAction } from "@/app/actions";
-import { Badge, Banner, Card, CardHeader, Stat } from "@/components/ui";
+import { Badge, Banner, Card, CardHeader, Stat, type Tone } from "@/components/ui";
 import { SyncForm } from "@/components/SyncForm";
 import { ProviderSettings } from "@/components/ProviderSettings";
 import { ProjectionForm } from "@/components/ProjectionForm";
@@ -30,8 +30,8 @@ export default async function SettingsPage() {
     createdAt: k.createdAt,
   }));
 
-  const statusTone =
-    league?.syncStatus === "ok" ? "success" : league?.syncStatus === "stale" ? "warn" : "info";
+  const statusTone: Tone =
+    league?.syncStatus === "ok" ? "good" : league?.syncStatus === "stale" ? "warn" : "info";
 
   return (
     <div className="space-y-5">

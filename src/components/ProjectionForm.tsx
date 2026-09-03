@@ -31,12 +31,12 @@ export function ProjectionForm() {
       </p>
       <SubmitButton />
       {state.status === "error" ? (
-        <Banner tone="error" title="Projection run failed">
+        <Banner tone="bad" title="Projection run failed">
           {state.message}
         </Banner>
       ) : null}
       {state.status === "ok" ? (
-        <Banner tone="success" title="Projections updated">
+        <Banner tone="good" title="Projections updated">
           {state.message}
         </Banner>
       ) : null}

@@ -36,6 +36,11 @@ export { Bm25Index, tokenize, type RagDocument, type ScoredDocument } from "@/li
 // Parsing
 export { parseCsv, parseRows, num } from "@/lib/data/csv";
 
-// Trades
+// Trades, lineups, waivers
 export * from "./trade/engine";
 export * from "./trade/value";
+
+// League math
+export * from "./league";
+export * from "./matchups";
+export * from "./schedule";

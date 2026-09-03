@@ -38,7 +38,7 @@ export default async function StreamingPage() {
     result = await getStreamers(league.id);
   } catch (err) {
     return (
-      <Banner tone="error" title="Couldn't build the streaming planner">
+      <Banner tone="bad" title="Couldn't build the streaming planner">
         {err instanceof Error ? err.message : "Unknown error."}
       </Banner>
     );

@@ -73,13 +73,13 @@ export function SyncForm({ defaultLeagueId }: { defaultLeagueId?: string }) {
       <SubmitButton />
 
       {state.status === "error" ? (
-        <Banner tone="error" title="Sync failed">
+        <Banner tone="bad" title="Sync failed">
           {state.message}
         </Banner>
       ) : null}
 
       {state.status === "ok" ? (
-        <Banner tone="success" title="Sync complete">
+        <Banner tone="good" title="Sync complete">
           {state.message}
           {state.warnings && state.warnings.length > 0 ? (
             <ul className="mt-1.5 list-inside list-disc">

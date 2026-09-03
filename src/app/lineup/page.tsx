@@ -61,7 +61,7 @@ export default async function LineupPage() {
       ) : null}
 
       {critical.map((a, i) => (
-        <Banner key={i} tone="error" title={a.message} />
+        <Banner key={i} tone="bad" title={a.message} />
       ))}
 
       <div className="grid grid-cols-3 gap-2">

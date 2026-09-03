@@ -28,7 +28,7 @@ export default async function WaiversPage() {
     report = await getWaiverReport(league.id);
   } catch (err) {
     return (
-      <Banner tone="error" title="Couldn't build the waiver board">
+      <Banner tone="bad" title="Couldn't build the waiver board">
         {err instanceof Error ? err.message : "Unknown error."} Your synced data is untouched.
       </Banner>
     );
