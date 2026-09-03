@@ -38,19 +38,19 @@ export function TeamCard(props: TeamCardProps) {
   return (
     <div
       className={`overflow-hidden rounded-xl border bg-[var(--panel)] ${
-        props.isMine ? "border-[var(--accent)]/50" : "border-[var(--border)]"
+        props.isMine ? "border-[var(--accent)]" : "border-[var(--border)]"
       }`}
     >
       <button
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
-        className="flex w-full items-center gap-3 px-4 py-3 text-left transition hover:bg-white/[0.03]"
+        className="flex w-full items-center gap-3 px-4 py-3 text-left transition hoverable"
       >
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
             <p className="truncate text-sm font-semibold">{props.name}</p>
             {props.isMine ? (
-              <Badge className="bg-[var(--accent)]/15 text-[var(--accent)] ring-[var(--accent)]/30">
+              <Badge tone="accent">
                 My team
               </Badge>
             ) : null}
@@ -105,14 +105,14 @@ function RosterSection({ label, rows }: { label: string; rows: RosterRow[] }) {
       </p>
       <ul>
         {rows.map((r) => (
-          <li key={r.id} className="flex items-center gap-2 rounded-md px-2 py-1.5 hover:bg-white/[0.03]">
+          <li key={r.id} className="flex items-center gap-2 rounded-md px-2 py-1.5 hoverable">
             <span className="w-14 shrink-0 text-[11px] font-medium text-[var(--muted)]">
               {r.slotLabel}
             </span>
             <Badge className={r.positionColor}>{r.position ?? "—"}</Badge>
             <span className="min-w-0 flex-1 truncate text-sm">{r.playerName}</span>
             {r.injuryStatus ? (
-              <Badge className="bg-rose-500/15 text-rose-300 ring-rose-500/30" title="Injury status">
+              <Badge tone="bad" title="Injury status">
                 {r.injuryStatus}
               </Badge>
             ) : null}
@@ -135,10 +135,10 @@ function RosterSection({ label, rows }: { label: string; rows: RosterRow[] }) {
                   <span
                     className={`ml-1 text-[10px] ${
                       r.confidence >= 0.66
-                        ? "text-emerald-400"
+                        ? "text-[var(--good-fg)]"
                         : r.confidence >= 0.4
-                          ? "text-amber-400"
-                          : "text-zinc-500"
+                          ? "text-[var(--warn-fg)]"
+                          : "text-[var(--faint)]"
                     }`}
                     title={`Confidence ${(r.confidence * 100).toFixed(0)}%`}
                   >

@@ -14,7 +14,7 @@ export default async function LineupPage() {
         title="No league synced"
         body="Sync your league in Settings and this becomes your weekly start/sit page."
         action={
-          <Link href="/settings" className="inline-block rounded-lg bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-black">
+          <Link href="/settings" className="inline-block rounded-lg bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-[var(--on-accent)]">
             Go to Settings
           </Link>
         }
@@ -29,7 +29,7 @@ export default async function LineupPage() {
         title="Pick your team first"
         body="Choose which of the synced teams is yours in Settings, and this page will optimize its lineup."
         action={
-          <Link href="/settings" className="inline-block rounded-lg bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-black">
+          <Link href="/settings" className="inline-block rounded-lg bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-[var(--on-accent)]">
             Go to Settings
           </Link>
         }
@@ -95,7 +95,7 @@ export default async function LineupPage() {
             {realChanges.map((c) => (
               <li key={c.slotIndex} className="p-4">
                 <div className="flex flex-wrap items-center gap-2">
-                  <Badge className="bg-white/5 text-[var(--muted)] ring-white/10">
+                  <Badge tone="neutral">
                     {sport.slotLabel(c.slot)}
                   </Badge>
                   <span className="text-sm">
@@ -107,7 +107,7 @@ export default async function LineupPage() {
                     ) : null}
                     <span className="font-semibold">{c.in.name}</span>
                   </span>
-                  <Badge className="ml-auto bg-emerald-500/15 text-emerald-300 ring-emerald-500/30">
+                  <Badge className="ml-auto tint-good">
                     +{c.gain.toFixed(1)}
                   </Badge>
                 </div>
@@ -131,7 +131,7 @@ export default async function LineupPage() {
           <ul className="divide-y divide-[var(--border)]">
             {coinFlips.map((c) => (
               <li key={c.slotIndex} className="flex flex-wrap items-center gap-2 p-4">
-                <Badge className="bg-white/5 text-[var(--muted)] ring-white/10">
+                <Badge tone="neutral">
                   {sport.slotLabel(c.slot)}
                 </Badge>
                 <span className="text-sm text-[var(--muted)]">
@@ -157,7 +157,7 @@ export default async function LineupPage() {
                   <Badge className={sport.positionColor(a.player.position)}>{a.player.position}</Badge>
                   <span className="min-w-0 flex-1 truncate text-sm">{a.player.name}</span>
                   {a.player.injuryStatus ? (
-                    <Badge className="bg-amber-500/15 text-amber-300 ring-amber-500/30">
+                    <Badge tone="warn">
                       {a.player.injuryStatus}
                     </Badge>
                   ) : null}

@@ -11,7 +11,7 @@ function SubmitButton() {
     <button
       type="submit"
       disabled={pending}
-      className="w-full rounded-lg border border-[var(--border)] px-4 py-2.5 text-sm font-medium transition hover:bg-white/5 disabled:opacity-60 sm:w-auto"
+      className="w-full rounded-lg border border-[var(--border)] px-4 py-2.5 text-sm font-medium transition hoverable disabled:opacity-60 sm:w-auto"
     >
       {pending ? "Downloading stats and projecting…" : "Refresh projections"}
     </button>

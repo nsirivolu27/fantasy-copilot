@@ -89,7 +89,7 @@ export function Chat({ ready }: { ready: boolean }) {
                   key={s}
                   onClick={() => send(s)}
                   disabled={!ready || busy}
-                  className="rounded-full border border-[var(--border)] px-3 py-1.5 text-xs text-[var(--muted)] transition hover:border-[var(--accent)]/50 hover:text-white disabled:opacity-40"
+                  className="rounded-full border border-[var(--border)] px-3 py-1.5 text-xs text-[var(--muted)] transition hover:border-[var(--accent)] hover:text-[var(--text)] disabled:opacity-40"
                 >
                   {s}
                 </button>
@@ -103,10 +103,10 @@ export function Chat({ ready }: { ready: boolean }) {
             <div
               className={
                 entry.role === "user"
-                  ? "max-w-[85%] rounded-2xl rounded-br-sm bg-[var(--accent)]/15 px-3.5 py-2.5 text-sm"
+                  ? "max-w-[85%] rounded-2xl rounded-br-sm bg-[var(--accent-weak)] px-3.5 py-2.5 text-sm"
                   : `max-w-[95%] rounded-2xl rounded-bl-sm px-3.5 py-2.5 text-sm ${
                       entry.error
-                        ? "border border-rose-500/30 bg-rose-500/10 text-rose-200"
+                        ? "border tint-bad text-[var(--bad-fg)]"
                         : "bg-[var(--panel)]"
                     }`
               }
@@ -162,7 +162,7 @@ export function Chat({ ready }: { ready: boolean }) {
         <button
           type="submit"
           disabled={!ready || busy || !input.trim()}
-          className="rounded-lg bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-black transition hover:brightness-110 disabled:opacity-40"
+          className="rounded-lg bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-[var(--on-accent)] transition hover:brightness-110 disabled:opacity-40"
         >
           Send
         </button>

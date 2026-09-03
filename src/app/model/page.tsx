@@ -65,9 +65,9 @@ export default async function ModelPage() {
               {BACKTEST.rows.map((r) => {
                 const best = Math.min(r.model, r.lastWeek, r.seasonAvg);
                 const cell = (v: number) =>
-                  `py-1.5 text-right tabular-nums ${v === best ? "font-semibold text-emerald-400" : ""}`;
+                  `py-1.5 text-right tabular-nums ${v === best ? "font-semibold text-[var(--good-fg)]" : ""}`;
                 return (
-                  <tr key={r.position} className="border-t border-[var(--border)]/60">
+                  <tr key={r.position} className="border-t border-[var(--border-soft)]">
                     <td className="py-1.5 pr-3 font-medium">{r.position}</td>
                     <td className={cell(r.model) + " pr-3"}>{r.model.toFixed(2)}</td>
                     <td className={cell(r.lastWeek) + " pr-3"}>{r.lastWeek.toFixed(2)}</td>

@@ -1,38 +1,168 @@
 @import "tailwindcss";
 
-/* Dark by default, mobile-first. One place for the palette. */
+/*
+  Light-first. The palette is a soft off-white ground with a slight green bias
+  toward the accent, so neutrals read as chosen rather than inherited grey.
+
+  Components never hardcode a colour. They use these tokens or the .tint-*
+  classes below, which is what lets the whole app flip themes correctly — the
+  old dark-only build had ~100 places assuming a dark ground.
+*/
 :root {
-  color-scheme: dark;
-  --bg: #0a0a0b;
-  --panel: #121214;
-  --panel-2: #17171a;
-  --border: #26262b;
-  --text: #ededf0;
-  --muted: #9a9aa4;
-  --accent: #22c55e;
+  color-scheme: light;
+
+  --bg:          #F7F8F7;
+  --panel:       #FFFFFF;
+  --panel-2:     #F1F3F1;
+  --hover:       #EEF1EE;
+  --border:      #E2E7E3;
+  --border-soft: #EDF0ED;
+
+  --text:   #16191B;
+  --muted:  #5F6B63;
+  --faint:  #8A958D;
+
+  --accent:      #0F7A48;
+  --accent-weak: #E7F3EC;
+  --on-accent:   #FFFFFF;
+
+  --shadow-sm: 0 1px 2px rgba(20, 30, 24, .05);
+  --shadow-md: 0 1px 2px rgba(20, 30, 24, .05), 0 10px 26px -14px rgba(20, 30, 24, .22);
+
+  /* Semantic tints: background, foreground, border. */
+  --good-bg: #E7F3EC; --good-fg: #0B5D37; --good-bd: #BEE0CC;
+  --warn-bg: #FDF3E3; --warn-fg: #8A5209; --warn-bd: #F0DBB4;
+  --bad-bg:  #FDECEA; --bad-fg:  #9B231C; --bad-bd:  #F3C9C5;
+  --info-bg: #E8F0FD; --info-fg: #17458F; --info-bd: #C6D8F6;
+  --neutral-bg: #F0F2F0; --neutral-fg: #5F6B63; --neutral-bd: #E2E7E3;
+
+  /* Position badges. */
+  --qb-bg:#FDECEA; --qb-fg:#9B231C; --qb-bd:#F3C9C5;
+  --rb-bg:#E7F3EC; --rb-fg:#0B5D37; --rb-bd:#BEE0CC;
+  --wr-bg:#E8F0FD; --wr-fg:#17458F; --wr-bd:#C6D8F6;
+  --te-bg:#FDF3E3; --te-fg:#8A5209; --te-bd:#F0DBB4;
+  --k-bg:#F0EBFA;  --k-fg:#4C349B;  --k-bd:#DCD2F2;
+  --def-bg:#EEF1EF; --def-fg:#41504A; --def-bd:#DDE3DE;
 }
 
-html, body {
+/* System dark, unless the user explicitly chose light. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+
+    --bg:          #0B0F0D;
+    --panel:       #121814;
+    --panel-2:     #171E19;
+    --hover:       #1C241E;
+    --border:      #232D26;
+    --border-soft: #1B231D;
+
+    --text:   #E9EFEA;
+    --muted:  #93A398;
+    --faint:  #6D7C73;
+
+    --accent:      #47B77B;
+    --accent-weak: #14281D;
+    --on-accent:   #06120B;
+
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, .4);
+    --shadow-md: 0 1px 2px rgba(0, 0, 0, .4), 0 12px 30px -16px rgba(0, 0, 0, .75);
+
+    --good-bg:#12281C; --good-fg:#7FD3A2; --good-bd:#1E4531;
+    --warn-bg:#2A1F0E; --warn-fg:#E0B168; --warn-bd:#4A3617;
+    --bad-bg: #2A1513; --bad-fg: #E58C84; --bad-bd: #4A2320;
+    --info-bg:#111E33; --info-fg:#8FB4EE; --info-bd:#1D3358;
+    --neutral-bg:#191F1B; --neutral-fg:#93A398; --neutral-bd:#232D26;
+
+    --qb-bg:#2A1513; --qb-fg:#E58C84; --qb-bd:#4A2320;
+    --rb-bg:#12281C; --rb-fg:#7FD3A2; --rb-bd:#1E4531;
+    --wr-bg:#111E33; --wr-fg:#8FB4EE; --wr-bd:#1D3358;
+    --te-bg:#2A1F0E; --te-fg:#E0B168; --te-bd:#4A3617;
+    --k-bg:#1D1730;  --k-fg:#B8A5EC;  --k-bd:#332A52;
+    --def-bg:#191F1B; --def-fg:#9FADA4; --def-bd:#232D26;
+  }
+}
+
+/* Explicit dark choice wins over a light OS. */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  --bg:          #0B0F0D;
+  --panel:       #121814;
+  --panel-2:     #171E19;
+  --hover:       #1C241E;
+  --border:      #232D26;
+  --border-soft: #1B231D;
+
+  --text:   #E9EFEA;
+  --muted:  #93A398;
+  --faint:  #6D7C73;
+
+  --accent:      #47B77B;
+  --accent-weak: #14281D;
+  --on-accent:   #06120B;
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, .4);
+  --shadow-md: 0 1px 2px rgba(0, 0, 0, .4), 0 12px 30px -16px rgba(0, 0, 0, .75);
+
+  --good-bg:#12281C; --good-fg:#7FD3A2; --good-bd:#1E4531;
+  --warn-bg:#2A1F0E; --warn-fg:#E0B168; --warn-bd:#4A3617;
+  --bad-bg: #2A1513; --bad-fg: #E58C84; --bad-bd: #4A2320;
+  --info-bg:#111E33; --info-fg:#8FB4EE; --info-bd:#1D3358;
+  --neutral-bg:#191F1B; --neutral-fg:#93A398; --neutral-bd:#232D26;
+
+  --qb-bg:#2A1513; --qb-fg:#E58C84; --qb-bd:#4A2320;
+  --rb-bg:#12281C; --rb-fg:#7FD3A2; --rb-bd:#1E4531;
+  --wr-bg:#111E33; --wr-fg:#8FB4EE; --wr-bd:#1D3358;
+  --te-bg:#2A1F0E; --te-fg:#E0B168; --te-bd:#4A3617;
+  --k-bg:#1D1730;  --k-fg:#B8A5EC;  --k-bd:#332A52;
+  --def-bg:#191F1B; --def-fg:#9FADA4; --def-bd:#232D26;
+}
+
+html {
   background: var(--bg);
-  color: var(--text);
-  -webkit-font-smoothing: antialiased;
 }
 
 body {
+  background: var(--bg);
+  color: var(--text);
+  margin: 0;
+  overflow-x: hidden;
   font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
 }
 
-/* Respect users who prefer light, without building a full second theme:
-   we keep the dark surface but soften contrast slightly. */
-@media (prefers-color-scheme: light) {
-  :root { --bg: #0e0e10; }
-}
+/* Semantic tints. Paired with `border` on the element, these carry background,
+   text and border together so a component never names a colour. */
+.tint-good    { background-color: var(--good-bg);    color: var(--good-fg);    border-color: var(--good-bd); }
+.tint-warn    { background-color: var(--warn-bg);    color: var(--warn-fg);    border-color: var(--warn-bd); }
+.tint-bad     { background-color: var(--bad-bg);     color: var(--bad-fg);     border-color: var(--bad-bd); }
+.tint-info    { background-color: var(--info-bg);    color: var(--info-fg);    border-color: var(--info-bd); }
+.tint-neutral { background-color: var(--neutral-bg); color: var(--neutral-fg); border-color: var(--neutral-bd); }
+.tint-accent  { background-color: var(--accent-weak); color: var(--accent);    border-color: var(--accent); }
 
-/* Every interactive element gets a visible keyboard focus state. */
+.tint-qb  { background-color: var(--qb-bg);  color: var(--qb-fg);  border-color: var(--qb-bd); }
+.tint-rb  { background-color: var(--rb-bg);  color: var(--rb-fg);  border-color: var(--rb-bd); }
+.tint-wr  { background-color: var(--wr-bg);  color: var(--wr-fg);  border-color: var(--wr-bd); }
+.tint-te  { background-color: var(--te-bg);  color: var(--te-fg);  border-color: var(--te-bd); }
+.tint-k   { background-color: var(--k-bg);   color: var(--k-fg);   border-color: var(--k-bd); }
+.tint-def { background-color: var(--def-bg); color: var(--def-fg); border-color: var(--def-bd); }
+
+/* Row and button hover, theme-correct in both directions. */
+.hoverable { transition: background-color .12s ease; }
+.hoverable:hover { background-color: var(--hover); }
+
+.skeleton {
+  background-color: var(--panel-2);
+  animation: pulse 1.6s cubic-bezier(.4, 0, .6, 1) infinite;
+}
+@keyframes pulse { 0%, 100% { opacity: 1 } 50% { opacity: .55 } }
+
 a:focus-visible,
 button:focus-visible,
 input:focus-visible,
 select:focus-visible,
+textarea:focus-visible,
 summary:focus-visible,
 [tabindex]:focus-visible {
   outline: 2px solid var(--accent);
@@ -40,17 +170,10 @@ summary:focus-visible,
   border-radius: 6px;
 }
 
-/* Wide content scrolls in its own container; the page never scrolls sideways. */
-body {
-  overflow-x: hidden;
-}
-
 @media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
     animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
+    transition-duration: .01ms !important;
   }
 }

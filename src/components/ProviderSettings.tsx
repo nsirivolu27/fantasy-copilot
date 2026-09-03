@@ -32,16 +32,16 @@ export async function ProviderSettings() {
                     <div className="flex flex-wrap items-center gap-2">
                       <span className="truncate text-sm font-medium">{p.label}</span>
                       {p.isDefault ? (
-                        <Badge className="bg-[var(--accent)]/15 text-[var(--accent)] ring-[var(--accent)]/30">
+                        <Badge tone="accent">
                           Default
                         </Badge>
                       ) : null}
                       {p.lastTestOk === true ? (
-                        <Badge className="bg-emerald-500/15 text-emerald-300 ring-emerald-500/30">
+                        <Badge tone="good">
                           Working
                         </Badge>
                       ) : p.lastTestOk === false ? (
-                        <Badge className="bg-rose-500/15 text-rose-300 ring-rose-500/30">Failed</Badge>
+                        <Badge tone="bad">Failed</Badge>
                       ) : null}
                     </div>
                     <p className="mt-0.5 truncate font-mono text-xs text-[var(--muted)]">
@@ -56,21 +56,21 @@ export async function ProviderSettings() {
                 <div className="mt-2.5 flex flex-wrap gap-2">
                   <form action={testProviderAction}>
                     <input type="hidden" name="providerId" value={p.id} />
-                    <button className="rounded-md border border-[var(--border)] px-2.5 py-1 text-xs transition hover:bg-white/5">
+                    <button className="rounded-md border border-[var(--border)] px-2.5 py-1 text-xs transition hoverable">
                       Test connection
                     </button>
                   </form>
                   {!p.isDefault ? (
                     <form action={setDefaultProviderAction}>
                       <input type="hidden" name="providerId" value={p.id} />
-                      <button className="rounded-md border border-[var(--border)] px-2.5 py-1 text-xs transition hover:bg-white/5">
+                      <button className="rounded-md border border-[var(--border)] px-2.5 py-1 text-xs transition hoverable">
                         Make default
                       </button>
                     </form>
                   ) : null}
                   <form action={deleteProviderAction}>
                     <input type="hidden" name="providerId" value={p.id} />
-                    <button className="rounded-md border border-rose-500/30 px-2.5 py-1 text-xs text-rose-300 transition hover:bg-rose-500/10">
+                    <button className="rounded-md border tint-bad px-2.5 py-1 text-xs text-[var(--bad-fg)] transition hover:brightness-95">
                       Remove
                     </button>
                   </form>
@@ -136,7 +136,7 @@ export async function ProviderSettings() {
                 placeholder="API key (leave blank for a local model)"
                 className="w-full rounded-lg border border-[var(--border)] bg-[var(--panel-2)] px-3 py-2 font-mono text-sm outline-none focus:border-[var(--accent)]"
               />
-              <button className="w-full rounded-lg bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-black sm:w-auto">
+              <button className="w-full rounded-lg bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-[var(--on-accent)] sm:w-auto">
                 Save provider
               </button>
             </form>

@@ -43,11 +43,11 @@ export function McpSettings({ keys, baseUrl }: { keys: KeyRow[]; baseUrl: string
       <div className="space-y-4 p-4">
         {state.status === "created" && state.plaintext ? (
           <Banner tone="success" title="Copy this key now — it won't be shown again">
-            <code className="mt-1 block break-all rounded bg-black/30 p-2 font-mono text-xs">
+            <code className="mt-1 block break-all rounded bg-[var(--panel-2)] p-2 font-mono text-xs">
               {state.plaintext}
             </code>
             <p className="mt-2">Paste it into your MCP client config:</p>
-            <pre className="mt-1 overflow-x-auto rounded bg-black/30 p-2 font-mono text-[11px]">
+            <pre className="mt-1 overflow-x-auto rounded bg-[var(--panel-2)] p-2 font-mono text-[11px]">
               {configSnippet}
             </pre>
           </Banner>
@@ -70,7 +70,7 @@ export function McpSettings({ keys, baseUrl }: { keys: KeyRow[]; baseUrl: string
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="text-sm font-medium">{k.label}</span>
                     {k.revokedAt ? (
-                      <Badge className="bg-rose-500/15 text-rose-300 ring-rose-500/30">Revoked</Badge>
+                      <Badge tone="bad">Revoked</Badge>
                     ) : null}
                   </div>
                   <p className="mt-0.5 font-mono text-xs text-[var(--muted)]">{k.prefix}…</p>
@@ -82,7 +82,7 @@ export function McpSettings({ keys, baseUrl }: { keys: KeyRow[]; baseUrl: string
                 {!k.revokedAt ? (
                   <form action={revokeApiKeyAction}>
                     <input type="hidden" name="keyId" value={k.id} />
-                    <button className="rounded-md border border-rose-500/30 px-2.5 py-1 text-xs text-rose-300 transition hover:bg-rose-500/10">
+                    <button className="rounded-md border tint-bad px-2.5 py-1 text-xs text-[var(--bad-fg)] transition hover:brightness-95">
                       Revoke
                     </button>
                   </form>
@@ -119,7 +119,7 @@ export function McpSettings({ keys, baseUrl }: { keys: KeyRow[]; baseUrl: string
                 </label>
               ))}
             </fieldset>
-            <button className="w-full rounded-lg bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-black sm:w-auto">
+            <button className="w-full rounded-lg bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-[var(--on-accent)] sm:w-auto">
               Create key
             </button>
           </form>

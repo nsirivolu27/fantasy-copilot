@@ -15,7 +15,7 @@ export default async function LeagueHubPage() {
         title="No league synced"
         body="Sync your league in Settings and this becomes the page your leaguemates open."
         action={
-          <Link href="/settings" className="inline-block rounded-lg bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-black">
+          <Link href="/settings" className="inline-block rounded-lg bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-[var(--on-accent)]">
             Go to Settings
           </Link>
         }
@@ -133,7 +133,7 @@ export default async function LeagueHubPage() {
             </thead>
             <tbody>
               {hub.rankings.map((t) => (
-                <tr key={t.teamId} className="border-t border-[var(--border)]/60">
+                <tr key={t.teamId} className="border-t border-[var(--border-soft)]">
                   <td className="px-4 py-2 text-[var(--muted)]">{t.rank}</td>
                   <td className="py-2 font-medium">{t.name}</td>
                   <td className="px-2 py-2 text-right tabular-nums">
@@ -145,9 +145,9 @@ export default async function LeagueHubPage() {
                     <span
                       className={
                         t.luck > 0.5
-                          ? "text-emerald-400"
+                          ? "text-[var(--good-fg)]"
                           : t.luck < -0.5
-                            ? "text-rose-400"
+                            ? "text-[var(--bad-fg)]"
                             : "text-[var(--muted)]"
                       }
                       title="Actual wins minus expected wins"

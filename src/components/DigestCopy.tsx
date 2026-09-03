@@ -44,7 +44,7 @@ export function DigestCopy({
       </ul>
       <button
         onClick={copy}
-        className="rounded-lg border border-[var(--border)] px-3 py-2 text-sm transition hover:bg-white/5"
+        className="rounded-lg border border-[var(--border)] px-3 py-2 text-sm transition hoverable"
       >
         {copied ? "Copied" : "Copy for the group chat"}
       </button>

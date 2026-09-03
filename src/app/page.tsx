@@ -23,7 +23,7 @@ export default async function LeaguePage() {
           action={
             <Link
               href="/settings"
-              className="inline-block rounded-lg bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-black"
+              className="inline-block rounded-lg bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-[var(--on-accent)]"
             >
               Go to Settings
             </Link>
@@ -33,7 +33,7 @@ export default async function LeaguePage() {
           <CardHeader
             title="Placeholder preview"
             subtitle="Not real data — replaced entirely by your league on first sync."
-            right={<Badge className="bg-amber-500/15 text-amber-300 ring-amber-500/30">Default</Badge>}
+            right={<Badge tone="warn">Default</Badge>}
           />
           <div className="grid grid-cols-2 gap-2 p-3 sm:grid-cols-3">
             <Stat label="League" value={PLACEHOLDER_LEAGUE.name} hint="placeholder" />
@@ -120,12 +120,12 @@ export default async function LeaguePage() {
       <div>
         <div className="flex flex-wrap items-center gap-2">
           <h1 className="text-xl font-semibold tracking-tight">{league.name}</h1>
-          <Badge className="bg-white/5 text-[var(--muted)] ring-white/10">{league.platform}</Badge>
+          <Badge tone="neutral">{league.platform}</Badge>
           {league.isDynasty ? (
-            <Badge className="bg-violet-500/15 text-violet-300 ring-violet-500/30">Dynasty</Badge>
+            <Badge tone="info">Dynasty</Badge>
           ) : null}
           {league.isKeeper ? (
-            <Badge className="bg-violet-500/15 text-violet-300 ring-violet-500/30">Keeper</Badge>
+            <Badge tone="info">Keeper</Badge>
           ) : null}
         </div>
         <p className="mt-1 text-xs text-[var(--muted)]">
@@ -163,7 +163,7 @@ export default async function LeaguePage() {
                   className={
                     s.isStarter
                       ? sport.positionColor(s.code)
-                      : "bg-white/5 text-[var(--muted)] ring-white/10"
+                      : "bg-[var(--panel-2)] text-[var(--muted)] border-[var(--border)]"
                   }
                 >
                   {sport.slotLabel(s.code)}
@@ -187,7 +187,7 @@ export default async function LeaguePage() {
               {scoringKeys.map((key) => (
                 <div
                   key={key}
-                  className="flex items-baseline justify-between gap-3 border-b border-[var(--border)]/60 py-1.5"
+                  className="flex items-baseline justify-between gap-3 border-b border-[var(--border-soft)] py-1.5"
                 >
                   <dt className="min-w-0 truncate text-[13px] text-[var(--muted)]" title={key}>
                     {sport.scoringLabel(key)}

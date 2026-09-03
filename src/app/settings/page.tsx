@@ -57,10 +57,10 @@ export default async function SettingsPage() {
               <Badge
                 className={
                   league.syncStatus === "ok"
-                    ? "bg-emerald-500/15 text-emerald-300 ring-emerald-500/30"
+                    ? "tint-good"
                     : league.syncStatus === "stale"
-                      ? "bg-amber-500/15 text-amber-300 ring-amber-500/30"
-                      : "bg-white/5 text-[var(--muted)] ring-white/10"
+                      ? "tint-warn"
+                      : "bg-[var(--panel-2)] text-[var(--muted)] border-[var(--border)]"
                 }
               >
                 {league.syncStatus}
@@ -110,9 +110,9 @@ export default async function SettingsPage() {
                     <input type="hidden" name="teamId" value={t.id} />
                     <button
                       type="submit"
-                      className={`flex w-full items-center gap-3 rounded-lg border px-3 py-2.5 text-left transition hover:bg-white/[0.03] ${
+                      className={`flex w-full items-center gap-3 rounded-lg border px-3 py-2.5 text-left transition hoverable ${
                         t.isMine
-                          ? "border-[var(--accent)]/50 bg-[var(--accent)]/5"
+                          ? "border-[var(--accent)] bg-[var(--accent-weak)]"
                           : "border-[var(--border)]"
                       }`}
                     >
@@ -132,7 +132,7 @@ export default async function SettingsPage() {
                         </span>
                       </span>
                       {t.isMine ? (
-                        <Badge className="bg-[var(--accent)]/15 text-[var(--accent)] ring-[var(--accent)]/30">
+                        <Badge tone="accent">
                           Mine
                         </Badge>
                       ) : null}

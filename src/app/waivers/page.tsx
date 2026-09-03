@@ -15,7 +15,7 @@ export default async function WaiversPage() {
         title="No league synced"
         body="Sync your league in Settings and this becomes your waiver board."
         action={
-          <Link href="/settings" className="inline-block rounded-lg bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-black">
+          <Link href="/settings" className="inline-block rounded-lg bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-[var(--on-accent)]">
             Go to Settings
           </Link>
         }
@@ -40,7 +40,7 @@ export default async function WaiversPage() {
         title="Pick your team first"
         body="Choose which synced team is yours in Settings, and waiver targets get ranked for that roster."
         action={
-          <Link href="/settings" className="inline-block rounded-lg bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-black">
+          <Link href="/settings" className="inline-block rounded-lg bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-[var(--on-accent)]">
             Go to Settings
           </Link>
         }
@@ -92,11 +92,11 @@ export default async function WaiversPage() {
                   </Badge>
                   <span className="font-semibold">{ranking.player.name}</span>
                   {ranking.player.injuryStatus ? (
-                    <Badge className="bg-rose-500/15 text-rose-300 ring-rose-500/30">
+                    <Badge tone="bad">
                       {ranking.player.injuryStatus}
                     </Badge>
                   ) : null}
-                  <Badge className="ml-auto bg-emerald-500/15 text-emerald-300 ring-emerald-500/30">
+                  <Badge className="ml-auto tint-good">
                     +{ranking.lineupGain.toFixed(1)}/wk
                   </Badge>
                 </div>
@@ -111,7 +111,7 @@ export default async function WaiversPage() {
 
                 <div className="mt-2 flex flex-wrap items-center gap-2">
                   {isFaab && faab.bid != null ? (
-                    <Badge className="bg-[var(--accent)]/15 text-[var(--accent)] ring-[var(--accent)]/30">
+                    <Badge tone="accent">
                       Bid ${faab.bid}
                       {faab.percentOfRemaining != null ? ` (${faab.percentOfRemaining.toFixed(0)}%)` : ""}
                     </Badge>
@@ -119,8 +119,8 @@ export default async function WaiversPage() {
                     <Badge
                       className={
                         faab.worthTheClaim
-                          ? "bg-emerald-500/15 text-emerald-300 ring-emerald-500/30"
-                          : "bg-white/5 text-[var(--muted)] ring-white/10"
+                          ? "tint-good"
+                          : "bg-[var(--panel-2)] text-[var(--muted)] border-[var(--border)]"
                       }
                     >
                       {faab.worthTheClaim ? "Worth a claim" : "Not worth a claim"}
@@ -128,7 +128,7 @@ export default async function WaiversPage() {
                   )}
                   {trendingAdds != null ? (
                     <Badge
-                      className="bg-white/5 text-[var(--muted)] ring-white/10"
+                      tone="neutral"
                       title="Sleeper adds in the last 24h. Market hype — shown for context, not part of the ranking."
                     >
                       {trendingAdds.toLocaleString()} adds / 24h
@@ -158,7 +158,7 @@ export default async function WaiversPage() {
               <Badge className={sport.positionColor(d.player.position)}>{d.player.position}</Badge>
               <span className="min-w-0 flex-1 truncate text-sm">{d.player.name}</span>
               {d.isProtected ? (
-                <Badge className="bg-sky-500/15 text-sky-300 ring-sky-500/30">Protected</Badge>
+                <Badge tone="info">Protected</Badge>
               ) : null}
               <span className="w-20 shrink-0 text-right text-[12px] text-[var(--muted)] tabular-nums">
                 −{d.lineupCost.toFixed(1)}/wk

@@ -9,12 +9,12 @@ export const maxDuration = 60;
 
 /** Green when the defense is generous to this position, red when it's stingy. */
 function matchupClass(multiplier: number | null): string {
-  if (multiplier == null) return "bg-white/5 text-[var(--muted)] ring-white/10";
-  if (multiplier >= 1.12) return "bg-emerald-500/15 text-emerald-300 ring-emerald-500/30";
-  if (multiplier >= 1.02) return "bg-emerald-500/10 text-emerald-200/80 ring-emerald-500/20";
-  if (multiplier <= 0.88) return "bg-rose-500/15 text-rose-300 ring-rose-500/30";
-  if (multiplier <= 0.98) return "bg-amber-500/10 text-amber-200/80 ring-amber-500/20";
-  return "bg-white/5 text-[var(--muted)] ring-white/10";
+  if (multiplier == null) return "bg-[var(--panel-2)] text-[var(--muted)] border-[var(--border)]";
+  if (multiplier >= 1.12) return "tint-good";
+  if (multiplier >= 1.02) return "tint-good";
+  if (multiplier <= 0.88) return "tint-bad";
+  if (multiplier <= 0.98) return "tint-warn";
+  return "bg-[var(--panel-2)] text-[var(--muted)] border-[var(--border)]";
 }
 
 export default async function StreamingPage() {
@@ -25,7 +25,7 @@ export default async function StreamingPage() {
         title="No league synced"
         body="Sync your league in Settings and this becomes your streaming planner."
         action={
-          <Link href="/settings" className="inline-block rounded-lg bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-black">
+          <Link href="/settings" className="inline-block rounded-lg bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-[var(--on-accent)]">
             Go to Settings
           </Link>
         }
@@ -92,7 +92,7 @@ export default async function StreamingPage() {
                 </thead>
                 <tbody>
                   {options.map((o) => (
-                    <tr key={o.playerId} className="border-t border-[var(--border)]/60">
+                    <tr key={o.playerId} className="border-t border-[var(--border-soft)]">
                       <td className="px-4 py-2">
                         <span className="font-medium">{o.name}</span>
                         <span className="ml-2 text-[11px] text-[var(--muted)]">{o.nflTeam}</span>

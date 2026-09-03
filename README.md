@@ -97,6 +97,12 @@ more useful than one that's confidently wrong.
 
 ---
 
+## Design
+
+Light-first, with dark as an explicit override and a toggle in the header. No component names a
+colour — everything runs through semantic tokens and six tints, which is what makes the theme flip
+a palette change rather than a sweep. See [DESIGN.md](./DESIGN.md).
+
 ## Running it
 
 Import into **Replit** and press Run — the committed `.replit` creates the schema and starts the

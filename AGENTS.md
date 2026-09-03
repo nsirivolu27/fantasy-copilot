@@ -92,7 +92,10 @@ A change that breaks one of these is wrong even if it works:
    such. Never manufacture confidence the numbers don't support.
 10. **Don't invent third-party APIs.** No public API means a generic adapter (HTTP endpoint, CSV
     import), never a client for guessed endpoints.
-11. **Human-readable, intern-level code.** Clear names; comments only where the logic isn't
+11. **Never write a raw colour utility.** No `bg-white/5`, `text-black`, or `bg-emerald-500/15`.
+    Use a token (`bg-[var(--panel)]`), a `tone` prop, or a `.tint-*` class — see `DESIGN.md`. The
+    app is light-first with a dark override, and a hardcoded colour is wrong in one of them.
+12. **Human-readable, intern-level code.** Clear names; comments only where the logic isn't
     obvious. No clever metaprogramming.
 
 ## Honesty is a feature here, not a posture

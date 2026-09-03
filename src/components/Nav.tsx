@@ -36,8 +36,8 @@ export function Nav() {
             aria-current={active ? "page" : undefined}
             className={`shrink-0 rounded-md px-3 py-1.5 transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)] ${
               active
-                ? "bg-white/[0.07] font-medium text-white"
-                : "text-[var(--muted)] hover:bg-white/5 hover:text-white"
+                ? "bg-[var(--hover)] font-medium text-[var(--text)]"
+                : "text-[var(--muted)] hoverable hover:text-[var(--text)]"
             }`}
           >
             {link.label}
