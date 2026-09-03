@@ -104,10 +104,16 @@ a palette change rather than a sweep. See [DESIGN.md](./DESIGN.md).
 
 ## Running it
 
-Import into **Replit** and press Run, the committed `.replit` creates the schema and starts the
+Deploy to **AWS** with the CDK stack in [`infra/`](./infra), import into
+**Replit** and press Run, the committed `.replit` creates the schema and starts the
 server ([REPLIT.md](./REPLIT.md)). Or `docker compose up -d` locally, or push to Vercel with a
 free Neon database. Environment variables and the serverless caveats are in
 [DEPLOYING.md](./DEPLOYING.md).
+
+Hosting it for other people is a different question from deploying it. The app
+is built as one league, one operator, and
+[MULTI-TENANCY.md](./MULTI-TENANCY.md) sets out exactly what is missing and
+what it would take.
 
 ## Start/sit
 

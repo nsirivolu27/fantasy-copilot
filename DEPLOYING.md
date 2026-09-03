@@ -13,7 +13,27 @@ Whichever you pick, set these:
 
 ---
 
-## 1. Replit, import and press Run
+## 1. AWS, for anything you intend to keep running
+
+CDK stack in [`infra/`](./infra): Fargate behind an ALB, Postgres in private
+subnets, secrets in Secrets Manager, and deliberately no NAT gateway. About
+$47/month at the default size, with cheaper variants documented.
+
+```bash
+cd infra && npm install && npx cdk bootstrap && npx cdk deploy
+```
+
+Full walkthrough, including the first image push and how to set the app
+password, is in [infra/README.md](./infra/README.md).
+
+Before inviting anyone else onto it, read
+[MULTI-TENANCY.md](./MULTI-TENANCY.md): the app is built as one league, one
+operator, and hosting several unrelated leagues on one deployment needs work
+the infrastructure does not do for you.
+
+---
+
+## 2. Replit, import and press Run
 
 Fastest path from zero to a running app: Node, a database and network in one place. Full
 walkthrough in [REPLIT.md](./REPLIT.md).
@@ -23,7 +43,7 @@ Postgres database before deploying, since autoscale deployments don't keep a fil
 
 ---
 
-## 2. Vercel + Neon, about 5 minutes, free tier
+## 3. Vercel + Neon, about 5 minutes, free tier
 
 1. Push the repo to GitHub.
 2. Create a free Postgres database at [neon.tech](https://neon.tech) (or use Vercel Postgres)
@@ -49,7 +69,7 @@ corpus ever gets large, move it to a table.
 
 ---
 
-## 3. Docker, one command, runs anywhere
+## 4. Docker, one command, runs anywhere
 
 ```bash
 docker compose up -d
@@ -70,7 +90,7 @@ The image is a standalone Next.js build with a `/api/health` healthcheck baked i
 
 ---
 
-## 4. Railway / Render / Fly, a long-running Node server
+## 5. Railway / Render / Fly, a long-running Node server
 
 These run the app as a normal server, which suits it better than serverless: the retrieval
 index stays warm and there's no connection-pooling caveat.

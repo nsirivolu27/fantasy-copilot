@@ -30,11 +30,6 @@ services:
       # SYNC_SECRET: change-me
     ports:
       - "3000:3000"
-    # Create the schema on first boot, then start the server.
-    command: >
-      sh -c "node scripts/prisma-schema.mjs &&
-             ./node_modules/.bin/prisma db push --schema=prisma/generated-schema.prisma --skip-generate &&
-             node server.js"
 
 volumes:
   pgdata:

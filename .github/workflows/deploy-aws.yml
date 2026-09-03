@@ -1,0 +1,59 @@
+name: Deploy to AWS
+
+# Manual only. An app that syncs a live league should not redeploy on every
+# push to main without someone deciding to.
+on:
+  workflow_dispatch:
+    inputs:
+      cluster:
+        description: "ECS cluster name (stack output ClusterName)"
+        required: true
+      service:
+        description: "ECS service name (stack output ServiceName)"
+        required: true
+
+permissions:
+  id-token: write # OIDC, so no long-lived AWS keys in GitHub
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - id: ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Build and push (arm64, to match Graviton tasks)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: linux/arm64
+          push: true
+          tags: |
+            ${{ steps.ecr.outputs.registry }}/fantasy-copilot:latest
+            ${{ steps.ecr.outputs.registry }}/fantasy-copilot:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Roll the service
+        run: |
+          aws ecs update-service \
+            --cluster "${{ inputs.cluster }}" \
+            --service "${{ inputs.service }}" \
+            --force-new-deployment
+
+      - name: Wait for it to stabilise
+        run: |
+          aws ecs wait services-stable \
+            --cluster "${{ inputs.cluster }}" \
+            --services "${{ inputs.service }}"
