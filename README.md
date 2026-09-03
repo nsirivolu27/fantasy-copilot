@@ -1,16 +1,21 @@
+<img src="./docs/banner.svg" alt="Fantasy Copilot" width="100%">
+
 # Fantasy Copilot
 
 [![CI](https://github.com/nsirivolu27/fantasy-copilot/actions/workflows/ci.yml/badge.svg)](https://github.com/nsirivolu27/fantasy-copilot/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 [![PRs welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](./CONTRIBUTING.md)
 
-A free, self-hosted companion for your fantasy football league. Sync from Sleeper, then get help
-with the decisions that matter: **start/sit, waivers, streaming and trades**, each with reasoning
-you can read and disagree with.
+Your league, your data, your machine. Paste a Sleeper league ID and Fantasy Copilot pulls every
+roster, projects every player in **your** scoring, and tells you who to start, who to grab, and
+whether that trade is actually good, with the reasoning shown so you can argue with it.
 
-Free public data only. **No paid APIs, no API keys, no accounts.**
+Built on free public data. **No paid APIs. No API keys. Nothing to buy.**
 
-## Run it
+It also tells you when it does not know. The projection model is 0.7% better than a season
+average, and that number is published inside the app rather than hidden.
+
+## 🏈 Kick off
 
 Pick one. All three take a few minutes.
 
@@ -44,7 +49,7 @@ npm run dev
 
 SQLite by default, so there is no database to set up.
 
-## First five minutes
+## 📋 Your first five minutes
 
 1. Open **Settings**, paste your Sleeper league ID, press **Sync league**.
    It is the long number in your league URL: `sleeper.com/leagues/`**`<this number>`**`/team`
@@ -60,7 +65,7 @@ before trusting anything else.
 **No league ID handy?** `SLEEPER_FIXTURES=1 npm run dev` and use league ID `1124839284756483920`.
 The whole sync path runs off `fixtures/`, no network needed.
 
-## What you get
+## 📊 What you get
 
 | Page | What it does |
 |---|---|
@@ -74,7 +79,7 @@ The whole sync path runs off `fixtures/`, no network needed.
 
 Plus an [MCP server](./MCP.md) so Claude Desktop or Cursor can query your league directly.
 
-### Works with any league format
+### Any league format, no configuration
 
 Nothing about scoring or roster shape is hardcoded. Scoring values, roster slots, team count,
 playoff settings and the current week all come from your league, and **replacement level is
@@ -82,21 +87,38 @@ derived from them** rather than assumed. So a superflex league correctly makes q
 scarce, a 14-team league values depth higher than a 10-team one, and TE premium changes tight end
 values, all with no configuration.
 
-## Deploying
+## 🚀 Hosting it for other people
 
-- **[REPLIT.md](./REPLIT.md)** for Replit
-- **[DEPLOYING.md](./DEPLOYING.md)** for Vercel, Docker, Railway, Render and Fly
-- **[AWS.md](./AWS.md)** for a production stack on AWS: Fargate, RDS, ECR, CDK in `infra/`,
-  suited to hosting this for other people
+Running it for yourself needs no accounts at all. Hosting it for your league, or for strangers,
+does. Set `REQUIRE_AUTH=1` and the app grows a sign-up and sign-in flow:
 
-## Tests
+- **The first account always succeeds and becomes the owner**, so a fresh deployment can be
+  claimed by whoever sets it up.
+- **After that, signups are closed by default.** Open them with `ALLOW_SIGNUPS=1`, or hand your
+  league an `INVITE_CODE`. A hosted app should not start accepting strangers because nobody
+  remembered to lock it.
+- Passwords are hashed with scrypt from `node:crypto`, so there is no native dependency to build.
+  Session cookies are `httpOnly` and only their hash is stored, so a database leak yields no
+  usable logins.
+- There is **no password reset yet**, because the app sends no email and adding a mail provider
+  would break the no-paid-services promise. The owner can reset one directly in the database.
+
+Where to run it:
+
+| | |
+|---|---|
+| **[REPLIT.md](./REPLIT.md)** | Replit, fastest path from nothing to running |
+| **[DEPLOYING.md](./DEPLOYING.md)** | Vercel, Docker, Railway, Render, Fly |
+| **[AWS.md](./AWS.md)** | Production AWS: Fargate, RDS, ECR, CDK in `infra/` |
+
+## ✅ Tests
 
 ```bash
 npm test        # 118 checks, no database and no network needed
 npm run backtest 2024   # measure the projection model against a real season
 ```
 
-## Roadmap
+## 🗺️ Roadmap
 
 | Phase | What lands | Status |
 |---|---|---|
@@ -116,7 +138,7 @@ npm run backtest 2024   # measure the projection model against a real season
 | 12 | Fitted projection model + season learning loop | ⬜ |
 | 13 | Polish | ⬜ |
 
-## What the backtest says
+## 📉 What the backtest says
 
 The projection model was tested against the **real 2024 nflverse season 3,415
 player-weeks**: and the numbers are published in the app at `/model`, including the ones
@@ -150,7 +172,7 @@ curl -L -o player_stats_2024.csv \
 npm run backtest 2024
 ```
 
-## Start/sit
+## 🔀 Start/sit
 
 The `/lineup` page compares your current lineup to the optimal one and shows what each change is
 worth. Three decisions shape it:
@@ -168,7 +190,7 @@ The slot-filling order matters too: the optimizer fills the most restrictive slo
 is the fix for the classic FLEX bug where a naive pass hands your best RB to the FLEX and leaves
 RB2 empty.
 
-## Waivers and streaming
+## 🔎 Waivers and streaming
 
 `/waivers` ranks free agents by **what each adds to your starting lineup**: not by raw
 projection. A 12-point WR is a big add for a team starting a 6-point WR and worth nothing to a
@@ -191,7 +213,7 @@ defense has been to the position this season.
 Sleeper's trending-add counts appear beside the ranking, clearly labelled as market hype. They are
 never part of the ranking itself, the point is to see when the crowd and the model disagree.
 
-## The trade engine
+## 🤝 The trade engine
 
 A trade is judged by **what it does to each roster's best legal starting lineup**: not by
 comparing player values in the abstract. That single decision is what makes the output useful:
@@ -207,7 +229,7 @@ Player values sit behind a `TradeValueProvider` interface, built-in points-above
 chart. The popular trade calculators publish no public API, so there's no fake client for one in
 this repo; the generic providers are the honest path.
 
-## The chat layer
+## 💬 The chat layer
 
 Ask your league questions in plain language. Two things make the answers trustworthy:
 
@@ -232,13 +254,13 @@ The system prompt forbids stating any number that didn't come from a tool or the
 context, and forbids inventing projections or start/sit advice that the app hasn't built
 yet. Ask it who to start and it will tell you that isn't built, rather than guessing.
 
-## Design
+## 🎨 Design
 
 Light-first, with dark as an explicit override and a toggle in the header. No component names a
 colour, everything runs through semantic tokens and six tints, which is what makes the theme flip
 a palette change rather than a sweep. See [DESIGN.md](./DESIGN.md).
 
-## Architecture
+## 🧱 Architecture
 
 ```
 src/lib/core/          pure domain layer, zero dependencies
@@ -269,7 +291,7 @@ that folder.
 
 Contributor guide: [AGENTS.md](./AGENTS.md), which coding agents read automatically.
 
-## Failure behavior
+## 🛟 When things break
 
 - The sync **fetches everything before writing anything**: so a mid-sync failure never
   leaves half-updated rosters.
@@ -282,7 +304,7 @@ Contributor guide: [AGENTS.md](./AGENTS.md), which coding agents read automatica
 - A valid-looking but nonexistent league ID (Sleeper answers `200 null`) is caught and
   reported as "check the league ID", not rendered as an empty league.
 
-## Database
+## 🗄️ Database
 
 SQLite by default so it runs with zero setup. Prisma's SQLite connector has no native JSON
 column type, so scoring settings, roster slots and platform IDs are stored as TEXT and read
@@ -292,11 +314,11 @@ Switching to Postgres is just setting `DATABASE_URL`. `scripts/prisma-schema.mjs
 provider from the URL scheme, so `file:` means SQLite and `postgresql://` means Postgres with no
 schema edit. The JSON helpers work identically on both.
 
-## Contributing
+## 🙌 Contributing
 
 Issues, ideas and PRs welcome, see [CONTRIBUTING.md](./CONTRIBUTING.md) for setup, the
 checks CI runs, and the twelve constraints the project is built around.
 
-## License
+## ⚖️ License
 
 [MIT](./LICENSE) © 2026 Nihal Sirivolu

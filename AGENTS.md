@@ -111,6 +111,17 @@ Consequences for you:
 - Every projection ships with floor, ceiling and confidence. Don't strip them to simplify a UI.
 - The interesting work is **decision leverage** (Phase 11), not chasing projection accuracy.
 
+## Accounts
+
+Off by default (`REQUIRE_AUTH=1` turns them on), because running this for yourself needs no
+login. When on: the first account becomes the owner, then signups close unless `ALLOW_SIGNUPS=1`
+or an `INVITE_CODE` is set.
+
+Rules of the layer: password rules live in `src/lib/core/auth.ts` and are tested; hashing is
+scrypt from `node:crypto` with no native dependency; only a session token's SHA-256 is stored;
+sign-in hashes even for a missing user so the form cannot enumerate accounts. Middleware runs on
+the edge and can only check that a cookie exists, so every page validates the session itself.
+
 ## Testing conventions
 
 Tests are plain Node scripts, no framework:

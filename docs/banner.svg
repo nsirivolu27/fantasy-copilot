@@ -1,0 +1,97 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 320" width="1200" height="320" role="img" aria-label="Fantasy Copilot, a free self-hosted fantasy football companion">
+  <defs>
+    <linearGradient id="field" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0F7A48"/>
+      <stop offset="1" stop-color="#0B5D37"/>
+    </linearGradient>
+    <clipPath id="round"><rect x="0" y="0" width="1200" height="320" rx="18"/></clipPath>
+  </defs>
+
+  <g clip-path="url(#round)">
+    <rect width="1200" height="320" fill="#F7F8F7"/>
+
+    <!-- Field strip: yard lines and hash marks, the only literal football motif -->
+    <rect x="0" y="248" width="1200" height="72" fill="url(#field)"/>
+    <g stroke="#FFFFFF" stroke-opacity="0.34" stroke-width="2">
+      <line x1="100" y1="248" x2="100" y2="320"/>
+      <line x1="200" y1="248" x2="200" y2="320"/>
+      <line x1="300" y1="248" x2="300" y2="320"/>
+      <line x1="400" y1="248" x2="400" y2="320"/>
+      <line x1="500" y1="248" x2="500" y2="320"/>
+      <line x1="600" y1="248" x2="600" y2="320"/>
+      <line x1="700" y1="248" x2="700" y2="320"/>
+      <line x1="800" y1="248" x2="800" y2="320"/>
+      <line x1="900" y1="248" x2="900" y2="320"/>
+      <line x1="1000" y1="248" x2="1000" y2="320"/>
+      <line x1="1100" y1="248" x2="1100" y2="320"/>
+    </g>
+    <g stroke="#FFFFFF" stroke-opacity="0.22" stroke-width="2">
+      <line x1="50" y1="276" x2="50" y2="292"/>
+      <line x1="150" y1="276" x2="150" y2="292"/>
+      <line x1="250" y1="276" x2="250" y2="292"/>
+      <line x1="350" y1="276" x2="350" y2="292"/>
+      <line x1="450" y1="276" x2="450" y2="292"/>
+      <line x1="550" y1="276" x2="550" y2="292"/>
+      <line x1="650" y1="276" x2="650" y2="292"/>
+      <line x1="750" y1="276" x2="750" y2="292"/>
+      <line x1="850" y1="276" x2="850" y2="292"/>
+      <line x1="950" y1="276" x2="950" y2="292"/>
+      <line x1="1050" y1="276" x2="1050" y2="292"/>
+      <line x1="1150" y1="276" x2="1150" y2="292"/>
+    </g>
+
+    <!-- Wordmark -->
+    <rect x="56" y="52" width="46" height="46" rx="10" fill="#0F7A48"/>
+    <text x="79" y="84" font-family="system-ui, -apple-system, Segoe UI, Roboto, sans-serif" font-size="20" font-weight="700" fill="#FFFFFF" text-anchor="middle">FC</text>
+
+    <text x="120" y="76" font-family="system-ui, -apple-system, Segoe UI, Roboto, sans-serif" font-size="34" font-weight="700" fill="#16191B" letter-spacing="-0.5">Fantasy Copilot</text>
+    <text x="120" y="102" font-family="system-ui, -apple-system, Segoe UI, Roboto, sans-serif" font-size="15" fill="#5F6B63">Start/sit, waivers, streaming and trades, with reasoning you can argue with.</text>
+
+    <!-- Lineup card: the app's actual output shape -->
+    <rect x="56" y="132" width="470" height="96" rx="12" fill="#FFFFFF" stroke="#E2E7E3"/>
+    <text x="74" y="156" font-family="system-ui, sans-serif" font-size="10.5" font-weight="600" fill="#5F6B63" letter-spacing="1">OPTIMAL LINEUP</text>
+
+    <rect x="74" y="168" width="34" height="20" rx="5" fill="#FDECEA" stroke="#F3C9C5"/>
+    <text x="91" y="182" font-family="system-ui, sans-serif" font-size="10.5" font-weight="600" fill="#9B231C" text-anchor="middle">QB</text>
+    <rect x="116" y="168" width="34" height="20" rx="5" fill="#E7F3EC" stroke="#BEE0CC"/>
+    <text x="133" y="182" font-family="system-ui, sans-serif" font-size="10.5" font-weight="600" fill="#0B5D37" text-anchor="middle">RB</text>
+    <rect x="158" y="168" width="34" height="20" rx="5" fill="#E7F3EC" stroke="#BEE0CC"/>
+    <text x="175" y="182" font-family="system-ui, sans-serif" font-size="10.5" font-weight="600" fill="#0B5D37" text-anchor="middle">RB</text>
+    <rect x="200" y="168" width="34" height="20" rx="5" fill="#E8F0FD" stroke="#C6D8F6"/>
+    <text x="217" y="182" font-family="system-ui, sans-serif" font-size="10.5" font-weight="600" fill="#17458F" text-anchor="middle">WR</text>
+    <rect x="242" y="168" width="34" height="20" rx="5" fill="#E8F0FD" stroke="#C6D8F6"/>
+    <text x="259" y="182" font-family="system-ui, sans-serif" font-size="10.5" font-weight="600" fill="#17458F" text-anchor="middle">WR</text>
+    <rect x="284" y="168" width="34" height="20" rx="5" fill="#FDF3E3" stroke="#F0DBB4"/>
+    <text x="301" y="182" font-family="system-ui, sans-serif" font-size="10.5" font-weight="600" fill="#8A5209" text-anchor="middle">TE</text>
+    <rect x="326" y="168" width="46" height="20" rx="5" fill="#F0F2F0" stroke="#E2E7E3"/>
+    <text x="349" y="182" font-family="system-ui, sans-serif" font-size="10.5" font-weight="600" fill="#41504A" text-anchor="middle">FLEX</text>
+    <rect x="380" y="168" width="30" height="20" rx="5" fill="#F0EBFA" stroke="#DCD2F2"/>
+    <text x="395" y="182" font-family="system-ui, sans-serif" font-size="10.5" font-weight="600" fill="#4C349B" text-anchor="middle">K</text>
+    <rect x="418" y="168" width="40" height="20" rx="5" fill="#EEF1EF" stroke="#DDE3DE"/>
+    <text x="438" y="182" font-family="system-ui, sans-serif" font-size="10.5" font-weight="600" fill="#41504A" text-anchor="middle">D/ST</text>
+
+    <text x="74" y="212" font-family="system-ui, sans-serif" font-size="12" fill="#5F6B63">Start Bucky Irving over Chuba Hubbard</text>
+    <rect x="404" y="199" width="54" height="18" rx="5" fill="#E7F3EC" stroke="#BEE0CC"/>
+    <text x="431" y="212" font-family="system-ui, sans-serif" font-size="11" font-weight="600" fill="#0B5D37" text-anchor="middle">+4.2</text>
+
+    <!-- Honest numbers, the thing the project is actually about -->
+    <g font-family="system-ui, sans-serif">
+      <rect x="560" y="132" width="180" height="96" rx="12" fill="#FFFFFF" stroke="#E2E7E3"/>
+      <text x="580" y="160" font-size="10.5" font-weight="600" fill="#5F6B63" letter-spacing="1">BACKTESTED ON</text>
+      <text x="580" y="192" font-size="26" font-weight="700" fill="#16191B">3,415</text>
+      <text x="580" y="212" font-size="12" fill="#5F6B63">real player-weeks</text>
+
+      <rect x="752" y="132" width="180" height="96" rx="12" fill="#FFFFFF" stroke="#E2E7E3"/>
+      <text x="772" y="160" font-size="10.5" font-weight="600" fill="#5F6B63" letter-spacing="1">EDGE OVER BASELINE</text>
+      <text x="772" y="192" font-size="26" font-weight="700" fill="#16191B">0.7%</text>
+      <text x="772" y="212" font-size="12" fill="#5F6B63">and we publish it</text>
+
+      <rect x="944" y="132" width="200" height="96" rx="12" fill="#FFFFFF" stroke="#E2E7E3"/>
+      <text x="964" y="160" font-size="10.5" font-weight="600" fill="#5F6B63" letter-spacing="1">COST TO RUN</text>
+      <text x="964" y="192" font-size="26" font-weight="700" fill="#0F7A48">$0</text>
+      <text x="964" y="212" font-size="12" fill="#5F6B63">no keys, no accounts</text>
+    </g>
+
+    <text x="1144" y="82" font-family="system-ui, sans-serif" font-size="12" fill="#5F6B63" text-anchor="end">Sleeper + nflverse · MIT</text>
+  </g>
+</svg>

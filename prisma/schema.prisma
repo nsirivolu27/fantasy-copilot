@@ -310,3 +310,34 @@ model Matchup {
   @@unique([leagueId, week, teamId])
   @@index([leagueId, week])
 }
+
+// ─── Accounts ────────────────────────────────────────────────────────────────
+
+model User {
+  id           String  @id @default(cuid())
+  email        String  @unique
+  displayName  String?
+  /// scrypt, stored as salt:hash. Never the password itself.
+  passwordHash String
+  /// The first account to sign up owns the deployment.
+  isOwner      Boolean @default(false)
+
+  createdAt   DateTime  @default(now())
+  lastLoginAt DateTime?
+
+  sessions Session[]
+}
+
+model Session {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  /// SHA-256 of the cookie value. A database leak yields no usable sessions.
+  tokenHash String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  userAgent String?
+
+  @@index([userId])
+}
