@@ -18,7 +18,7 @@ export function ThemeToggle() {
       const stored = localStorage.getItem(KEY);
       if (stored === "light" || stored === "dark") setChoice(stored);
     } catch {
-      // Private mode or blocked storage — the default is fine.
+      // Private mode or blocked storage, the default is fine.
     }
   }, []);
 

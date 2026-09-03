@@ -2,13 +2,12 @@
  * The trade engine: lineup optimization plus two-sided trade evaluation.
  *
  * These live together because they are one idea. A trade is judged by what it
- * does to each roster's best legal starting lineup — not by comparing player
+ * does to each roster's best legal starting lineup, not by comparing player
  * values in the abstract. That is why a fourth good running back is worth
  * little to a team already starting three, and why the same trade can be a win
  * for one side and a loss for the other.
  *
- * Zero imports on purpose: pure, unit testable, and the piece both the trading
- * app and the MCP server share.
+ * Zero imports on purpose: pure, unit testable, and shareable as-is.
  */
 
 export interface LineupPlayer {
@@ -29,7 +28,13 @@ export interface LineupSlot {
   index: number;
 }
 
-/** Which positions each slot code accepts. Anything unlisted matches its own name. */
+/**
+ * Which positions each slot code accepts, ORDERED BY who typically wins the
+ * slot. That order is data, not decoration: a slot whose first entry is a
+ * position tells you the slot will usually be filled by it, which is how
+ * streamablePositions distinguishes a SUPER_FLEX (a second QB) from a plain
+ * FLEX (rarely a TE).
+ */
 const SLOT_ELIGIBILITY: Record<string, string[]> = {
   FLEX: ["RB", "WR", "TE"],
   WRRB_FLEX: ["RB", "WR"],
@@ -92,7 +97,7 @@ export function optimizeLineup(players: LineupPlayer[], slots: LineupSlot[]): Li
   };
 }
 
-/** Points the best legal lineup scores — the number trades are judged against. */
+/** Points the best legal lineup scores, the number trades are judged against. */
 export function lineupTotal(players: LineupPlayer[], slots: LineupSlot[]): number {
   return optimizeLineup(players, slots).total;
 }
@@ -101,7 +106,7 @@ export function round2(n: number): number {
   return Math.round(n * 100) / 100;
 }
 
-// ── Trade evaluation ────────────────────────────────────────────────────────
+// -- Trade evaluation --------------------------------------------------------
 
 interface PlayerValue {
   playerId: string;
@@ -160,7 +165,7 @@ export interface TradeEvaluation {
   sideB: SideResult;
   /** Verdict from the perspective of side A. */
   verdict: Verdict;
-  /** True when both rosters improve — the trades that actually get accepted. */
+  /** True when both rosters improve, the trades that actually get accepted. */
   mutuallyBeneficial: boolean;
   reasoning: string[];
   warnings: string[];
@@ -195,7 +200,7 @@ export function evaluateTrade(input: TradeInput): TradeEvaluation {
 
   if (mutuallyBeneficial) {
     reasoning.push(
-      "Both rosters improve — complementary needs, so this is the rare trade that actually gets accepted.",
+      "Both rosters improve, complementary needs, so this is the rare trade that actually gets accepted.",
     );
   } else if (sideB.weeklyDelta < -NOISE_THRESHOLD) {
     reasoning.push(
@@ -209,18 +214,18 @@ export function evaluateTrade(input: TradeInput): TradeEvaluation {
     const aValueDelta = (sideA.valueReceived ?? 0) - (sideA.valueSent ?? 0);
     if (aValueDelta < 0 && sideA.weeklyDelta > NOISE_THRESHOLD) {
       reasoning.push(
-        "You give up more raw trade value than you get, but your starting lineup improves — consolidating depth into a starter.",
+        "You give up more raw trade value than you get, but your starting lineup improves, consolidating depth into a starter.",
       );
     }
     if (aValueDelta > 0 && sideA.weeklyDelta < -NOISE_THRESHOLD) {
       reasoning.push(
-        "You gain trade value but your starting lineup gets worse — the pieces coming back don't crack your lineup.",
+        "You gain trade value but your starting lineup gets worse, the pieces coming back don't crack your lineup.",
       );
     }
   }
 
   if (input.sideA.sending.length === 0 || input.sideB.sending.length === 0) {
-    warnings.push("One side gives up nothing — this is a giveaway, not a trade.");
+    warnings.push("One side gives up nothing, this is a giveaway, not a trade.");
   }
 
   return { sideA, sideB, verdict, mutuallyBeneficial, reasoning, warnings };
@@ -297,7 +302,7 @@ export const VERDICT_LABEL: Record<Verdict, string> = {
   decline: "Decline",
 };
 
-// ── Start/sit advice ────────────────────────────────────────────────────────
+// -- Start/sit advice --------------------------------------------------------
 
 /** A gap smaller than this is noise, not a recommendation. */
 export const COIN_FLIP_THRESHOLD = 1.5;
@@ -337,7 +342,7 @@ export interface LineupAdvice {
  * Two deliberate choices. Players who cannot play are removed from the pool
  * before optimizing, so the optimizer never recommends starting someone who is
  * Out. And a swap worth less than COIN_FLIP_THRESHOLD is labelled a coin flip
- * rather than dressed up as a recommendation — most start/sit calls genuinely
+ * rather than dressed up as a recommendation, most start/sit calls genuinely
  * are close, and pretending otherwise is how a tool loses trust.
  */
 export function adviseLineup(args: {
@@ -438,12 +443,12 @@ function buildReason(
     return `${outgoing.name} is ${outgoing.injuryStatus}; ${incoming.name} projects ${incoming.projectedPoints.toFixed(1)}.`;
   }
   if (isCoinFlip) {
-    return `Coin flip — ${gain.toFixed(1)} points between them. Either is defensible.`;
+    return `Coin flip, ${gain.toFixed(1)} points between them. Either is defensible.`;
   }
   return `${incoming.name} projects ${gain.toFixed(1)} more than ${outgoing.name}.`;
 }
 
-// ── Waivers and drops ───────────────────────────────────────────────────────
+// -- Waivers and drops -------------------------------------------------------
 
 export interface AdditionRanking {
   player: LineupPlayer;
@@ -508,8 +513,7 @@ export interface DropRanking {
 
 /**
  * Ranks a roster from most to least droppable, by what the lineup loses.
- * Protected players are ranked last and flagged, never silently excluded —
- * the user should see that the app knows about them.
+ * Protected players are ranked last and flagged, never silently excluded, * the user should see that the app knows about them.
  */
 export function rankDrops(
   roster: LineupPlayer[],
@@ -574,7 +578,7 @@ export function recommendFaabBid(args: {
   if (args.budgetRemaining == null) {
     reasoning.push(
       worthTheClaim
-        ? `Adds ${gain.toFixed(1)} points a week to your starting lineup — worth using your waiver claim.`
+        ? `Adds ${gain.toFixed(1)} points a week to your starting lineup, worth using your waiver claim.`
         : `Only ${gain.toFixed(1)} points a week. Not worth burning a claim; you can likely get him later.`,
     );
     return { bid: null, percentOfRemaining: null, worthTheClaim, reasoning };
@@ -593,11 +597,11 @@ export function recommendFaabBid(args: {
   }
 
   // Base: roughly 3% of remaining budget per weekly point added, so a 5-point
-  // upgrade is a ~15% bid. Deliberately conservative — most FAAB is wasted on
+  // upgrade is a ~15% bid. Deliberately conservative, most FAAB is wasted on
   // week-to-week churn, and running out of budget in November is a real cost.
   let share = Math.min(0.6, gain * 0.03);
   reasoning.push(
-    `Adds ${gain.toFixed(1)} points a week to your starting lineup — the basis for a ${(share * 100).toFixed(0)}% bid.`,
+    `Adds ${gain.toFixed(1)} points a week to your starting lineup, the basis for a ${(share * 100).toFixed(0)}% bid.`,
   );
 
   // Season timing: the same weekly gain is worth less with fewer weeks to use it.
@@ -627,4 +631,154 @@ export function recommendFaabBid(args: {
     worthTheClaim,
     reasoning,
   };
+}
+
+// -- League format -----------------------------------------------------------
+//
+// Everything below derives from the league's own roster slots and team count,
+// so a 12-team half-PPR 1QB league, a 10-team superflex dynasty and a 14-team
+// two-flex league all get correct numbers with no configuration.
+
+export interface PositionCounts {
+  /** Slots only this position can fill, per team. */
+  dedicated: Record<string, number>;
+  /** Dedicated plus an equal share of every flex slot it's eligible for. */
+  effective: Record<string, number>;
+}
+
+/**
+ * How many starting slots each position occupies per team.
+ *
+ * A flex slot is split equally between the positions eligible for it, which is
+ * an approximation but the right one: it makes RB and WR worth more in a
+ * two-flex league and makes QB scarce in superflex, which is what the values
+ * downstream need to reflect.
+ */
+export function positionStartCounts(slots: LineupSlot[]): PositionCounts {
+  const dedicated: Record<string, number> = {};
+  const effective: Record<string, number> = {};
+
+  const bump = (map: Record<string, number>, key: string, by: number) => {
+    map[key] = (map[key] ?? 0) + by;
+  };
+
+  for (const slot of slots) {
+    const eligible = SLOT_ELIGIBILITY[slot.code];
+    if (eligible) {
+      const share = 1 / eligible.length;
+      for (const position of eligible) bump(effective, position, share);
+    } else {
+      bump(dedicated, slot.code, 1);
+      bump(effective, slot.code, 1);
+    }
+  }
+
+  return { dedicated, effective };
+}
+
+/**
+ * Replacement level: what a freely available player at each position is worth.
+ *
+ * Defined the standard way, the best player NOT startable league-wide. With
+ * 12 teams starting 2.33 RBs each, the 29th-best RB is replacement level. That
+ * single definition is what makes value correct in any format: superflex
+ * doubles the QB requirement and the replacement QB becomes far better, so
+ * quarterbacks become genuinely scarce without a special case.
+ */
+export function deriveReplacementLevels(
+  pool: { position: string; projectedPoints: number }[],
+  slots: LineupSlot[],
+  teamCount: number,
+  fallback: Record<string, number> = {},
+): Record<string, number> {
+  const { effective } = positionStartCounts(slots);
+  const byPosition = new Map<string, number[]>();
+
+  for (const player of pool) {
+    if (!player.position) continue;
+    if (!byPosition.has(player.position)) byPosition.set(player.position, []);
+    (byPosition.get(player.position) as number[]).push(player.projectedPoints);
+  }
+
+  const out: Record<string, number> = {};
+  for (const [position, perTeam] of Object.entries(effective)) {
+    const scores = (byPosition.get(position) ?? []).slice().sort((a, b) => b - a);
+    if (scores.length === 0) {
+      if (fallback[position] != null) out[position] = fallback[position];
+      continue;
+    }
+    // The first player past the last startable one.
+    const index = Math.min(Math.ceil(perTeam * teamCount), scores.length - 1);
+    out[position] = Math.round(scores[index] * 100) / 100;
+  }
+
+  // Positions with no starting slot (IDP in a league that doesn't use them)
+  // still need a number if anyone is rostered there.
+  for (const [position, scores] of byPosition) {
+    if (out[position] == null) {
+      const sorted = scores.slice().sort((a, b) => b - a);
+      out[position] = fallback[position] ?? Math.round((sorted[sorted.length - 1] ?? 0) * 100) / 100;
+    }
+  }
+
+  return out;
+}
+
+/**
+ * Positions worth streaming: exactly one dedicated starting slot, and not
+ * meaningfully deepened by flex eligibility.
+ *
+ * That rule gets superflex right automatically. QB still has one dedicated
+ * slot, but SUPER_FLEX pushes its effective count past the threshold, so the
+ * app stops suggesting you stream a quarterback in a league where everyone
+ * rosters two.
+ */
+export function streamablePositions(slots: LineupSlot[]): string[] {
+  const { dedicated } = positionStartCounts(slots);
+
+  // A flex slot usually goes to the strongest position it accepts, which is
+  // the first entry in its eligibility list. If a position leads some flex,
+  // teams roster a second one and nobody streams it.
+  const consumedByFlex = new Set<string>();
+  for (const slot of slots) {
+    const eligible = SLOT_ELIGIBILITY[slot.code];
+    if (eligible && eligible.length > 0) consumedByFlex.add(eligible[0]);
+  }
+
+  return Object.keys(dedicated)
+    .filter((position) => dedicated[position] === 1 && !consumedByFlex.has(position))
+    .sort();
+}
+
+/** One-line description of the format, for the UI and the chat's context. */
+export function describeLeagueFormat(args: {
+  teamCount: number;
+  slots: LineupSlot[];
+  scoringSettings: Record<string, number>;
+  isDynasty?: boolean;
+  isKeeper?: boolean;
+}): string {
+  const { dedicated } = positionStartCounts(args.slots);
+
+  const rec = args.scoringSettings.rec ?? 0;
+  const ppr = rec >= 1 ? "PPR" : rec > 0 ? `${rec}-PPR` : "standard";
+
+  // A flex that leads with QB is a superflex, however the platform names it.
+  const flexSlots = args.slots.filter((s) => SLOT_ELIGIBILITY[s.code]);
+  const superflexSlots = flexSlots.filter((s) => SLOT_ELIGIBILITY[s.code][0] === "QB");
+  const plainFlexSlots = flexSlots.length - superflexSlots.length;
+
+  const quarterbacks =
+    superflexSlots.length > 0 ? "superflex" : (dedicated.QB ?? 0) >= 2 ? `${dedicated.QB}QB` : "1QB";
+
+  const parts = [
+    `${args.teamCount}-team`,
+    ppr,
+    quarterbacks,
+    plainFlexSlots > 0 ? `${plainFlexSlots} flex` : null,
+    args.isDynasty ? "dynasty" : args.isKeeper ? "keeper" : null,
+    args.scoringSettings.bonus_rec_te ? "TE premium" : null,
+  ].filter(Boolean);
+
+  return parts.join(" \u00b7 ");
 }

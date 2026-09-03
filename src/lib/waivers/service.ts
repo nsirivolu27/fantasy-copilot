@@ -13,9 +13,8 @@ import {
   type DropRanking,
   type FaabAdvice,
   type LineupPlayer,
-  type LineupSlot,
 } from "@/lib/core";
-import type { NormalizedSlot } from "@/lib/platforms/types";
+import { getLeagueFormat } from "@/lib/league/format";
 
 /**
  * Waivers and streaming: loads rows, projects free agents, and hands the
@@ -23,17 +22,16 @@ import type { NormalizedSlot } from "@/lib/platforms/types";
  *
  * Free agents don't have stored projections (only rostered players do), so
  * they're projected on the fly from their nflverse history using the league's
- * own scoring — the same path rostered players take.
+ * own scoring, the same path rostered players take.
  */
 
-const FINAL_REGULAR_WEEK = 18;
 /** The dictionary has thousands of entries; only project plausible adds. */
 const MAX_CANDIDATES = 120;
 
 export interface WaiverTarget {
   ranking: AdditionRanking;
   faab: FaabAdvice;
-  /** Sleeper's 24h add count — market hype, never part of the ranking. */
+  /** Sleeper's 24h add count, market hype, never part of the ranking. */
   trendingAdds: number | null;
   confidence: number;
 }
@@ -51,14 +49,13 @@ export interface WaiverReport {
 async function leagueContext(leagueId: string) {
   const league = await prisma.league.findUnique({ where: { id: leagueId } });
   if (!league) throw new Error("League not found.");
-  const slots: LineupSlot[] = parseJson<NormalizedSlot[]>(league.rosterSlotsJson, [])
-    .filter((s) => s.isStarter)
-    .map((s) => ({ code: s.code, index: s.index }));
+  const format = await getLeagueFormat(leagueId);
   return {
     league,
-    slots,
-    scoring: parseJson<Record<string, number>>(league.scoringSettingsJson, {}),
-    weeksRemaining: Math.max(1, FINAL_REGULAR_WEEK - (league.currentWeek || 1) + 1),
+    format,
+    slots: format.slots,
+    scoring: format.scoringSettings,
+    weeksRemaining: format.weeksRemaining,
   };
 }
 
@@ -230,7 +227,7 @@ async function fetchTrendingAdds(): Promise<Map<string, number>> {
   return new Map(rows.filter((r) => r.player_id).map((r) => [r.player_id as string, r.count ?? 0]));
 }
 
-// ─── Streaming ───────────────────────────────────────────────────────────────
+// --- Streaming ---------------------------------------------------------------
 
 export interface StreamOption {
   playerId: string;
@@ -247,9 +244,13 @@ export interface StreamOption {
 
 export async function getStreamers(
   leagueId: string,
-  positions = ["QB", "TE", "K", "DEF"],
-): Promise<{ week: number; byPosition: Record<string, StreamOption[]> }> {
-  const { league, scoring } = await leagueContext(leagueId);
+  positions?: string[],
+): Promise<{ week: number; byPosition: Record<string, StreamOption[]>; streamable: string[] }> {
+  const { league, scoring, format } = await leagueContext(leagueId);
+  // Which positions are worth streaming depends on the league: a superflex
+  // league doesn't stream quarterbacks, and a league with no kicker slot
+  // shouldn't be offered kickers at all.
+  const wanted = positions?.length ? positions.filter((p) => format.streamable.includes(p)) : format.streamable;
   const week = league.currentWeek || 1;
 
   const schedule = await prisma.game.findMany({
@@ -279,7 +280,7 @@ export async function getStreamers(
 
   const byPosition: Record<string, StreamOption[]> = {};
 
-  for (const position of positions) {
+  for (const position of wanted) {
     const players = await prisma.player.findMany({
       where: { position, nflTeam: { not: null } },
       take: 80,
@@ -319,5 +320,5 @@ export async function getStreamers(
       .slice(0, 8);
   }
 
-  return { week, byPosition };
+  return { week, byPosition, streamable: format.streamable };
 }

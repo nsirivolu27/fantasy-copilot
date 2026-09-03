@@ -2,7 +2,7 @@
  * The projection model, v1.
  *
  * Deliberately simple and explainable. It takes games that have ALREADY been
- * scored with the league's own settings (see scoring.ts) — the model never
+ * scored with the league's own settings (see scoring.ts), the model never
  * sees a stat line, so it can't assume a scoring format. The output carries
  * floor, ceiling, confidence and human-readable reasoning, because a bare
  * point estimate isn't a decision aid.
@@ -33,7 +33,7 @@ export interface GameLine {
   week: number;
   /** Fantasy points this game was worth IN THIS LEAGUE, scored by scoring.ts. */
   points: number;
-  /** Touches or targets — drives role stability, never the point estimate. */
+  /** Touches or targets, drives role stability, never the point estimate. */
   opportunity: number;
 }
 
@@ -43,11 +43,11 @@ export interface ProjectionInput {
   /**
    * Season-to-date averages. These anchor the projection, because weekly
    * fantasy scoring is noisy enough that a season average is a genuinely hard
-   * baseline to beat — see the backtest numbers in the README.
+   * baseline to beat, see the backtest numbers in the README.
    */
   seasonAveragePoints?: number;
   seasonAverageOpportunity?: number;
-  /** Season-long points per opportunity — the efficiency term. */
+  /** Season-long points per opportunity, the efficiency term. */
   seasonPointsPerOpportunity?: number;
   /** Multiplier from the opponent's points allowed to this position. */
   matchupMultiplier?: number;
@@ -84,7 +84,7 @@ export function project(input: ProjectionInput): ProjectionOutput {
 
   const status = (input.injuryStatus ?? "").toUpperCase();
   if (status && OUT_STATUSES.has(status)) {
-    return zero(`Listed ${input.injuryStatus} — projected zero.`, reasoning);
+    return zero(`Listed ${input.injuryStatus}, projected zero.`, reasoning);
   }
 
   const games = input.games.slice(0, 4);
@@ -94,7 +94,7 @@ export function project(input: ProjectionInput): ProjectionOutput {
       floor: 0,
       ceiling: round2(replacement * 1.8),
       confidence: 0.1,
-      reasoning: ["No game history — using positional replacement level."],
+      reasoning: ["No game history, using positional replacement level."],
       modelVersion: MODEL_VERSION,
     };
   }
@@ -109,8 +109,8 @@ export function project(input: ProjectionInput): ProjectionOutput {
 
   // 2. Two estimates, then blend.
   //
-  //    (a) Season average — the anchor. Boring and hard to beat.
-  //    (b) Opportunity model — recent weighted usage times season-long
+  //    (a) Season average, the anchor. Boring and hard to beat.
+  //    (b) Opportunity model, recent weighted usage times season-long
   //        efficiency. Usage is more stable than points, so this reacts to a
   //        role change without overreacting to one big touchdown week.
   const seasonPoints = input.seasonAveragePoints ?? recentPoints;
@@ -136,7 +136,7 @@ export function project(input: ProjectionInput): ProjectionOutput {
   // 3. With almost no history, pull toward replacement level.
   if (scored.length < 2 && replacement > 0) {
     base = base * 0.5 + replacement * 0.5;
-    reasoning.push(`Only ${scored.length} game of history — regressed halfway to replacement level.`);
+    reasoning.push(`Only ${scored.length} game of history, regressed halfway to replacement level.`);
   }
 
   // 4. Matchup, capped.
@@ -152,7 +152,7 @@ export function project(input: ProjectionInput): ProjectionOutput {
   // 5. Questionable players keep playing but carry risk.
   if (status === "QUESTIONABLE") {
     base *= 0.85;
-    reasoning.push("Listed Questionable — 15% haircut and lower confidence.");
+    reasoning.push("Listed Questionable 15% haircut and lower confidence.");
   }
 
   // 6. Floor and ceiling from the player's own spread, widened on thin samples.

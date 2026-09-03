@@ -78,7 +78,7 @@ export default async function SettingsPage() {
               <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
                 <Stat label="League" value={league.name} />
                 <Stat label="Season" value={league.season} />
-                <Stat label="Week" value={league.currentWeek || "—"} />
+                <Stat label="Week" value={league.currentWeek || "-"} />
                 <Stat label="Teams" value={league.teamCount} />
               </div>
               <p className="text-xs text-[var(--muted)]">
@@ -146,7 +146,7 @@ export default async function SettingsPage() {
       </Card>
 
       <Card>
-        <CardHeader title="Projections" subtitle="Free nflverse data — no key required" />
+        <CardHeader title="Projections" subtitle="Free nflverse data, no key required" />
         <div className="p-4">
           <ProjectionForm />
         </div>
@@ -166,7 +166,7 @@ export default async function SettingsPage() {
           </p>
           <p>
             Season, week, team count, scoring rules and roster slots all come from your league. None
-            of them are hardcoded, so any format works — half-PPR, superflex, dynasty.
+            of them are hardcoded, so any format works, half-PPR, superflex, dynasty.
           </p>
           <p>
             The ~5MB player dictionary is cached and refreshed at most once every 24 hours. If it

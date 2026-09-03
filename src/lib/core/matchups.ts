@@ -23,7 +23,7 @@ export interface DefenseStrength {
 /**
  * Points allowed to each position, per defense.
  *
- * The multiplier is capped in the projection model, not here — this function
+ * The multiplier is capped in the projection model, not here, this function
  * reports what happened and lets the caller decide how much to trust it.
  */
 export function pointsAllowedByDefense(
@@ -105,7 +105,7 @@ export function upcomingOpponents(
       });
     } else {
       // No game that week is a bye, which is exactly what a streamer needs to
-      // see — it's the week the plan breaks.
+      // see, it's the week the plan breaks.
       out.push({ week, opponent: null, isHome: false });
     }
   }

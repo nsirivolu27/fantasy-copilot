@@ -20,7 +20,7 @@ import type {
 /**
  * Schemas are deliberately loose: we validate the handful of fields we depend
  * on and pass everything else through. A new field from Sleeper must never
- * break the sync — a missing critical field should fail loudly and clearly.
+ * break the sync, a missing critical field should fail loudly and clearly.
  */
 
 const numberish = z.union([z.number(), z.string()]).transform((v) => {
@@ -87,6 +87,8 @@ export function normalizeLeague(raw: unknown, week: number, seasonState?: string
   const settings = l.settings ?? {};
 
   const { isKeeper, isDynasty } = readLeagueType(settings.type);
+  const playoffWeekStart = Number(settings.playoff_week_start ?? 0);
+  const playoffTeams = Number(settings.playoff_teams ?? 0);
   const waiverBudget = Number(settings.waiver_budget ?? 0);
   const waiverType = readWaiverType(settings.waiver_budget);
 
@@ -108,6 +110,8 @@ export function normalizeLeague(raw: unknown, week: number, seasonState?: string
     waiverBudget: waiverBudget > 0 ? waiverBudget : undefined,
     isDynasty,
     isKeeper,
+    playoffWeekStart: playoffWeekStart > 0 ? playoffWeekStart : undefined,
+    playoffTeams: playoffTeams > 0 ? playoffTeams : undefined,
   };
 }
 
@@ -186,7 +190,7 @@ export function normalizePlayer(id: string, raw: unknown): NormalizedPlayer {
   return {
     platformPlayerId: id,
     gsisId: typeof p.gsis_id === "string" && p.gsis_id ? p.gsis_id : undefined,
-    // Team defenses have no name fields — their ID is the team code ("SF").
+    // Team defenses have no name fields, their ID is the team code ("SF").
     fullName: full || (typeof p.team === "string" ? `${p.team} Defense` : `Player ${id}`),
     position: typeof p.position === "string" ? p.position : undefined,
     nflTeam: typeof p.team === "string" ? p.team : undefined,

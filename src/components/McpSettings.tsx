@@ -42,7 +42,7 @@ export function McpSettings({ keys, baseUrl }: { keys: KeyRow[]; baseUrl: string
       />
       <div className="space-y-4 p-4">
         {state.status === "created" && state.plaintext ? (
-          <Banner tone="good" title="Copy this key now — it won't be shown again">
+          <Banner tone="good" title="Copy this key now, it won't be shown again">
             <code className="mt-1 block break-all rounded bg-[var(--panel-2)] p-2 font-mono text-xs">
               {state.plaintext}
             </code>
@@ -92,7 +92,7 @@ export function McpSettings({ keys, baseUrl }: { keys: KeyRow[]; baseUrl: string
           </ul>
         ) : (
           <p className="text-sm text-[var(--muted)]">
-            No keys yet. Create one to connect an AI client — it&apos;s shown once and stored only as
+            No keys yet. Create one to connect an AI client, it&apos;s shown once and stored only as
             a hash.
           </p>
         )}
@@ -107,7 +107,7 @@ export function McpSettings({ keys, baseUrl }: { keys: KeyRow[]; baseUrl: string
             />
             <fieldset className="space-y-1.5">
               <legend className="mb-1 text-xs text-[var(--muted)]">
-                Scopes — give a client only what it needs
+                Scopes, give a client only what it needs
               </legend>
               {SCOPES.map((s) => (
                 <label key={s.id} className="flex items-start gap-2 text-sm">

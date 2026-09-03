@@ -6,7 +6,7 @@ const BASE = "https://api.sleeper.app/v1";
 
 /**
  * Offline demo mode. Set SLEEPER_FIXTURES=1 to serve the JSON in /fixtures
- * instead of calling Sleeper — useful for developing without a league ID or
+ * instead of calling Sleeper, useful for developing without a league ID or
  * on a network that can't reach the API. Never enabled in production.
  */
 const USE_FIXTURES = process.env.SLEEPER_FIXTURES === "1";

@@ -5,7 +5,7 @@ import { prisma } from "@/lib/db";
  * API keys for the MCP endpoint, so an AI client (Claude Desktop, Cursor) can
  * query the league without a browser session.
  *
- * Only a SHA-256 hash is stored — the plaintext is shown once at creation and
+ * Only a SHA-256 hash is stored, the plaintext is shown once at creation and
  * never again, so a database leak doesn't hand over working credentials.
  */
 

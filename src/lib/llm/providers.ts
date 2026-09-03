@@ -2,7 +2,7 @@ import { prisma } from "@/lib/db";
 import type { FantasyTool } from "@/lib/tools/registry";
 
 /**
- * A tiny LLM client written against fetch — no SDK, no dependencies.
+ * A tiny LLM client written against fetch, no SDK, no dependencies.
  *
  * Nearly every provider speaks the OpenAI chat-completions wire format, so
  * "openai-compatible" plus a base URL covers Groq, OpenRouter, Together,
@@ -293,6 +293,6 @@ async function describeFailure(res: Response): Promise<string> {
   if (res.status === 401 || res.status === 403) return "The API key was rejected (401/403). Check it in Settings.";
   if (res.status === 404) return "The model or base URL wasn't found (404). Check the model ID and base URL.";
   if (res.status === 429) return "Rate limited by the provider (429). Wait a moment and try again.";
-  if (res.status >= 500) return `The provider returned ${res.status}. That's on their side — try again shortly.`;
+  if (res.status >= 500) return `The provider returned ${res.status}. That's on their side, try again shortly.`;
   return `Provider returned ${res.status}. ${detail}`;
 }

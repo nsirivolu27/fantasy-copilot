@@ -21,7 +21,7 @@ export async function isPlayerCacheFresh(): Promise<boolean> {
  * Refreshes the player dictionary if it's stale.
  * Returns how many players were written, or null if the cache was already fresh.
  *
- * This must never block the core league sync — the caller catches its errors
+ * This must never block the core league sync, the caller catches its errors
  * and continues, and the UI falls back to showing player IDs.
  */
 export async function refreshPlayerCache(force = false): Promise<number | null> {

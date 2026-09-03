@@ -4,8 +4,7 @@
  * Everything re-exported here is pure: no Prisma, no Next, no React, no
  * network. That is enforced by scripts/test-boundaries.mjs, not just by
  * convention, so this directory can be lifted into a standalone package
- * (@fantasy-copilot/core) when the trading app needs to share it — see
- * INTEGRATIONS.md.
+ * (@fantasy-copilot/core) if another app ever needs it.
  *
  * Rule for contributors: if it touches the database, the framework or the
  * network, it does not belong behind this barrel.

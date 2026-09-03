@@ -35,12 +35,12 @@ export function SyncForm({ defaultLeagueId }: { defaultLeagueId?: string }) {
           defaultValue="sleeper"
           className="w-full rounded-lg border border-[var(--border)] bg-[var(--panel-2)] px-3 py-2.5 text-sm outline-none focus:border-[var(--accent)]"
         >
-          <option value="sleeper">Sleeper — no login needed</option>
+          <option value="sleeper">Sleeper, no login needed</option>
           <option value="espn" disabled>
-            ESPN — Phase 7
+            ESPN. Phase 7
           </option>
           <option value="manual" disabled>
-            Manual / CSV — Phase 7
+            Manual / CSV. Phase 7
           </option>
         </select>
         <p className="mt-1.5 text-xs text-[var(--muted)]">

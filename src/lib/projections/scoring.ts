@@ -3,7 +3,7 @@
  *
  * This is the step that makes the app format-agnostic: half-PPR, full PPR, TE
  * premium, 6-point passing TDs all fall out of the league's own JSON. Nothing
- * about scoring is hardcoded — the settings arrive from the league sync.
+ * about scoring is hardcoded, the settings arrive from the league sync.
  *
  * Pure and dependency-free so it can be unit tested.
  */

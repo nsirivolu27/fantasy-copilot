@@ -6,13 +6,14 @@ import { bestLineup, evaluate, findTrades } from "@/lib/trade/service";
 import { getStartSitAdvice } from "@/lib/lineup/service";
 import { getStreamers, getWaiverReport } from "@/lib/waivers/service";
 import { getLeagueHub } from "@/lib/league/service";
+import { getLeagueFormat } from "@/lib/league/format";
 import { VERDICT_LABEL } from "@/lib/core";
 import type { NormalizedSlot } from "@/lib/platforms/types";
 
 /**
  * The tool registry: every capability defined exactly once.
  *
- * This is the keystone of later phases — the chat route converts these to the
+ * This is the keystone of later phases, the chat route converts these to the
  * model's function-calling format, and the MCP server (Phase 10) will expose
  * the same array. Adding a tool here adds it everywhere. There must never be
  * a second list.
@@ -86,7 +87,14 @@ export const tools: FantasyTool[] = [
       const sport = getSportModule(league.sport);
       const scoring = parseJson<Record<string, number>>(league.scoringSettingsJson, {});
       const slots = parseJson<NormalizedSlot[]>(league.rosterSlotsJson, []);
+      const format = await getLeagueFormat(ctx.leagueId);
       const data = {
+        format: format.description,
+        weeksRemaining: format.weeksRemaining,
+        playoffWeekStart: format.playoffWeekStart,
+        playoffSpots: format.playoffSpots,
+        replacementLevel: format.replacementLevel,
+        streamablePositions: format.streamable,
         name: league.name,
         platform: league.platform,
         season: league.season,
@@ -103,7 +111,7 @@ export const tools: FantasyTool[] = [
         syncStatus: league.syncStatus,
       };
       return {
-        summary: `${league.name}: ${league.teamCount} teams, season ${league.season}, week ${league.currentWeek}. Starters: ${data.startingSlots.join(", ")}. PPR value: ${scoring.rec ?? 0}.`,
+        summary: `${league.name}: ${format.description}. Season ${league.season}, week ${league.currentWeek}, playoffs start week ${format.playoffWeekStart}, ${format.playoffSpots} spots. Starters: ${data.startingSlots.join(", ")}. Streamable positions here: ${format.streamable.join(", ") || "none"}.`,
         data,
       };
     },
@@ -132,7 +140,7 @@ export const tools: FantasyTool[] = [
       }));
       return {
         summary: data
-          .map((t) => `${t.rank}. ${t.name} (${t.record}, ${t.pointsFor.toFixed(1)} PF)${t.isMine ? " — the user's team" : ""}`)
+          .map((t) => `${t.rank}. ${t.name} (${t.record}, ${t.pointsFor.toFixed(1)} PF)${t.isMine ? ", the user's team" : ""}`)
           .join("\n"),
         data,
       };
@@ -241,7 +249,7 @@ export const tools: FantasyTool[] = [
     name: "get_projections",
     title: "Get projections",
     description:
-      "Week projections for a team's players: projected points, floor, ceiling, confidence and the reasoning behind each. Use for 'how many points will X score' and to compare players. Returns nothing if projections haven't been generated yet — say so rather than guessing.",
+      "Week projections for a team's players: projected points, floor, ceiling, confidence and the reasoning behind each. Use for 'how many points will X score' and to compare players. Returns nothing if projections haven't been generated yet, say so rather than guessing.",
     inputSchema: {
       type: "object",
       properties: {
@@ -294,7 +302,7 @@ export const tools: FantasyTool[] = [
         .sort((a, b) => b.projectedPoints - a.projectedPoints);
 
       return {
-        summary: `Week ${week} projections for ${team.name} (model is only ~0.7% better than a season average — treat as a rough guide):\n${data
+        summary: `Week ${week} projections for ${team.name} (model is only ~0.7% better than a season average, treat as a rough guide):\n${data
           .map(
             (d) =>
               `${d.player} (${d.position ?? "?"}${d.isStarter ? ", starting" : ", bench"}): ${d.projectedPoints.toFixed(1)} pts, floor ${d.floor.toFixed(1)}, ceiling ${d.ceiling.toFixed(1)}, ${(d.confidence * 100).toFixed(0)}% confidence`,
@@ -366,7 +374,7 @@ export const tools: FantasyTool[] = [
         lines.push(`${c.slot}: start ${c.in.name} over ${c.out?.name ?? "an empty slot"} (+${c.gain.toFixed(1)}). ${c.reason}`);
       }
       for (const c of advice.changes.filter((x) => x.isCoinFlip)) {
-        lines.push(`${c.slot}: ${c.out?.name} vs ${c.in.name} is a coin flip (${c.gain.toFixed(1)} apart) — say so rather than picking confidently.`);
+        lines.push(`${c.slot}: ${c.out?.name} vs ${c.in.name} is a coin flip (${c.gain.toFixed(1)} apart), say so rather than picking confidently.`);
       }
       return { summary: lines.join("\n"), data: advice };
     },
@@ -388,7 +396,7 @@ export const tools: FantasyTool[] = [
       if (!report) return { summary: "No team is marked as the user's, and none was named.", data: null };
       if (report.targets.length === 0) {
         return {
-          summary: `Nothing on waivers improves ${report.teamName}'s starting lineup right now. That is a real answer, not missing data — say so rather than suggesting a name.`,
+          summary: `Nothing on waivers improves ${report.teamName}'s starting lineup right now. That is a real answer, not missing data, say so rather than suggesting a name.`,
           data: report,
         };
       }
@@ -426,7 +434,7 @@ export const tools: FantasyTool[] = [
         summary: report.drops
           .map(
             (d) =>
-              `${d.player.name} (${d.player.position}): dropping costs ${d.lineupCost.toFixed(1)}/wk${d.isProtected ? " — PROTECTED, do not suggest dropping" : ""}`,
+              `${d.player.name} (${d.player.position}): dropping costs ${d.lineupCost.toFixed(1)}/wk${d.isProtected ? ". PROTECTED, do not suggest dropping" : ""}`,
           )
           .join("\n"),
         data: report.drops,
@@ -448,14 +456,20 @@ export const tools: FantasyTool[] = [
     readOnly: true,
     handler: async (input, ctx) => {
       const wanted = str(input.position).toUpperCase();
-      const positions = ["QB", "TE", "K", "DEF"].includes(wanted) ? [wanted] : ["QB", "TE", "K", "DEF"];
-      const result = await getStreamers(ctx.leagueId, positions);
+      const result = await getStreamers(ctx.leagueId, wanted ? [wanted] : undefined);
+      const positions = Object.keys(result.byPosition);
+      if (positions.length === 0) {
+        return {
+          summary: `This league has no streamable positions (every single-slot position is deepened by a flex, or the requested position isn't started here). Streamable in this league: ${result.streamable.join(", ") || "none"}.`,
+          data: result,
+        };
+      }
 
       const lines: string[] = [];
       for (const position of positions) {
         const options = result.byPosition[position] ?? [];
         if (options.length === 0) {
-          lines.push(`${position}: no streaming data yet — stats and schedule need to be ingested.`);
+          lines.push(`${position}: no streaming data yet, stats and schedule need to be ingested.`);
           continue;
         }
         for (const o of options.slice(0, 4)) {
@@ -534,7 +548,7 @@ export const tools: FantasyTool[] = [
       if (found.length === 0) {
         return {
           summary:
-            "No one-for-one swap improves both rosters right now. That is common in a settled league — a package deal may still work, but this app only checks 1-for-1.",
+            "No one-for-one swap improves both rosters right now. That is common in a settled league, a package deal may still work, but this app only checks 1-for-1.",
           data: [],
         };
       }
@@ -564,7 +578,7 @@ export const tools: FantasyTool[] = [
         summary: hub.rankings
           .map(
             (t) =>
-              `${t.rank}. ${t.name} (${t.wins}-${t.losses}) — ${t.pointsFor.toFixed(0)} PF, power ${t.powerScore.toFixed(0)}, luck ${t.luck > 0 ? "+" : ""}${t.luck.toFixed(1)}, playoffs ${Math.round((hub.playoffOdds[t.teamId] ?? 0) * 100)}%`,
+              `${t.rank}. ${t.name} (${t.wins}-${t.losses}), ${t.pointsFor.toFixed(0)} PF, power ${t.powerScore.toFixed(0)}, luck ${t.luck > 0 ? "+" : ""}${t.luck.toFixed(1)}, playoffs ${Math.round((hub.playoffOdds[t.teamId] ?? 0) * 100)}%`,
           )
           .join("\n"),
         data: hub.rankings,
@@ -589,8 +603,8 @@ export const tools: FantasyTool[] = [
         summary: hub.matchups
           .map((m) =>
             m.winProbability != null
-              ? `${m.home.name} ${Math.round(m.winProbability * 100)}% vs ${m.away.name} ${Math.round((1 - m.winProbability) * 100)}% (projected ${m.home.projected.toFixed(1)} — ${m.away.projected.toFixed(1)})`
-              : `${m.home.name} vs ${m.away.name} — no projections, so no odds`,
+              ? `${m.home.name} ${Math.round(m.winProbability * 100)}% vs ${m.away.name} ${Math.round((1 - m.winProbability) * 100)}% (projected ${m.home.projected.toFixed(1)}, ${m.away.projected.toFixed(1)})`
+              : `${m.home.name} vs ${m.away.name}, no projections, so no odds`,
           )
           .join("\n"),
         data: hub.matchups,
@@ -619,7 +633,7 @@ export const tools: FantasyTool[] = [
     name: "search_league",
     title: "Search league data",
     description:
-      "Free-text search across everything synced — league settings, scoring, teams, rosters and players. Use this when no other tool fits, or to gather background before answering.",
+      "Free-text search across everything synced, league settings, scoring, teams, rosters and players. Use this when no other tool fits, or to gather background before answering.",
     inputSchema: {
       type: "object",
       properties: {

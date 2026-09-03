@@ -23,7 +23,7 @@ export interface PlayerValue {
   value: number;
   /** Where the number came from, so the UI can attribute it honestly. */
   source: string;
-  /** 0..1 — how much the provider trusts this number. */
+  /** 0..1, how much the provider trusts this number. */
   confidence: number;
 }
 
@@ -149,7 +149,7 @@ export function createHttpValueProvider(config: {
   };
 }
 
-/** Accepts {"Player Name": 42} or [{name, value}] — the two common shapes. */
+/** Accepts {"Player Name": 42} or [{name, value}], the two common shapes. */
 function defaultParse(body: unknown): Record<string, number> {
   if (Array.isArray(body)) {
     const out: Record<string, number> = {};

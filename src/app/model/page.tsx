@@ -7,12 +7,12 @@ export const dynamic = "force-dynamic";
 
 /**
  * The model report card. These numbers come from scripts/backtest.mjs run
- * against the real 2024 nflverse season — including the parts that don't
+ * against the real 2024 nflverse season, including the parts that don't
  * flatter the model.
  */
 const BACKTEST = {
   season: "2024",
-  weeks: "5–17",
+  weeks: "5-17",
   playerWeeks: 3415,
   scoring: "full PPR",
   rows: [
@@ -82,14 +82,14 @@ export default async function ModelPage() {
 
       <Banner tone="warn" title="Read this before trusting a projection">
         <p className="mt-1">
-          The model beats both baselines at every position — but by <strong>0.7% overall</strong>,
+          The model beats both baselines at every position, but by <strong>0.7% overall</strong>,
           and only 2.6% at QB. That is a small edge, and it is the honest number.
         </p>
         <p className="mt-2">
           Weekly fantasy scoring is mostly noise. A player&apos;s season average is a genuinely hard
           baseline to beat, and no amount of tuning a four-game weighted average changes that. Treat
           the point estimate as a commodity, and pay attention to the floor, ceiling and confidence
-          instead — they carry more decision-relevant information than the median does.
+          instead, they carry more decision-relevant information than the median does.
         </p>
         <p className="mt-2">
           This is why the roadmap puts the real effort into <strong>decision leverage</strong>:
@@ -102,7 +102,7 @@ export default async function ModelPage() {
         <ol className="list-inside list-decimal space-y-1.5 p-4 text-sm text-[var(--muted)]">
           <li>Every past game is scored with your league&apos;s own settings, so format never matters.</li>
           <li>
-            Season-to-date average anchors the estimate — the baseline that is hard to beat is used
+            Season-to-date average anchors the estimate, the baseline that is hard to beat is used
             as the base, not the thing to beat.
           </li>
           <li>
@@ -113,7 +113,7 @@ export default async function ModelPage() {
           <li>Injury designations gate the projection; Out and IR project zero, Questionable takes 15% off.</li>
           <li>Floor and ceiling come from the player&apos;s own 20th/80th percentile spread.</li>
           <li>
-            Confidence combines sample size and role stability — a steady 10-touch back scores higher
+            Confidence combines sample size and role stability, a steady 10-touch back scores higher
             than one alternating 2 and 18.
           </li>
         </ol>

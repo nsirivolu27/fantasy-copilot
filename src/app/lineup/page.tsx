@@ -46,7 +46,7 @@ export default async function LineupPage() {
   return (
     <div className="space-y-5">
       <div>
-        <h1 className="text-xl font-semibold tracking-tight">Start/sit — week {advice.week}</h1>
+        <h1 className="text-xl font-semibold tracking-tight">Start/sit, week {advice.week}</h1>
         <p className="mt-1 text-sm text-[var(--muted)]">{advice.teamName}</p>
       </div>
 
@@ -126,7 +126,7 @@ export default async function LineupPage() {
         <Card>
           <CardHeader
             title="Coin flips"
-            subtitle="Under 1.5 points apart — either choice is defensible, so this isn't a recommendation"
+            subtitle="Under 1.5 points apart, either choice is defensible, so this isn't a recommendation"
           />
           <ul className="divide-y divide-[var(--border)]">
             {coinFlips.map((c) => (
@@ -166,7 +166,7 @@ export default async function LineupPage() {
                   </span>
                 </>
               ) : (
-                <span className="flex-1 text-sm text-[var(--muted)]">— empty —</span>
+                <span className="flex-1 text-sm text-[var(--muted)]">- empty -</span>
               )}
             </li>
           ))}

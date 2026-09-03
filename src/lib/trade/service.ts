@@ -1,10 +1,9 @@
 import { prisma } from "@/lib/db";
 import { parseJson } from "@/lib/json";
-import type { NormalizedSlot } from "@/lib/platforms/types";
+import { getLeagueFormat } from "@/lib/league/format";
 import {
   evaluateTrade,
   optimizeLineup,
-  DEFAULT_REPLACEMENT_LEVEL,
   pointsAboveReplacementProvider,
   createCsvValueProvider,
   createHttpValueProvider,
@@ -22,9 +21,6 @@ import {
  * app share the engine without dragging Prisma along.
  */
 
-/** Regular season runs to week 18; used to scale weekly gains. */
-const FINAL_REGULAR_WEEK = 18;
-
 export interface LeagueTradeContext {
   leagueId: string;
   slots: LineupSlot[];
@@ -32,23 +28,20 @@ export interface LeagueTradeContext {
   isDynasty: boolean;
   season: string;
   week: number;
+  /** Derived from this league's format, not a constant. */
+  replacementLevel: Record<string, number>;
 }
 
 export async function loadTradeContext(leagueId: string): Promise<LeagueTradeContext> {
-  const league = await prisma.league.findUnique({ where: { id: leagueId } });
-  if (!league) throw new Error("League not found.");
-
-  const slots = parseJson<NormalizedSlot[]>(league.rosterSlotsJson, [])
-    .filter((s) => s.isStarter)
-    .map((s) => ({ code: s.code, index: s.index }));
-
+  const format = await getLeagueFormat(leagueId);
   return {
     leagueId,
-    slots,
-    weeksRemaining: Math.max(1, FINAL_REGULAR_WEEK - (league.currentWeek || 1) + 1),
-    isDynasty: league.isDynasty,
-    season: league.season,
-    week: league.currentWeek || 1,
+    slots: format.slots,
+    weeksRemaining: format.weeksRemaining,
+    isDynasty: format.isDynasty,
+    season: format.season,
+    week: format.week,
+    replacementLevel: format.replacementLevel,
   };
 }
 
@@ -141,7 +134,7 @@ export async function evaluate(request: EvaluateRequest): Promise<TradeEvaluatio
       {
         weeksRemaining: ctx.weeksRemaining,
         isDynasty: ctx.isDynasty,
-        replacementLevel: DEFAULT_REPLACEMENT_LEVEL,
+        replacementLevel: ctx.replacementLevel,
       },
     )
     .catch(() => []); // an external provider failing must not break evaluation
@@ -155,7 +148,7 @@ export async function evaluate(request: EvaluateRequest): Promise<TradeEvaluatio
   });
 }
 
-/** Best legal lineup for one team — also the basis of Phase 3's optimizer. */
+/** Best legal lineup for one team, also the basis of Phase 3's optimizer. */
 export async function bestLineup(leagueId: string, teamId: string) {
   const ctx = await loadTradeContext(leagueId);
   const { roster, teamName } = await loadRoster(teamId, ctx);
@@ -197,7 +190,7 @@ export async function findTrades(
         {
           weeksRemaining: ctx.weeksRemaining,
           isDynasty: ctx.isDynasty,
-          replacementLevel: DEFAULT_REPLACEMENT_LEVEL,
+          replacementLevel: ctx.replacementLevel,
         },
       )
       .catch(() => []);

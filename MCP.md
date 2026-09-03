@@ -24,7 +24,7 @@ Running locally, the URL is `http://localhost:3000/api/mcp`.
 
 ## Tools
 
-All ten come from `src/lib/tools/registry.ts` — the same list the in-app chat uses. There is
+All ten come from `src/lib/tools/registry.ts`, the same list the in-app chat uses. There is
 deliberately no second list, so adding a tool adds it in both places.
 
 | Tool | What it does |
@@ -73,9 +73,9 @@ If the app runs on the same machine, a subprocess is simpler than HTTP:
 }
 ```
 
-No API key there — a local subprocess already has the database, so a key would protect nothing.
+No API key there, a local subprocess already has the database, so a key would protect nothing.
 
 ## If it returns 501
 
 The MCP package is loaded dynamically so a missing dependency can't break the rest of the app.
-Run `npm install` and redeploy — every other endpoint keeps working in the meantime.
+Run `npm install` and redeploy, every other endpoint keeps working in the meantime.

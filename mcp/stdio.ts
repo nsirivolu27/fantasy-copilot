@@ -1,6 +1,5 @@
 /**
- * Local stdio entrypoint for MCP clients that prefer a subprocess over HTTP —
- * the easiest path for Claude Desktop on the same machine as the app.
+ * Local stdio entrypoint for MCP clients that prefer a subprocess over HTTP, * the easiest path for Claude Desktop on the same machine as the app.
  *
  *   npx tsx mcp/stdio.ts
  *

@@ -17,7 +17,7 @@ export function DigestCopy({
 }) {
   const [copied, setCopied] = useState(false);
 
-  const text = [`${leagueName} — week ${week}`, "", ...lines.map((l) => `${l.title}: ${l.detail}`)].join(
+  const text = [`${leagueName}, week ${week}`, "", ...lines.map((l) => `${l.title}: ${l.detail}`)].join(
     "\n",
   );
 
@@ -38,7 +38,7 @@ export function DigestCopy({
         {lines.map((l, i) => (
           <li key={i} className="text-sm">
             <span className="font-medium">{l.title}</span>
-            <span className="text-[var(--muted)]"> — {l.detail}</span>
+            <span className="text-[var(--muted)]">, {l.detail}</span>
           </li>
         ))}
       </ul>

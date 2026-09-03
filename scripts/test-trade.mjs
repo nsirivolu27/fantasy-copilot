@@ -143,7 +143,7 @@ await test("a player unknown to the chart scores zero with zero confidence", asy
   assert.equal(v.confidence, 0);
 });
 
-// ── Trade evaluation ─────────────────────────────────────────────────────────
+// -- Trade evaluation ---------------------------------------------------------
 
 const rbHeavy = {
   teamId: "A", teamName: "RB Heavy",
@@ -186,7 +186,7 @@ await test("a fourth good RB adds nothing to a team already starting three", () 
 await test("the same trade is scored separately for each side", () => {
   // A sends a WR who is already the weak link in their lineup and receives
   // B's best WR. B gets back a player who doesn't crack their lineup, so the
-  // deal helps A and hurts B — the engine must not report one number for both.
+  // deal helps A and hurts B, the engine must not report one number for both.
   const lopsided = evaluateTrade({
     sideA: { ...rbHeavy, sending: ["wr2"] },
     sideB: { ...wrHeavy, sending: ["bwr1"] },
@@ -246,7 +246,7 @@ await test("players the sender doesn't roster are ignored with a warning", () =>
   assert.match(r.warnings.join(" "), /doesn't roster/i);
 });
 
-// ── Start/sit advice ─────────────────────────────────────────────────────────
+// -- Start/sit advice ---------------------------------------------------------
 
 const startSitRoster = [
   p("qb", "QB One", "QB", 20),
@@ -345,7 +345,7 @@ await test("a missing projection is surfaced rather than treated as zero points"
   assert.ok(advice.alerts.some((a) => /No projection/i.test(a.message)));
 });
 
-// ── Waivers ──────────────────────────────────────────────────────────────────
+// -- Waivers ------------------------------------------------------------------
 
 const thinAtWr = [
   p("qb", "QB One", "QB", 20),
@@ -382,7 +382,7 @@ await test("an addition reports who it displaces", () => {
 
 await test("drop candidates are ranked by what the lineup loses, not by projection", () => {
   const drops = rankDrops(thinAtWr, SLOTS);
-  // Cheapest to lose is the 5-point WR. Dearest is the QB — not the highest
+  // Cheapest to lose is the 5-point WR. Dearest is the QB, not the highest
   // projected player, but the one with no replacement behind him, which is
   // exactly the distinction raw projections miss.
   assert.equal(drops[0].player.playerId, "wr2");
@@ -402,7 +402,7 @@ await test("protected players sort last and are flagged, never hidden", () => {
   assert.equal(drops.length, thinAtWr.length, "protected players stay in the list");
 });
 
-// ── FAAB ─────────────────────────────────────────────────────────────────────
+// -- FAAB ---------------------------------------------------------------------
 
 await test("a bigger lineup gain earns a bigger bid", () => {
   const small = recommendFaabBid({ lineupGain: 2, budgetRemaining: 100, weeksRemaining: 12 });

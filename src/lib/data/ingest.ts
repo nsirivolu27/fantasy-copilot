@@ -6,7 +6,7 @@ import { deriveByeWeeks } from "@/lib/core/schedule";
  * Pulls a season of nflverse weekly stats and stores them against players we
  * already know about.
  *
- * Players are joined on GSIS id, which Sleeper's dictionary supplies — no fuzzy
+ * Players are joined on GSIS id, which Sleeper's dictionary supplies, no fuzzy
  * name matching, so "D.J. Moore" and "DJ Moore" can't silently become two
  * players. Rows whose GSIS id we don't recognize are counted and reported so
  * gaps are visible rather than invisible.

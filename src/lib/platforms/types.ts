@@ -1,7 +1,7 @@
 // Normalized, platform-agnostic types.
 //
 // Everything outside lib/platforms/ talks to THESE types only. Adding Yahoo or
-// NFL.com later means writing one new adapter file — no changes to the app.
+// NFL.com later means writing one new adapter file, no changes to the app.
 
 export type PlatformId = "sleeper" | "espn" | "manual";
 export type SportId = "football" | "basketball" | "baseball";
@@ -10,7 +10,7 @@ export type SportId = "football" | "basketball" | "baseball";
 export interface NormalizedSlot {
   /** "QB", "RB", "WR", "TE", "FLEX", "SUPER_FLEX", "K", "DEF", "BN", "IR", "TAXI" */
   code: string;
-  /** Position within the full roster_positions array — preserves lineup order. */
+  /** Position within the full roster_positions array, preserves lineup order. */
   index: number;
   isStarter: boolean;
 }
@@ -29,6 +29,10 @@ export interface NormalizedLeague {
   rosterSlots: NormalizedSlot[];
   waiverType?: "faab" | "rolling";
   waiverBudget?: number;
+  /** First week of the playoffs, so "weeks remaining" is the league's, not a guess. */
+  playoffWeekStart?: number;
+  /** How many teams make the playoffs. */
+  playoffTeams?: number;
   isDynasty: boolean;
   isKeeper: boolean;
 }

@@ -54,7 +54,7 @@ export default async function WaiversPage() {
   return (
     <div className="space-y-5">
       <div>
-        <h1 className="text-xl font-semibold tracking-tight">Waivers — week {report.week}</h1>
+        <h1 className="text-xl font-semibold tracking-tight">Waivers, week {report.week}</h1>
         <p className="mt-1 text-sm text-[var(--muted)]">
           {report.teamName} · ranked by what each adds to <em>your</em> starting lineup, not by raw
           projection
@@ -65,7 +65,7 @@ export default async function WaiversPage() {
         <Stat label="Waivers" value={isFaab ? "FAAB" : "Priority"} hint={isFaab ? "bids below" : "claims"} />
         <Stat
           label="Budget left"
-          value={report.budgetRemaining != null ? `$${report.budgetRemaining}` : "—"}
+          value={report.budgetRemaining != null ? `$${report.budgetRemaining}` : "-"}
         />
         <Stat label="Considered" value={report.candidatesConsidered} hint="free agents projected" />
       </div>
@@ -75,7 +75,7 @@ export default async function WaiversPage() {
           <div className="p-6 text-center">
             <p className="text-sm font-medium">Nothing on waivers improves your lineup.</p>
             <p className="mt-1 text-sm text-[var(--muted)]">
-              That&apos;s a good sign, not a bug — every free agent projects below what you already
+              That&apos;s a good sign, not a bug, every free agent projects below what you already
               start. Check back after injuries settle.
             </p>
           </div>
@@ -129,7 +129,7 @@ export default async function WaiversPage() {
                   {trendingAdds != null ? (
                     <Badge
                       tone="neutral"
-                      title="Sleeper adds in the last 24h. Market hype — shown for context, not part of the ranking."
+                      title="Sleeper adds in the last 24h. Market hype, shown for context, not part of the ranking."
                     >
                       {trendingAdds.toLocaleString()} adds / 24h
                     </Badge>
@@ -170,7 +170,7 @@ export default async function WaiversPage() {
 
       <p className="text-xs text-[var(--muted)]">
         Free agents are projected on the fly from their nflverse history using your league&apos;s
-        scoring. Trending-add counts come from Sleeper and are shown as market context only — they
+        scoring. Trending-add counts come from Sleeper and are shown as market context only, they
         never affect the ranking.
       </p>
     </div>

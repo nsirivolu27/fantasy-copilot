@@ -1,16 +1,16 @@
 /**
  * League-level math: power rankings, matchup simulation, playoff odds.
  *
- * The simulator is seeded so results are reproducible — a win probability that
+ * The simulator is seeded so results are reproducible, a win probability that
  * changes on every page load is worse than useless, and an unseeded Monte
  * Carlo can't be unit tested.
  *
  * Zero imports: pure, self-contained, testable.
  */
 
-// ── Seeded RNG ───────────────────────────────────────────────────────────────
+// -- Seeded RNG ---------------------------------------------------------------
 
-/** mulberry32 — small, fast, good enough for Monte Carlo, and deterministic. */
+/** mulberry32, small, fast, good enough for Monte Carlo, and deterministic. */
 export function createRng(seed: number): () => number {
   let a = seed >>> 0;
   return function next() {
@@ -21,7 +21,7 @@ export function createRng(seed: number): () => number {
   };
 }
 
-/** Box–Muller, so a projection's spread turns into plausible weekly outcomes. */
+/** Box-Muller, so a projection's spread turns into plausible weekly outcomes. */
 export function sampleNormal(rng: () => number, mean: number, stdDev: number): number {
   const u1 = Math.max(rng(), 1e-9);
   const u2 = rng();
@@ -29,7 +29,7 @@ export function sampleNormal(rng: () => number, mean: number, stdDev: number): n
   return mean + z * stdDev;
 }
 
-// ── Power rankings ───────────────────────────────────────────────────────────
+// -- Power rankings -----------------------------------------------------------
 
 export interface TeamRecord {
   teamId: string;
@@ -79,7 +79,7 @@ export function powerRankings(teams: TeamRecord[]): PowerRanking[] {
     const expectedWins = Math.round(winRate * played * 100) / 100;
     const actualWins = team.wins + team.ties * 0.5;
 
-    // 70% scoring rate, 30% actual record — strength first, but a team that
+    // 70% scoring rate, 30% actual record, strength first, but a team that
     // keeps winning shouldn't be ranked as if results are meaningless.
     const scoreComponent = ((pointsPerGame(team) - worst) / span) * 100;
     const recordComponent = played > 0 ? (actualWins / played) * 100 : 50;
@@ -99,7 +99,7 @@ export function powerRankings(teams: TeamRecord[]): PowerRanking[] {
   return ranked;
 }
 
-// ── Matchup simulation ───────────────────────────────────────────────────────
+// -- Matchup simulation -------------------------------------------------------
 
 export interface SimPlayer {
   projectedPoints: number;
@@ -159,7 +159,7 @@ export function simulateMatchup(
   };
 }
 
-// ── Playoff odds ─────────────────────────────────────────────────────────────
+// -- Playoff odds -------------------------------------------------------------
 
 export interface RemainingGame {
   week: number;
@@ -197,7 +197,7 @@ export function playoffOdds(input: PlayoffInput): Record<string, number> {
     for (const game of input.remaining) {
       const a = rate.get(game.homeTeamId) ?? 1;
       const b = rate.get(game.awayTeamId) ?? 1;
-      // Bradley–Terry style: stronger scoring rate wins proportionally more.
+      // Bradley-Terry style: stronger scoring rate wins proportionally more.
       const pHome = a + b > 0 ? a / (a + b) : 0.5;
       const winner = rng() < pHome ? game.homeTeamId : game.awayTeamId;
       wins.set(winner, (wins.get(winner) ?? 0) + 1);

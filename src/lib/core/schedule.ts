@@ -3,7 +3,7 @@
  *
  * No free source publishes a bye-week list directly, but nflverse publishes
  * every game. A team's bye is simply the regular-season week in which it does
- * not appear — which stays correct every season with no maintenance.
+ * not appear, which stays correct every season with no maintenance.
  *
  * Zero imports: pure, unit testable, and safe to share.
  */
@@ -49,7 +49,7 @@ export function deriveByeWeeks(games: ScheduledGame[], season: string): ByeWeekR
       byeByTeam[team] = off[0];
     } else {
       // An expanded season, a cancelled game, or a partial file. Report it
-      // rather than guessing — a wrong bye week is worse than a missing one.
+      // rather than guessing, a wrong bye week is worse than a missing one.
       anomalies.push({ team, weeks: off });
     }
   }

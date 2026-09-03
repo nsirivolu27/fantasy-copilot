@@ -19,7 +19,7 @@ function test(name, fn) {
   console.log(`  ok  ${name}`);
 }
 
-// Ja'Marr Chase, 2024 week 5 — real nflverse row.
+// Ja'Marr Chase, 2024 week 5, real nflverse row.
 const CHASE_W5 = {
   receptions: 10,
   targets: 12,
@@ -44,7 +44,7 @@ test("the model never sees a stat line, only points", () => {
 });
 
 test("scores a real stat line correctly in full PPR", () => {
-  // 10 rec + 19.3 yds + 12 TD = 41.3 — matches nflverse's own fantasy_points_ppr.
+  // 10 rec + 19.3 yds + 12 TD = 41.3, matches nflverse's own fantasy_points_ppr.
   assert.equal(scoreStatLine(CHASE_W5, PPR, "WR").points, 41.3);
 });
 
@@ -99,7 +99,7 @@ test("Questionable takes a haircut and lowers confidence", () => {
 
 test("recent games are weighted more heavily than older ones", () => {
   // Same four games, reversed order. The player whose big games are most
-  // recent must project higher — that is the whole point of recency weighting.
+  // recent must project higher, that is the whole point of recency weighting.
   const g = (pts, opp) => ({ points: pts, opportunity: opp, week: 0 });
   const trendingUp = project({ games: [g(25, 12), g(20, 10), g(6, 4), g(4, 3)] });
   const trendingDown = project({ games: [g(4, 3), g(6, 4), g(20, 10), g(25, 12)] });

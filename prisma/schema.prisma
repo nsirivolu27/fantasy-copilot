@@ -1,8 +1,8 @@
-// Fantasy Copilot — Phase 1 schema.
+// Fantasy Copilot. Phase 1 schema.
 //
 // Datasource note: this schema runs unchanged on SQLite (local dev) and
-// Postgres (deployments). JSON payloads — scoring settings, roster slots,
-// platform IDs — are stored as TEXT and read through the typed helpers in
+// Postgres (deployments). JSON payloads, scoring settings, roster slots,
+// platform IDs, are stored as TEXT and read through the typed helpers in
 // src/lib/json.ts, because Prisma's SQLite connector has no native Json type.
 // TEXT behaves identically on both, so no migration is needed to switch.
 
@@ -11,7 +11,7 @@ generator client {
 }
 
 datasource db {
-  // Do not edit by hand — scripts/prisma-schema.mjs rewrites this into
+  // Do not edit by hand, scripts/prisma-schema.mjs rewrites this into
   // prisma/generated-schema.prisma to match DATABASE_URL (sqlite locally,
   // postgresql when deployed). Run prisma via the npm db:* scripts.
   provider = "postgresql"
@@ -35,6 +35,9 @@ model League {
 
   waiverType   String? // "faab" | "rolling"
   waiverBudget Int?
+  /// Read from the platform, never assumed.
+  playoffWeekStart Int?
+  playoffTeams     Int?
   isDynasty    Boolean @default(false)
   isKeeper     Boolean @default(false)
 
@@ -116,7 +119,7 @@ model WeeklyStat {
   /// Full nflverse row, so new features can be used without a re-ingest.
   statLineJson String  @default("{}")
 
-  // Denormalized opportunity features — what actually predicts fantasy output.
+  // Denormalized opportunity features, what actually predicts fantasy output.
   targets         Int?
   targetShare     Float?
   airYardsShare   Float?
@@ -140,7 +143,7 @@ model Projection {
   projectedPoints Float
   floor           Float
   ceiling         Float
-  /// 0..1 — sample size, role stability and injury certainty.
+  /// 0..1, sample size, role stability and injury certainty.
   confidence      Float
   modelVersion    String
   /// JSON array of short strings explaining the number.
@@ -182,7 +185,7 @@ model PlayerCacheMeta {
   playerCount Int      @default(0)
 }
 
-// ─── LLM layer ───────────────────────────────────────────────────────────────
+// --- LLM layer ---------------------------------------------------------------
 // Providers are database rows, not code. Almost every provider speaks the
 // OpenAI chat-completions wire format, so "openai-compatible" plus a baseUrl
 // covers Groq, OpenRouter, Together, DeepSeek, Ollama, LM Studio and more.
@@ -231,7 +234,7 @@ model Message {
   @@index([conversationId])
 }
 
-// ─── Trades ──────────────────────────────────────────────────────────────────
+// --- Trades ------------------------------------------------------------------
 
 model TradeBlock {
   id       String @id @default(cuid())
@@ -239,7 +242,7 @@ model TradeBlock {
   teamId   String
   playerId String
 
-  /// "available" | "seeking" — a team can advertise both sides of a need.
+  /// "available" | "seeking", a team can advertise both sides of a need.
   intent    String   @default("available")
   note      String?
   createdAt DateTime @default(now())
@@ -248,7 +251,7 @@ model TradeBlock {
   @@index([leagueId])
 }
 
-// ─── MCP access ──────────────────────────────────────────────────────────────
+// --- MCP access --------------------------------------------------------------
 
 model ApiKey {
   id     String @id @default(cuid())

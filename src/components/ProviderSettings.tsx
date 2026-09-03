@@ -10,7 +10,7 @@ import { Badge, Card, CardHeader } from "@/components/ui";
 
 /**
  * Providers are database rows, so adding one never needs a redeploy.
- * Keys are written to the database and never sent back to the browser — this
+ * Keys are written to the database and never sent back to the browser, this
  * component only ever renders whether a key exists.
  */
 export async function ProviderSettings() {
@@ -20,7 +20,7 @@ export async function ProviderSettings() {
     <Card>
       <CardHeader
         title="AI model"
-        subtitle="Any provider. Bring your own key — or run one locally for free."
+        subtitle="Any provider. Bring your own key, or run one locally for free."
       />
       <div className="space-y-4 p-4">
         {providers.length > 0 ? (
@@ -80,7 +80,7 @@ export async function ProviderSettings() {
           </ul>
         ) : (
           <p className="text-sm text-[var(--muted)]">
-            No model yet. Groq has a free tier and takes about a minute — pick it below, paste a key
+            No model yet. Groq has a free tier and takes about a minute, pick it below, paste a key
             from console.groq.com, and save.
           </p>
         )}
@@ -93,7 +93,7 @@ export async function ProviderSettings() {
             <div className="mb-3 grid gap-1.5 text-xs text-[var(--muted)]">
               {PROVIDER_PRESETS.map((preset) => (
                 <p key={preset.label}>
-                  <span className="font-medium text-[var(--text)]">{preset.label}</span> —{" "}
+                  <span className="font-medium text-[var(--text)]">{preset.label}</span> -{" "}
                   {preset.note}{" "}
                   <span className="font-mono">{preset.baseUrl}</span>
                 </p>

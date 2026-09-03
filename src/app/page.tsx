@@ -7,6 +7,7 @@ import { PLACEHOLDER_LEAGUE } from "@/lib/defaults";
 import type { NormalizedSlot } from "@/lib/platforms/types";
 import { Badge, Banner, Card, CardHeader, EmptyState, Stat } from "@/components/ui";
 import { getStartSitAdvice } from "@/lib/lineup/service";
+import { getLeagueFormat } from "@/lib/league/format";
 import { TeamCard, type RosterRow } from "@/components/TeamCard";
 
 export const dynamic = "force-dynamic";
@@ -19,7 +20,7 @@ export default async function LeaguePage() {
       <div className="space-y-6">
         <EmptyState
           title="No league synced yet"
-          body="Add your Sleeper league ID in Settings and run a sync. Everything on this page comes straight from Sleeper — nothing is guessed."
+          body="Add your Sleeper league ID in Settings and run a sync. Everything on this page comes straight from Sleeper, nothing is guessed."
           action={
             <Link
               href="/settings"
@@ -32,7 +33,7 @@ export default async function LeaguePage() {
         <Card>
           <CardHeader
             title="Placeholder preview"
-            subtitle="Not real data — replaced entirely by your league on first sync."
+            subtitle="Not real data, replaced entirely by your league on first sync."
             right={<Badge tone="warn">Default</Badge>}
           />
           <div className="grid grid-cols-2 gap-2 p-3 sm:grid-cols-3">
@@ -68,6 +69,7 @@ export default async function LeaguePage() {
 
   // Lineup problems for the user's own team, surfaced before anything else.
   const advice = await getStartSitAdvice(league.id).catch(() => null);
+  const format = await getLeagueFormat(league.id).catch(() => null);
   const criticalAlerts = advice?.alerts.filter((a) => a.severity === "critical") ?? [];
 
   const starterSlots = slots.filter((s) => s.isStarter);
@@ -93,7 +95,7 @@ export default async function LeaguePage() {
   return (
     <div className="space-y-5">
       {league.syncStatus === "stale" ? (
-        <Banner tone="warn" title="Showing cached data — the last sync failed">
+        <Banner tone="warn" title="Showing cached data, the last sync failed">
           {league.lastSyncError}
           {league.lastSyncedAt ? (
             <> Last good sync: {league.lastSyncedAt.toLocaleString()}.</>
@@ -128,7 +130,10 @@ export default async function LeaguePage() {
             <Badge tone="info">Keeper</Badge>
           ) : null}
         </div>
-        <p className="mt-1 text-xs text-[var(--muted)]">
+        {format ? (
+          <p className="mt-1 text-sm text-[var(--muted)]">{format.description}</p>
+        ) : null}
+        <p className="mt-1 text-xs text-[var(--faint)]">
           {league.lastSyncedAt
             ? `Synced ${league.lastSyncedAt.toLocaleString()}`
             : "Never synced"}{" "}
@@ -138,11 +143,11 @@ export default async function LeaguePage() {
 
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
         <Stat label="Season" value={league.season} hint={league.seasonState ?? undefined} />
-        <Stat label="Current week" value={league.currentWeek || "—"} hint="from Sleeper" />
+        <Stat label="Current week" value={league.currentWeek || "-"} hint="from Sleeper" />
         <Stat label="Teams" value={league.teamCount} />
         <Stat
           label="Waivers"
-          value={league.waiverType === "faab" ? "FAAB" : league.waiverType === "rolling" ? "Priority" : "—"}
+          value={league.waiverType === "faab" ? "FAAB" : league.waiverType === "rolling" ? "Priority" : "-"}
           hint={league.waiverBudget ? `$${league.waiverBudget} budget` : undefined}
         />
       </div>

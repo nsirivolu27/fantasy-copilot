@@ -28,7 +28,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <div className="mx-auto flex max-w-5xl flex-col gap-2 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
             <Link href="/" className="flex shrink-0 items-center gap-2 font-semibold tracking-tight">
               <span className="grid size-7 place-items-center rounded-md bg-[var(--accent-weak)] text-[var(--accent)]">
-                ▲
+                >
               </span>
               Fantasy Copilot
             </Link>
@@ -40,7 +40,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </header>
         <main className="mx-auto max-w-5xl px-4 py-6 pb-20">{children}</main>
         <footer className="mx-auto max-w-5xl px-4 pb-8 text-xs text-[var(--muted)]">
-          Free, self-hosted, and honest about its own accuracy — see the{" "}
+          Free, self-hosted, and honest about its own accuracy, see the{" "}
           <Link href="/model" className="underline hover:text-[var(--text)]">
             model report card
           </Link>

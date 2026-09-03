@@ -23,7 +23,7 @@ test("the RNG is deterministic for a given seed", () => {
   assert.notDeepEqual(seqA, [createRng(124)(), 0, 0].slice(0, 1).concat(seqA.slice(1)));
 });
 
-// Team A scores the most but has lost more than it should — unlucky.
+// Team A scores the most but has lost more than it should, unlucky.
 const TEAMS = [
   { teamId: "a", name: "Unlucky", wins: 2, losses: 4, ties: 0, pointsFor: 780, pointsAgainst: 700 },
   { teamId: "b", name: "Lucky", wins: 5, losses: 1, ties: 0, pointsFor: 600, pointsAgainst: 610 },
@@ -56,7 +56,7 @@ test("an empty league returns an empty ranking rather than throwing", () => {
   assert.deepEqual(powerRankings([]), []);
 });
 
-// ── Simulation ───────────────────────────────────────────────────────────────
+// -- Simulation ---------------------------------------------------------------
 
 const strong = Array.from({ length: 9 }, () => ({ projectedPoints: 15, floor: 10, ceiling: 20 }));
 const weak = Array.from({ length: 9 }, () => ({ projectedPoints: 10, floor: 6, ceiling: 14 }));
@@ -100,7 +100,7 @@ test("an empty lineup scores zero and always loses", () => {
   assert.equal(odds.winProbability, 0);
 });
 
-// ── Playoff odds ─────────────────────────────────────────────────────────────
+// -- Playoff odds -------------------------------------------------------------
 
 const REMAINING = [
   { week: 7, homeTeamId: "a", awayTeamId: "d" },

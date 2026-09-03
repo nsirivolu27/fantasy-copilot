@@ -9,8 +9,7 @@ redefined in three places: `:root` (light), `@media (prefers-color-scheme: dark)
 `:root:not([data-theme="light"])`, and `:root[data-theme="dark"]` so an explicit choice wins in
 both directions.
 
-That structure matters. The previous build was dark-only with ~100 hardcoded utilities —
-`bg-white/5`, `text-white`, `text-black`, `bg-emerald-500/15` — each of which silently breaks on
+That structure matters. The previous build was dark-only with ~100 hardcoded utilities, `bg-white/5`, `text-white`, `text-black`, `bg-emerald-500/15`, each of which silently breaks on
 a light ground. Tokens make a theme flip a palette change instead of an archaeology project.
 
 | Token | Role |
@@ -27,8 +26,8 @@ inherited grey.
 
 ## Semantic tints
 
-Status colour is a role, not a hue. Six tints — `good`, `warn`, `bad`, `info`, `neutral`,
-`accent` — each define background, foreground and border together as `.tint-*` classes. Position
+Status colour is a role, not a hue. Six tints, `good`, `warn`, `bad`, `info`, `neutral`,
+`accent`, each define background, foreground and border together as `.tint-*` classes. Position
 badges use the same mechanism (`.tint-qb` … `.tint-def`).
 
 ```tsx
@@ -43,7 +42,7 @@ A component that needs `text-emerald-300` is a component that will be wrong in o
 - **Never write a raw colour utility.** No `bg-white/5`, no `text-black`, no
   `bg-emerald-500/15`. Use a token, a `tone`, or a `.tint-*` class.
 - **No opacity modifiers on CSS variables.** `border-[var(--accent)]/50` doesn't reliably apply
-  in Tailwind. Use a dedicated token instead — that's what `--border-soft` and `--accent-weak`
+  in Tailwind. Use a dedicated token instead, that's what `--border-soft` and `--accent-weak`
   are for.
 - **`--on-accent` only ever sits on `--accent`.** It's near-white in light mode and near-black in
   dark, so using it anywhere else inverts.
@@ -52,7 +51,7 @@ A component that needs `text-emerald-300` is a component that will be wrong in o
 
 ## Typography and layout
 
-System font stack — fast, familiar, and no network dependency for a self-hosted app. Numbers use
+System font stack, fast, familiar, and no network dependency for a self-hosted app. Numbers use
 `tabular-nums` everywhere they line up in columns, which is most places here.
 
 Cards are single-bordered with a small shadow; the accent is spent on primary actions and the
@@ -64,4 +63,4 @@ current nav item, not sprinkled. Wide content (tables, the streaming grid) scrol
 `src/components/ThemeToggle.tsx` stores only an override in `localStorage`; a viewer who never
 touches it follows their OS. A small inline script in the layout applies a stored choice before
 first paint, so choosing dark doesn't produce a white flash on load. Storage access is wrapped in
-try/catch — private windows throw.
+try/catch, private windows throw.

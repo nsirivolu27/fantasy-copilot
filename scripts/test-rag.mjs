@@ -56,7 +56,7 @@ test("tokenizer keeps digits and drops stopwords", () => {
 });
 
 test("apostrophes and punctuation don't break tokens", () => {
-  const t = tokenize("Sam's Squad — Ja'Marr Chase (WR)!");
+  const t = tokenize("Sam's Squad. Ja'Marr Chase (WR)!");
   assert.ok(t.includes("sam's") || t.includes("sams") || t.includes("sam"));
   assert.ok(t.includes("chase"));
   assert.ok(t.includes("squad"));

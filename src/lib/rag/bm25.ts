@@ -3,7 +3,7 @@
  *
  * Why not vector embeddings: every embedding API costs money or needs a key,
  * and this project promises neither. League data is also short, factual and
- * full of proper nouns ("Bucky Irving", "FAAB", "SUPER_FLEX") — exactly the
+ * full of proper nouns ("Bucky Irving", "FAAB", "SUPER_FLEX"), exactly the
  * case where lexical scoring is strong and semantic search adds little.
  *
  * Pure and dependency-free so it can be unit tested without a database.

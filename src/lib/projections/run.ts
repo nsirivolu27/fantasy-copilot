@@ -2,6 +2,7 @@ import { prisma } from "@/lib/db";
 import { parseJson } from "@/lib/json";
 import { project, MODEL_VERSION } from "./model";
 import { scoreStatLine, type StatLine } from "./scoring";
+import { getLeagueFormat } from "@/lib/league/format";
 
 /**
  * Generates projections for every rostered player in a league, for one week.
@@ -19,8 +20,12 @@ export interface RunResult {
   modelVersion: string;
 }
 
-/** How many points a freely available player at each position is worth. */
-const REPLACEMENT_LEVEL: Record<string, number> = { QB: 12, RB: 6, WR: 6, TE: 4, K: 7, DEF: 6 };
+/**
+ * Seed values only. The first run of a season has no projections to derive
+ * replacement level from, so it starts here and every later run uses the
+ * league's own pool via getLeagueFormat.
+ */
+const SEED_REPLACEMENT: Record<string, number> = { QB: 12, RB: 6, WR: 6, TE: 4, K: 7, DEF: 6 };
 
 export async function runProjections(leagueId: string, week?: number): Promise<RunResult> {
   const league = await prisma.league.findUnique({ where: { id: leagueId } });
@@ -34,6 +39,15 @@ export async function runProjections(leagueId: string, week?: number): Promise<R
     include: { player: true },
   });
   const players = [...new Map(spots.map((s) => [s.player.id, s.player])).values()];
+
+  // Derived from last run's projections where they exist; seeded otherwise.
+  let replacementLevel: Record<string, number> = SEED_REPLACEMENT;
+  try {
+    const format = await getLeagueFormat(leagueId);
+    replacementLevel = { ...SEED_REPLACEMENT, ...format.replacementLevel };
+  } catch {
+    // First run of a season: the seed values stand.
+  }
 
   const unsupported = new Set<string>();
   let playersProjected = 0;
@@ -75,7 +89,7 @@ export async function runProjections(leagueId: string, week?: number): Promise<R
       seasonPointsPerOpportunity: totalOpportunity > 0 ? totalPoints / totalOpportunity : 0,
       injuryStatus: player.injuryStatus,
       isByeWeek: player.byeWeek === targetWeek,
-      replacementLevel: REPLACEMENT_LEVEL[player.position ?? ""] ?? 4,
+      replacementLevel: replacementLevel[player.position ?? ""] ?? 4,
     });
 
     await prisma.projection.upsert({

@@ -1,7 +1,7 @@
 import { parseCsv, num } from "./csv";
 
 /**
- * nflverse weekly player stats — free, public, no key.
+ * nflverse weekly player stats, free, public, no key.
  * https://github.com/nflverse/nflverse-data/releases
  *
  * Column names below were read off the real 2024 file, not guessed. The parser
@@ -49,7 +49,7 @@ export async function fetchWeeklyStats(season: string): Promise<NflverseWeek[]> 
   for (const row of rows) {
     const position = row.position ?? "";
     if (!FANTASY_POSITIONS.has(position)) continue;
-    // Regular season only — postseason usage doesn't predict next-season roles.
+    // Regular season only, postseason usage doesn't predict next-season roles.
     if ((row.season_type ?? "REG") !== "REG") continue;
     const gsisId = row.player_id ?? "";
     const week = num(row.week);

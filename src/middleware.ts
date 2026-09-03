@@ -22,7 +22,7 @@ export function middleware(request: NextRequest) {
       const supplied = decoded.slice(decoded.indexOf(":") + 1);
       if (timingSafeEqual(supplied, password)) return NextResponse.next();
     } catch {
-      // Malformed header — fall through to the challenge.
+      // Malformed header, fall through to the challenge.
     }
   }
 

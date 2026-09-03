@@ -51,7 +51,7 @@ export async function syncLeague(platform: PlatformId, platformLeagueId: string)
   } catch (err) {
     const platformErr = err instanceof PlatformError ? err : null;
     const message = platformErr?.message ?? (err instanceof Error ? err.message : "Unknown sync error");
-    // Log without secrets — there are none on the Sleeper path, but keep the habit.
+    // Log without secrets, there are none on the Sleeper path, but keep the habit.
     console.error(`[sync] ${platform}/${trimmedId} failed:`, message);
 
     await markLeagueStale(platform, trimmedId, message);
@@ -64,7 +64,7 @@ export async function syncLeague(platform: PlatformId, platformLeagueId: string)
     };
   }
 
-  // --- 2. Player metadata (best effort — must never fail the sync) --------
+  // --- 2. Player metadata (best effort, must never fail the sync) --------
   let playersRefreshed: number | null = null;
   let playerNamesAvailable = true;
   try {
@@ -72,7 +72,7 @@ export async function syncLeague(platform: PlatformId, platformLeagueId: string)
   } catch (err) {
     const message = err instanceof Error ? err.message : "unknown";
     console.warn("[sync] player dictionary unavailable:", message);
-    warnings.push("Player names are unavailable right now — showing player IDs instead.");
+    warnings.push("Player names are unavailable right now, showing player IDs instead.");
     playerNamesAvailable = false;
   }
 
@@ -116,6 +116,10 @@ export async function syncLeague(platform: PlatformId, platformLeagueId: string)
       rosterSlotsJson: stringifyJson(league.rosterSlots),
       waiverType: league.waiverType,
       waiverBudget: league.waiverBudget,
+      playoffWeekStart: league.playoffWeekStart,
+      playoffTeams: league.playoffTeams,
+      playoffWeekStart: league.playoffWeekStart,
+      playoffTeams: league.playoffTeams,
       isDynasty: league.isDynasty,
       isKeeper: league.isKeeper,
       syncStatus: "ok",
@@ -158,7 +162,7 @@ export async function syncLeague(platform: PlatformId, platformLeagueId: string)
         waiverBudgetUsed: t.waiverBudgetUsed,
       },
       update: {
-        // isMine is deliberately NOT updated — it's the user's choice, not the platform's.
+        // isMine is deliberately NOT updated, it's the user's choice, not the platform's.
         name: t.name,
         ownerName: t.ownerName,
         avatar: t.avatar,

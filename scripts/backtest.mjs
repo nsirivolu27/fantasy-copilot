@@ -66,7 +66,7 @@ for (const p of POSITIONS) byPosition[p] = { model: [], lastWeek: [], seasonAvg:
 for (const [, player] of byPlayer) {
   for (let week = FIRST_WEEK; week <= LAST_WEEK; week++) {
     const actual = player.weeks.get(week);
-    if (!actual) continue; // didn't play — nothing to predict against
+    if (!actual) continue; // didn't play, nothing to predict against
 
     const prior = [];
     for (let w = week - 1; w >= 1 && prior.length < 4; w--) {
@@ -112,7 +112,7 @@ for (const [, player] of byPlayer) {
 const mae = (xs) => (xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : NaN);
 const fmt = (n) => (Number.isNaN(n) ? "  n/a" : n.toFixed(2).padStart(5));
 
-console.log(`\nBacktest — ${season} regular season, weeks ${FIRST_WEEK}-${LAST_WEEK}, full PPR`);
+console.log(`\nBacktest, ${season} regular season, weeks ${FIRST_WEEK}-${LAST_WEEK}, full PPR`);
 console.log(`${errors.model.length} player-weeks predicted\n`);
 console.log("                model   last wk  season avg   verdict");
 console.log("            ---------------------------------------------");

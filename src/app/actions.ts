@@ -34,7 +34,7 @@ export async function syncLeagueAction(
 
   if (result.leagueId) {
     await setSetting(SETTING_KEYS.activeLeagueId, result.leagueId);
-    // Rosters just changed — drop the cached retrieval index.
+    // Rosters just changed, drop the cached retrieval index.
     invalidateLeagueIndex(result.leagueId);
   }
 
@@ -68,7 +68,7 @@ export async function setMyTeamAction(formData: FormData): Promise<void> {
   revalidatePath("/settings");
 }
 
-// ─── LLM providers ───────────────────────────────────────────────────────────
+// --- LLM providers -----------------------------------------------------------
 
 export async function saveProviderAction(formData: FormData): Promise<void> {
   const label = formData.get("label")?.toString().trim() ?? "";
@@ -152,7 +152,7 @@ export async function testProviderAction(formData: FormData): Promise<void> {
   revalidatePath("/settings");
 }
 
-// ─── Stats + projections ─────────────────────────────────────────────────────
+// --- Stats + projections -----------------------------------------------------
 
 export interface ProjectionFormState {
   status: "idle" | "ok" | "error";
@@ -170,7 +170,7 @@ export async function refreshProjectionsAction(
   try {
     const ingest = await ingestSeasonStats(league.season);
 
-    // Bye weeks power the start/sit alerts. Best effort — a schedule fetch
+    // Bye weeks power the start/sit alerts. Best effort, a schedule fetch
     // failure must not lose the stats we just ingested.
     let byes: { teamsResolved: number; anomalies: string[] } | null = null;
     try {
@@ -211,7 +211,7 @@ export async function refreshProjectionsAction(
   }
 }
 
-// ─── API keys (MCP access) ───────────────────────────────────────────────────
+// --- API keys (MCP access) ---------------------------------------------------
 
 export interface ApiKeyFormState {
   status: "idle" | "created" | "error";

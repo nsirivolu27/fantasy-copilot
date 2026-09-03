@@ -11,15 +11,14 @@ import {
   type SimPlayer,
 } from "@/lib/core";
 import type { NormalizedSlot } from "@/lib/platforms/types";
+import { getLeagueFormat } from "./format";
 
 /**
  * The league hub: standings, this week's odds, playoff odds and the digest.
  * All the math lives in core/league.ts; this loads rows and calls it.
  */
 
-const FINAL_REGULAR_WEEK = 18;
-/** Typical league; overridden by the platform's setting when we have it. */
-const DEFAULT_PLAYOFF_SPOTS = 6;
+
 
 export interface MatchupView {
   matchupId: string;
@@ -167,8 +166,9 @@ export async function getLeagueHub(leagueId: string): Promise<LeagueHub | null> 
   }
 
   // Remaining schedule, approximated by round-robin pairing of who hasn't met.
-  const remaining = await buildRemainingSchedule(leagueId, week, teams.map((t) => t.id));
-  const playoffSpots = Math.min(DEFAULT_PLAYOFF_SPOTS, Math.max(2, Math.floor(teams.length / 2)));
+  const format = await getLeagueFormat(leagueId);
+  const remaining = buildRemainingSchedule(week, format.playoffWeekStart, teams.map((t) => t.id));
+  const playoffSpots = format.playoffSpots;
 
   return {
     week,
@@ -192,10 +192,10 @@ export async function getLeagueHub(leagueId: string): Promise<LeagueHub | null> 
  * approximated: each remaining week pairs teams round-robin. Good enough for
  * playoff odds, and honestly labelled in the UI as an approximation.
  */
-async function buildRemainingSchedule(leagueId: string, fromWeek: number, teamIds: string[]) {
+function buildRemainingSchedule(fromWeek: number, playoffWeekStart: number, teamIds: string[]) {
   const games: { week: number; homeTeamId: string; awayTeamId: string }[] = [];
   const rotation = [...teamIds];
-  for (let week = fromWeek + 1; week <= FINAL_REGULAR_WEEK - 3; week++) {
+  for (let week = fromWeek + 1; week < playoffWeekStart; week++) {
     for (let i = 0; i < Math.floor(rotation.length / 2); i++) {
       games.push({
         week,
@@ -234,7 +234,7 @@ function buildDigest(
 
     const describe = (p: (typeof played)[number]) => {
       const [hi, lo] = [...p].sort((x, y) => y.points - x.points);
-      return `${name(hi.teamId)} ${hi.points.toFixed(1)} — ${lo.points.toFixed(1)} ${name(lo.teamId)}`;
+      return `${name(hi.teamId)} ${hi.points.toFixed(1)}, ${lo.points.toFixed(1)} ${name(lo.teamId)}`;
     };
 
     lines.push({ title: "Biggest blowout", detail: describe(blowout.pair) });
@@ -258,7 +258,7 @@ function buildDigest(
   if (rankings[0]) {
     lines.push({
       title: "Power ranking leader",
-      detail: `${rankings[0].name} — ${rankings[0].powerScore.toFixed(1)} power score, ${rankings[0].pointsFor.toFixed(1)} points for.`,
+      detail: `${rankings[0].name}, ${rankings[0].powerScore.toFixed(1)} power score, ${rankings[0].pointsFor.toFixed(1)} points for.`,
     });
   }
 

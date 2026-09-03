@@ -63,7 +63,7 @@ export class SleeperAdapter implements PlatformAdapter {
 
   /**
    * Fetches metadata for specific players from the full dictionary.
-   * Callers should prefer the cached path in playerCache.ts — this exists so
+   * Callers should prefer the cached path in playerCache.ts, this exists so
    * the adapter interface is complete and testable on its own.
    */
   async getPlayers(platformPlayerIds: string[]): Promise<NormalizedPlayer[]> {

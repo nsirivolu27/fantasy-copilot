@@ -8,7 +8,7 @@ labels: bug
 
 **What you expected**
 
-**League setup** (platform, team count, scoring, superflex/dynasty — anything unusual)
+**League setup** (platform, team count, scoring, superflex/dynasty, anything unusual)
 
 **Steps to reproduce**
 

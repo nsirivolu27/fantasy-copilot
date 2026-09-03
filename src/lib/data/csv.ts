@@ -1,6 +1,6 @@
 /**
  * A minimal RFC-4180 CSV parser. nflverse files contain quoted fields with
- * commas in player names, so a naive split(",") corrupts rows — but pulling in
+ * commas in player names, so a naive split(",") corrupts rows, but pulling in
  * a CSV dependency for one file isn't worth it either.
  *
  * Pure and dependency-free so it can be unit tested.

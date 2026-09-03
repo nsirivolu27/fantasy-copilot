@@ -3,7 +3,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
-  /* ── Tokens: light-first. Dark is the override, not the default. ── */
+  /* -- Tokens: light-first. Dark is the override, not the default. -- */
   :root {
     color-scheme: light;
     --ground:  #F7F8F7;
@@ -106,7 +106,7 @@
   .mono { font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace; }
   .tnum { font-variant-numeric: tabular-nums; }
 
-  /* ── Masthead ── */
+  /* -- Masthead -- */
   .masthead { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 14px; justify-content: space-between; }
   .brand { display: flex; align-items: center; gap: 11px; }
   .mark {
@@ -131,7 +131,7 @@
   }
   .notice b { color: var(--text); font-weight: 600; }
 
-  /* ── Tabs ── */
+  /* -- Tabs -- */
   .tabs { display: flex; gap: 2px; margin: 22px 0 0; border-bottom: 1px solid var(--line); overflow-x: auto; }
   .tab {
     appearance: none; background: none; border: 0; border-bottom: 2px solid transparent;
@@ -144,7 +144,7 @@
   .panel { padding-top: 20px; }
   .panel[hidden] { display: none !important; }
 
-  /* ── Generic surfaces ── */
+  /* -- Generic surfaces -- */
   .card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; box-shadow: var(--shadow); }
   .card + .card { margin-top: 12px; }
   .card-head { padding: 12px 15px; border-bottom: 1px solid var(--line-soft); }
@@ -159,7 +159,7 @@
   .stat .v { font-family: Oswald, sans-serif; font-size: 20px; margin-top: 2px; line-height: 1.15; }
   .stat .s { font-size: 11.5px; color: var(--muted); }
 
-  /* ── Roster ── */
+  /* -- Roster -- */
   .team { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; box-shadow: var(--shadow); }
   .team + .team { margin-top: 10px; }
   .team.mine { border-color: var(--accent); }
@@ -205,7 +205,7 @@
   .conf { width: 5px; height: 5px; border-radius: 50%; flex: none; }
   .conf.hi{background:var(--good-fg)} .conf.mid{background:var(--warn-fg)} .conf.lo{background:var(--faint)}
 
-  /* ── Scoring grid ── */
+  /* -- Scoring grid -- */
   .kv { display: grid; grid-template-columns: 1fr; gap: 0 26px; }
   @media (min-width: 560px) { .kv { grid-template-columns: 1fr 1fr; } }
   .kv div { display: flex; justify-content: space-between; gap: 12px; padding: 5px 0; border-bottom: 1px solid var(--line-soft); font-size: 13px; }
@@ -216,7 +216,7 @@
   .slotpill { font-size: 11px; padding: 3px 8px; border-radius: 5px; border: 1px solid var(--line); color: var(--muted); }
   .slotpill.start { color: var(--accent); border-color: var(--accent); background: var(--accent-weak); }
 
-  /* ── Chat ── */
+  /* -- Chat -- */
   .chatlog { display: flex; flex-direction: column; gap: 11px; }
   .msg { max-width: 88%; padding: 9px 13px; border-radius: 13px; font-size: 13.5px; }
   .msg.u { align-self: flex-end; background: var(--accent-weak); border: 1px solid var(--good-bd); border-bottom-right-radius: 4px; }
@@ -237,7 +237,7 @@
   .ask:disabled { opacity: .38; cursor: default; }
   .ask:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
-  /* ── Model table ── */
+  /* -- Model table -- */
   .scroll { overflow-x: auto; }
   table { border-collapse: collapse; width: 100%; min-width: 420px; font-size: 13.5px; }
   th { text-align: right; font-size: 10.5px; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); font-weight: 500; padding: 0 0 7px; }
@@ -272,11 +272,11 @@
       <div class="mark">FC</div>
       <div>
         <h1>Fantasy Copilot</h1>
-        <p class="tagline">Free, self-hosted league companion — Sleeper sync, projections, grounded chat.</p>
+        <p class="tagline">Free, self-hosted league companion. Sleeper sync, projections, grounded chat.</p>
       </div>
     </div>
     <div style="display:flex;gap:7px;flex-wrap:wrap;align-items:center">
-      <span class="chip"><span class="dot"></span> Phases 1–6, 8–10 <b>shipped</b></span>
+      <span class="chip"><span class="dot"></span> Phases 1-6, 8-10 <b>shipped</b></span>
       <span class="chip">MIT</span>
       <button id="theme" class="chip" style="cursor:pointer" aria-label="Switch theme" title="Switch theme">☾</button>
     </div>
@@ -285,7 +285,7 @@
   <p class="notice">
     <b>This is a static preview, not the running app.</b> The rosters and scoring below come from the
     repo's test fixture; the projections are <b>real output from the actual model</b>, run over the real
-    2024 nflverse season. The chat replies are scripted transcripts — the live app calls whichever model
+    2024 nflverse season. The chat replies are scripted transcripts, the live app calls whichever model
     you configure. Run the real thing with <code class="mono">docker compose up -d</code>.
   </p>
 
@@ -295,7 +295,7 @@
     <button class="tab" role="tab" id="t-model"  aria-controls="p-model"  aria-selected="false">Model</button>
   </div>
 
-  <!-- ── LEAGUE ────────────────────────────────────────────────── -->
+  <!-- -- LEAGUE -------------------------------------------------- -->
   <section class="panel" id="p-league" role="tabpanel" aria-labelledby="t-league">
     <div class="stats">
       <div class="stat"><div class="k">Season</div><div class="v">2026</div><div class="s">in season</div></div>
@@ -313,7 +313,7 @@
     </div>
 
     <div class="card" style="margin-top:14px">
-      <div class="card-head"><h3>Roster slots</h3><p>9 starters · 7 bench and reserve — read from the league, never hardcoded</p></div>
+      <div class="card-head"><h3>Roster slots</h3><p>9 starters · 7 bench and reserve, read from the league, never hardcoded</p></div>
       <div class="card-body"><div class="slots" id="slots"></div></div>
     </div>
 
@@ -323,7 +323,7 @@
     </div>
   </section>
 
-  <!-- ── CHAT ──────────────────────────────────────────────────── -->
+  <!-- -- CHAT ---------------------------------------------------- -->
   <section class="panel" id="p-chat" role="tabpanel" aria-labelledby="t-chat" hidden>
     <div class="card">
       <div class="card-head">
@@ -337,16 +337,16 @@
     </div>
     <p style="font-size:12.5px;color:var(--muted);margin-top:11px">
       The system prompt forbids stating any number that didn't come from a tool call. Ask it something the
-      app hasn't built and it says so — the third question below shows that.
+      app hasn't built and it says so, the third question below shows that.
     </p>
   </section>
 
-  <!-- ── MODEL ─────────────────────────────────────────────────── -->
+  <!-- -- MODEL --------------------------------------------------- -->
   <section class="panel" id="p-model" role="tabpanel" aria-labelledby="t-model" hidden>
     <div class="card">
       <div class="card-head">
         <h3>Mean absolute error</h3>
-        <p>Fantasy points per game. Lower is better. Real 2024 season, weeks 5–17, 3,415 player-weeks, full PPR.</p>
+        <p>Fantasy points per game. Lower is better. Real 2024 season, weeks 5-17, 3,415 player-weeks, full PPR.</p>
       </div>
       <div class="card-body scroll">
         <table>
@@ -359,7 +359,7 @@
     <div class="callout" style="margin-top:12px">
       <h3>Read this before trusting a projection</h3>
       <p>
-        The model beats both baselines at every position — but by <strong>0.7% overall</strong>, and only
+        The model beats both baselines at every position, but by <strong>0.7% overall</strong>, and only
         2.6% at QB. That is a small edge, and it is the honest number.
       </p>
       <p>
@@ -370,7 +370,7 @@
       </p>
       <p>
         So the projection is a commodity. That's precisely why the roadmap spends its real effort on
-        <strong>decision leverage</strong> — ranking choices by how much they move your odds of winning
+        <strong>decision leverage</strong>, ranking choices by how much they move your odds of winning
         rather than by projected points. A +2.0 swap in a game you win 88% of the time is worth nothing.
       </p>
     </div>
@@ -380,9 +380,9 @@
       <div class="card-body">
         <ol class="how">
           <li>Every past game is scored with <b>your league's own settings</b>, so format never matters.</li>
-          <li>The <b>season average anchors</b> the estimate — the hard baseline becomes the base.</li>
+          <li>The <b>season average anchors</b> the estimate, the hard baseline becomes the base.</li>
           <li>An <b>opportunity term</b> (recency-weighted usage × season-long efficiency) blends in at weights the backtest chose: QB 80%, RB 40%, TE 30%, WR 20%.</li>
-          <li><b>Injury designations gate it</b> — Out and IR project zero, Questionable takes 15% off.</li>
+          <li><b>Injury designations gate it</b>. Out and IR project zero, Questionable takes 15% off.</li>
           <li><b>Floor and ceiling</b> come from the player's own 20th/80th percentile spread.</li>
           <li><b>Confidence</b> combines sample size and role stability: a steady 10-touch back outranks one alternating 2 and 18.</li>
         </ol>
@@ -395,7 +395,7 @@ npm run backtest 2024</code></pre>
   </section>
 
   <footer>
-    Built with Claude. Free data only — <a href="https://docs.sleeper.com">Sleeper</a> for leagues,
+    Built with Claude. Free data only, <a href="https://docs.sleeper.com">Sleeper</a> for leagues,
     <a href="https://github.com/nflverse/nflverse-data">nflverse</a> for stats. No API keys, no paid services.
   </footer>
 </div>
@@ -473,13 +473,13 @@ npm run backtest 2024</code></pre>
     var box = el("span", "proj");
     if (p) {
       var v = el("span", "p tnum", p[0].toFixed(1));
-      var band = el("span", "band tnum", p[1].toFixed(0) + "–" + p[2].toFixed(0));
+      var band = el("span", "band tnum", p[1].toFixed(0) + "-" + p[2].toFixed(0));
       box.title = "Floor " + p[1].toFixed(1) + " · ceiling " + p[2].toFixed(1) +
                   " · confidence " + Math.round(p[3] * 100) + "%";
       box.appendChild(band); box.appendChild(v);
       box.appendChild(el("span", "conf " + confClass(p[3])));
     } else {
-      box.appendChild(el("span", "none", "—"));
+      box.appendChild(el("span", "none", "-"));
       box.title = "No projection: the model covers QB, RB, WR and TE only.";
     }
     row.appendChild(box);
@@ -515,10 +515,10 @@ npm run backtest 2024</code></pre>
 
     var proj = el("div", "team-proj");
     var sum = total(t);
-    proj.appendChild(el("div", "n tnum", sum ? sum.toFixed(1) : "—"));
+    proj.appendChild(el("div", "n tnum", sum ? sum.toFixed(1) : "-"));
     proj.appendChild(el("div", "l", "projected"));
     head.appendChild(proj);
-    head.appendChild(el("span", "caret", "›"));
+    head.appendChild(el("span", "caret", ">"));
 
     var body = el("div", "roster");
     if (!t.starters.length) {
@@ -574,19 +574,19 @@ npm run backtest 2024</code></pre>
   // Scripted transcripts. Each mirrors what the tool layer actually returns.
   var QA = [
     { q: "Who's projected highest on my team?",
-      a: ["Rashee Rice, at 21.9 points — floor 17.5, ceiling 26.4, 78% confidence.",
-          "Derrick Henry is next at 20.0 with a much tighter band (16.8–23.2). Rice has the higher ceiling; Henry is the safer floor."],
+      a: ["Rashee Rice, at 21.9 points, floor 17.5, ceiling 26.4, 78% confidence.",
+          "Derrick Henry is next at 20.0 with a much tighter band (16.8-23.2). Rice has the higher ceiling; Henry is the safer floor."],
       tool: "get_projections", note: "team=me → 9 starters, 2 bench" },
     { q: "What are the scoring settings?",
-      a: ["Full PPR — 1 point per reception, 0.1 per receiving and rushing yard, 6 per TD, 4 per passing TD, −2 per interception and fumble lost.",
+      a: ["Full PPR 1 point per reception, 0.1 per receiving and rushing yard, 6 per TD, 4 per passing TD, −2 per interception and fumble lost.",
           "Roster is 9 starters: QB, 2 RB, 2 WR, TE, FLEX, K, D/ST, with 6 bench and an IR spot."],
       tool: "get_league_info", note: "12 scoring rules, 16 roster slots" },
     { q: "Who should I start at flex?",
-      a: ["The start/sit optimizer isn't built yet — that's Phase 3, so I won't guess at it.",
-          "What I can tell you is what's projected. Derrick Henry is in your FLEX at 20.0 (16.8–23.2). On your bench, Chuba Hubbard projects 17.3 with a wider band (11.7–22.9). Henry is ahead on both the median and the floor, so nothing here argues for a change."],
+      a: ["The start/sit optimizer isn't built yet, that's Phase 3, so I won't guess at it.",
+          "What I can tell you is what's projected. Derrick Henry is in your FLEX at 20.0 (16.8-23.2). On your bench, Chuba Hubbard projects 17.3 with a wider band (11.7-22.9). Henry is ahead on both the median and the floor, so nothing here argues for a change."],
       tool: "get_projections", note: "starters + bench compared" },
     { q: "Is Kelce hurt?",
-      a: ["Travis Kelce is listed Questionable. He's your starting TE, projected 12.4 with a wide band — floor 6.1, ceiling 18.7.",
+      a: ["Travis Kelce is listed Questionable. He's your starting TE, projected 12.4 with a wide band, floor 6.1, ceiling 18.7.",
           "The Questionable tag already took 15% off that number and lowered his confidence to 87%."],
       tool: "find_player", note: 'name="Kelce" → 1 match, rostered by tech rejects' }
   ];
@@ -605,7 +605,7 @@ npm run backtest 2024</code></pre>
     var code = el("code", null, item.tool);
     chip.appendChild(document.createTextNode("called "));
     chip.appendChild(code);
-    chip.appendChild(document.createTextNode(" — " + item.note));
+    chip.appendChild(document.createTextNode(", " + item.note));
     a.appendChild(chip);
     logEl.appendChild(a);
 

@@ -5,7 +5,7 @@ equally useful for Claude Code or any other agent).
 
 ## What this is
 
-**Fantasy Copilot** — a free, self-hosted fantasy football companion. It syncs a league from
+**Fantasy Copilot**: a free, self-hosted fantasy football companion. It syncs a league from
 Sleeper, projects players, and helps with start/sit, waivers, streaming and trades. There's a
 chat interface grounded in the league's real data and an MCP server exposing the same tools.
 
@@ -24,12 +24,12 @@ npm run backtest 2024  # measure the projection model against real data
 ```
 
 No league ID to test with? `SLEEPER_FIXTURES=1 npm run dev` and use league ID
-`1124839284756483920` — the whole sync path runs off `fixtures/`.
+`1124839284756483920`, the whole sync path runs off `fixtures/`.
 
 ## Architecture
 
 ```
-src/lib/core/          PURE domain layer. The important one — see below.
+src/lib/core/          PURE domain layer. The important one, see below.
   trade/engine.ts      optimizeLineup, adviseLineup, evaluateTrade, rankAdditions,
                        rankDrops, recommendFaabBid
   trade/value.ts       TradeValueProvider + built-in / HTTP / CSV implementations
@@ -41,7 +41,7 @@ src/lib/core/          PURE domain layer. The important one — see below.
 src/lib/platforms/     PlatformAdapter interface; SleeperAdapter implements all of it
 src/lib/projections/   scoring.ts (league-aware), model.ts (v2), run.ts
 src/lib/rag/           BM25 index over documents built from the synced league
-src/lib/tools/registry.ts   16 read-only tools — the ONE source for chat and MCP
+src/lib/tools/registry.ts   16 read-only tools, the ONE source for chat and MCP
 src/lib/llm/           provider layer over plain fetch, no SDK
 src/lib/{lineup,waivers,league,trade}/service.ts   DB → core bridges
 src/app/               /, /league, /lineup, /waivers, /streaming, /chat, /model, /settings
@@ -69,13 +69,13 @@ API route, it's in the wrong place.
 
 A change that breaks one of these is wrong even if it works:
 
-1. **No paid APIs, no required API keys.** Free public data only — Sleeper for leagues, nflverse
+1. **No paid APIs, no required API keys.** Free public data only. Sleeper for leagues, nflverse
    for stats. The only credentials anywhere are the user's own (their ESPN cookies, their own
    LLM key).
 2. **Nothing about league format is hardcoded.** Scoring values, roster slots, team count, season
    and week all come from the sync. A 12-team half-PPR 1QB league and a 10-team superflex dynasty
    must both work with zero code changes. `scoring.ts` scores any stat line with the league's own
-   settings — that's the mechanism.
+   settings, that's the mechanism.
 3. **Platform code stays behind the adapter.** Nothing outside `src/lib/platforms/` imports
    `SleeperAdapter`. App code only knows the normalized types in `platforms/types.ts`.
 4. **Sport-specific logic stays in `src/lib/sports/<sport>/`,** reached through `getSportModule()`.
@@ -84,7 +84,7 @@ A change that breaks one of these is wrong even if it works:
    raw. A player-dictionary failure must not fail a league sync.
 6. **Core stays pure.** See above.
 7. **The LLM explains; it never computes.** No projection, rank or probability originates from a
-   language model. The system prompt in `src/lib/llm/systemPrompt.ts` says so explicitly — don't
+   language model. The system prompt in `src/lib/llm/systemPrompt.ts` says so explicitly, don't
    loosen it.
 8. **Tools are defined once,** in `src/lib/tools/registry.ts`. Chat and MCP both read that array.
    Never create a second list.
@@ -93,14 +93,14 @@ A change that breaks one of these is wrong even if it works:
 10. **Don't invent third-party APIs.** No public API means a generic adapter (HTTP endpoint, CSV
     import), never a client for guessed endpoints.
 11. **Never write a raw colour utility.** No `bg-white/5`, `text-black`, or `bg-emerald-500/15`.
-    Use a token (`bg-[var(--panel)]`), a `tone` prop, or a `.tint-*` class — see `DESIGN.md`. The
+    Use a token (`bg-[var(--panel)]`), a `tone` prop, or a `.tint-*` class, see `DESIGN.md`. The
     app is light-first with a dark override, and a hardcoded colour is wrong in one of them.
 12. **Human-readable, intern-level code.** Clear names; comments only where the logic isn't
     obvious. No clever metaprogramming.
 
 ## Honesty is a feature here, not a posture
 
-The projection model is **0.7% better than a season average** — measured on 3,415 real
+The projection model is **0.7% better than a season average**: measured on 3,415 real
 player-weeks and published at `/model`, including the parts that don't flatter it. Version 1 was
 *4.4% worse* than that baseline and got rewritten because the backtest said so.
 
@@ -130,8 +130,7 @@ test("describes a behaviour, not a function name", () => {
 console.log(`\n${passed} passing\n`);
 ```
 
-Add the file to the `test` script in `package.json`. Write tests that would catch a real bug —
-the ones that have earned their keep here caught a stranded FLEX slot, a QB being cheaper to drop
+Add the file to the `test` script in `package.json`. Write tests that would catch a real bug, the ones that have earned their keep here caught a stranded FLEX slot, a QB being cheaper to drop
 than a worse RB, and a model that lost to its own baseline.
 
 ## What's left
@@ -139,7 +138,7 @@ than a worse RB, and a model that lost to its own baseline.
 | Phase | Work | Notes |
 |---|---|---|
 | 11 | **Decision leverage + calibration** | The flagship. Rank every decision by Δ win probability, not Δ points, using `simulateMatchup`. Log recommendations with their confidence and grade them later; publish the calibration curve on `/model`. |
-| 7 | ESPN + manual/CSV adapters | Base URL `https://lm-api-reads.fantasy.espn.com/apis/v3/games/ffl/seasons/{season}/segments/0/leagues/{id}`, repeated `?view=` params. Private leagues need the user's `espn_s2` and `SWID` cookies — stored in the DB, never logged, never sent to the browser. **Success means no file outside `src/lib/platforms/` changed.** |
+| 7 | ESPN + manual/CSV adapters | Base URL `https://lm-api-reads.fantasy.espn.com/apis/v3/games/ffl/seasons/{season}/segments/0/leagues/{id}`, repeated `?view=` params. Private leagues need the user's `espn_s2` and `SWID` cookies, stored in the DB, never logged, never sent to the browser. **Success means no file outside `src/lib/platforms/` changed.** |
 | 12 | Fitted projection model | Ridge regression on nflverse features, plain TypeScript, no ML dependency. Must beat v2 in the backtest or it doesn't ship. |
 | 13 | Polish | Mobile pass, remaining empty/error states, dead code. |
 

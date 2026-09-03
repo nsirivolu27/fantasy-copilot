@@ -5,7 +5,7 @@
   toward the accent, so neutrals read as chosen rather than inherited grey.
 
   Components never hardcode a colour. They use these tokens or the .tint-*
-  classes below, which is what lets the whole app flip themes correctly — the
+  classes below, which is what lets the whole app flip themes correctly, the
   old dark-only build had ~100 places assuming a dark ground.
 */
 :root {

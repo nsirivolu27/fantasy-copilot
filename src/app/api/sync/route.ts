@@ -37,7 +37,7 @@ export async function POST(request: Request) {
   try {
     body = await request.json();
   } catch {
-    // No body is fine — that means "sync everything".
+    // No body is fine, that means "sync everything".
   }
 
   try {

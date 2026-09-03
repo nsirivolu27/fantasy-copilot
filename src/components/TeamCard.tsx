@@ -74,7 +74,7 @@ export function TeamCard(props: TeamCardProps) {
           className={`shrink-0 text-[var(--muted)] transition-transform ${open ? "rotate-90" : ""}`}
           aria-hidden
         >
-          ›
+          >
         </span>
       </button>
 
@@ -109,7 +109,7 @@ function RosterSection({ label, rows }: { label: string; rows: RosterRow[] }) {
             <span className="w-14 shrink-0 text-[11px] font-medium text-[var(--muted)]">
               {r.slotLabel}
             </span>
-            <Badge className={r.positionColor}>{r.position ?? "—"}</Badge>
+            <Badge className={r.positionColor}>{r.position ?? "-"}</Badge>
             <span className="min-w-0 flex-1 truncate text-sm">{r.playerName}</span>
             {r.injuryStatus ? (
               <Badge tone="bad" title="Injury status">
@@ -124,7 +124,7 @@ function RosterSection({ label, rows }: { label: string; rows: RosterRow[] }) {
                 className="w-14 shrink-0 text-right"
                 title={
                   r.floor != null && r.ceiling != null
-                    ? `Floor ${r.floor.toFixed(1)} — ceiling ${r.ceiling.toFixed(1)}`
+                    ? `Floor ${r.floor.toFixed(1)}, ceiling ${r.ceiling.toFixed(1)}`
                     : undefined
                 }
               >

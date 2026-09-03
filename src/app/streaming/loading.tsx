@@ -12,7 +12,7 @@ export default function Loading() {
         <div key={i} className="h-40 skeleton rounded-xl" />
       ))}
       <p className="text-center text-xs text-[var(--muted)]">
-        Projecting free agents against your league&apos;s scoring — this takes a few seconds.
+        Projecting free agents against your league&apos;s scoring, this takes a few seconds.
       </p>
     </div>
   );

@@ -7,7 +7,7 @@ export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
 /**
- * MCP server — the same tool registry the chat uses, exposed over the Model
+ * MCP server, the same tool registry the chat uses, exposed over the Model
  * Context Protocol so Claude Desktop or Cursor can query the
  * league directly. There is deliberately no second list of tools.
  *
@@ -21,7 +21,7 @@ async function buildHandler() {
   };
 
   return createMcpHandler((server) => {
-    // ── Resources: things a client should be able to read without a tool call
+    // -- Resources: things a client should be able to read without a tool call
     for (const resource of MCP_RESOURCES) {
       server.registerResource?.(
         resource.name,
@@ -42,7 +42,7 @@ async function buildHandler() {
       );
     }
 
-    // ── Prompts: reusable templates, which show up as slash commands
+    // -- Prompts: reusable templates, which show up as slash commands
     for (const prompt of MCP_PROMPTS) {
       server.registerPrompt?.(
         prompt.name,
@@ -146,7 +146,7 @@ const MCP_PROMPTS = [
     name: "trade_review",
     title: "Review a trade",
     description: "Evaluate a specific trade for both sides.",
-    text: "I want to evaluate a trade. Ask me which players are moving in each direction if I haven't said, then use evaluate_trade and give me the verdict for BOTH sides honestly — including whether the other manager would actually accept it.",
+    text: "I want to evaluate a trade. Ask me which players are moving in each direction if I haven't said, then use evaluate_trade and give me the verdict for BOTH sides honestly, including whether the other manager would actually accept it.",
   },
   {
     name: "waiver_plan",

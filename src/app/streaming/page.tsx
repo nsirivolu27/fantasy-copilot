@@ -46,15 +46,19 @@ export default async function StreamingPage() {
 
   const sport = getSportModule(league.sport);
   const positions = Object.keys(result.byPosition);
-  const empty = positions.every((p) => result.byPosition[p].length === 0);
+  const empty = positions.length === 0 || positions.every((p) => result.byPosition[p].length === 0);
 
   return (
     <div className="space-y-5">
       <div>
-        <h1 className="text-xl font-semibold tracking-tight">Streaming — weeks {result.week}–{result.week + 2}</h1>
+        <h1 className="text-xl font-semibold tracking-tight">Streaming, weeks {result.week}-{result.week + 2}</h1>
         <p className="mt-1 text-sm text-[var(--muted)]">
           Plan two weeks ahead instead of scrambling on Saturday night. Colour shows how generous
           each defense has been to the position.
+        </p>
+        <p className="mt-1 text-xs text-[var(--faint)]">
+          Streamable in this league: {result.streamable.join(", ") || "none"}. Positions with more
+          than one starting slot, or deepened by a flex, are left out.
         </p>
       </div>
 
@@ -98,7 +102,7 @@ export default async function StreamingPage() {
                         <span className="ml-2 text-[11px] text-[var(--muted)]">{o.nflTeam}</span>
                       </td>
                       <td className="px-2 py-2 text-right tabular-nums">
-                        {o.projectedPoints > 0 ? o.projectedPoints.toFixed(1) : "—"}
+                        {o.projectedPoints > 0 ? o.projectedPoints.toFixed(1) : "-"}
                       </td>
                       {o.schedule.map((s) => (
                         <td key={s.week} className="px-2 py-2 text-center">
@@ -118,7 +122,7 @@ export default async function StreamingPage() {
 
       <p className="text-xs text-[var(--muted)]">
         Defensive strength is points allowed to the position this season, relative to the league
-        average. Early in a season those samples are small — treat a single green cell lightly.
+        average. Early in a season those samples are small, treat a single green cell lightly.
       </p>
     </div>
   );

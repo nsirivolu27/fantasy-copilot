@@ -80,7 +80,7 @@ export function Chat({ ready }: { ready: boolean }) {
         {entries.length === 0 ? (
           <div className="pt-6">
             <p className="text-sm text-[var(--muted)]">
-              Ask about your league. Every answer is grounded in your synced data — if the app
+              Ask about your league. Every answer is grounded in your synced data, if the app
               doesn&apos;t have it, it says so instead of guessing.
             </p>
             <div className="mt-4 flex flex-wrap gap-2">
@@ -116,7 +116,7 @@ export function Chat({ ready }: { ready: boolean }) {
               {entry.tools && entry.tools.length > 0 ? (
                 <details className="mt-2 border-t border-[var(--border)] pt-2">
                   <summary className="cursor-pointer text-[11px] text-[var(--muted)]">
-                    {entry.tools.length} tool call{entry.tools.length > 1 ? "s" : ""} — tap to inspect
+                    {entry.tools.length} tool call{entry.tools.length > 1 ? "s" : ""}, tap to inspect
                   </summary>
                   <ul className="mt-1.5 space-y-1.5">
                     {entry.tools.map((t, j) => (

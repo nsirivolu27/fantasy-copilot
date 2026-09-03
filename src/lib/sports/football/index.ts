@@ -50,11 +50,11 @@ const SCORING_LABELS: Record<string, string> = {
   fum_rec: "Fumble recovery",
   safe: "Safety",
   pts_allow_0: "Points allowed: 0",
-  pts_allow_1_6: "Points allowed: 1–6",
-  pts_allow_7_13: "Points allowed: 7–13",
-  pts_allow_14_20: "Points allowed: 14–20",
-  pts_allow_21_27: "Points allowed: 21–27",
-  pts_allow_28_34: "Points allowed: 28–34",
+  pts_allow_1_6: "Points allowed: 1-6",
+  pts_allow_7_13: "Points allowed: 7-13",
+  pts_allow_14_20: "Points allowed: 14-20",
+  pts_allow_21_27: "Points allowed: 21-27",
+  pts_allow_28_34: "Points allowed: 28-34",
   pts_allow_35p: "Points allowed: 35+",
 };
 

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { getActiveLeague } from "@/lib/settings";
 import { getLeagueHub } from "@/lib/league/service";
-import { Badge, Banner, Card, CardHeader, EmptyState } from "@/components/ui";
+import { Banner, Card, CardHeader, EmptyState } from "@/components/ui";
 import { DigestCopy } from "@/components/DigestCopy";
 
 export const dynamic = "force-dynamic";
@@ -35,7 +35,7 @@ export default async function LeagueHubPage() {
       <div>
         <h1 className="text-xl font-semibold tracking-tight">{league.name}</h1>
         <p className="mt-1 text-sm text-[var(--muted)]">
-          Power rankings, matchups and playoff odds — week {hub.week}
+          Power rankings, matchups and playoff odds, week {hub.week}
         </p>
       </div>
 
@@ -74,7 +74,7 @@ export default async function LeagueHubPage() {
                     {m.winProbability != null ? (
                       <div className="shrink-0 text-center">
                         <p className="font-mono text-sm tabular-nums">
-                          {pct(m.winProbability)} — {pct(1 - m.winProbability)}
+                          {pct(m.winProbability)}, {pct(1 - m.winProbability)}
                         </p>
                         <p className="text-[10px] uppercase tracking-wide text-[var(--muted)]">
                           win prob
@@ -109,14 +109,14 @@ export default async function LeagueHubPage() {
         </Card>
       ) : (
         <Banner tone="info" title="No matchups stored for this week">
-          Run a sync from Settings — matchups are pulled with it.
+          Run a sync from Settings, matchups are pulled with it.
         </Banner>
       )}
 
       <Card>
         <CardHeader
           title="Power rankings"
-          subtitle="70% scoring rate, 30% record — luck is actual wins minus what the scoring deserved"
+          subtitle="70% scoring rate, 30% record, luck is actual wins minus what the scoring deserved"
         />
         <div className="overflow-x-auto">
           <table className="w-full min-w-[34rem] text-sm">

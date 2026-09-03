@@ -2,6 +2,7 @@ import { prisma } from "@/lib/db";
 import { formatContext, retrieve } from "@/lib/rag";
 import { runTool, tools } from "@/lib/tools/registry";
 import { buildSystemPrompt } from "./systemPrompt";
+import { getLeagueFormat } from "@/lib/league/format";
 import { chat, getDefaultProvider, type ChatMessage } from "./providers";
 
 export interface ChatTurn {
@@ -29,13 +30,14 @@ export async function runChatTurn(args: {
 }): Promise<ChatTurn> {
   const provider = await getDefaultProvider();
   if (!provider) {
-    throw new Error("No LLM provider is configured. Add one in Settings — Groq's free tier works.");
+    throw new Error("No LLM provider is configured. Add one in Settings. Groq's free tier works.");
   }
 
   const league = await prisma.league.findUnique({ where: { id: args.leagueId } });
   if (!league) throw new Error("No league is synced yet. Sync one in Settings first.");
   const myTeam = await prisma.team.findFirst({ where: { leagueId: args.leagueId, isMine: true } });
 
+  const format = await getLeagueFormat(args.leagueId);
   const retrieved = await retrieve(args.leagueId, args.userMessage, { limit: 6 });
 
   const history = await prisma.message.findMany({
@@ -49,6 +51,7 @@ export async function runChatTurn(args: {
       role: "system",
       content: buildSystemPrompt({
         leagueName: league.name,
+        format: format.description,
         season: league.season,
         week: league.currentWeek,
         teamCount: league.teamCount,
@@ -87,7 +90,7 @@ export async function runChatTurn(args: {
 
   if (!answer) {
     answer =
-      "I couldn't reach an answer — the model kept asking for tools without concluding. Try rephrasing, or switch to a stronger model in Settings.";
+      "I couldn't reach an answer, the model kept asking for tools without concluding. Try rephrasing, or switch to a stronger model in Settings.";
   }
 
   await prisma.$transaction([
