@@ -74,7 +74,7 @@ export function TeamCard(props: TeamCardProps) {
           className={`shrink-0 text-[var(--muted)] transition-transform ${open ? "rotate-90" : ""}`}
           aria-hidden
         >
-          >
+          &gt;
         </span>
       </button>
 

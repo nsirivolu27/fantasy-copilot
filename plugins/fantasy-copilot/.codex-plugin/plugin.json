@@ -1,0 +1,19 @@
+{
+  "name": "fantasy-copilot",
+  "version": "0.1.0",
+  "description": "Sleeper league analysis, lineup decisions, and waiver planning grounded in Fantasy Copilot tools.",
+  "author": {
+    "name": "Nihal Sirivolu",
+    "url": "https://github.com/nsirivolu27"
+  },
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Fantasy Copilot",
+    "shortDescription": "Understand your Sleeper league and plan your next move.",
+    "longDescription": "Reusable league check-in, lineup, trade, and waiver workflows. Requires a connected Fantasy Copilot MCP server for league data and computed analytics. This authoring package has no hosted connection configured yet.",
+    "developerName": "Nihal Sirivolu",
+    "category": "Productivity",
+    "capabilities": [],
+    "defaultPrompt": ["Check my fantasy team this week.", "Review a trade for both teams.", "Build my waiver plan."]
+  }
+}
