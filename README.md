@@ -2,6 +2,17 @@
 
 # Fantasy Copilot
 
+## Live league view and installable plugin
+
+Open `/live` in your running app, paste a Sleeper league URL, and share the resulting link.
+Scores refresh every minute while the page is visible, with season power rankings, weekly
+median scoring, and all-play comparisons. Failed refreshes keep the last good snapshot visible.
+
+The [plugin authoring package](./plugins/fantasy-copilot/) includes portable and Codex manifests
+plus a league check-in skill. The hosted MCP connection and public directory listing still need
+configuration. See [live hosting and plugin setup](./LIVE-AND-PLUGIN.md) for what is ready and
+what remains before hosting separate users' workspaces.
+
 [![CI](https://github.com/nsirivolu27/fantasy-copilot/actions/workflows/ci.yml/badge.svg)](https://github.com/nsirivolu27/fantasy-copilot/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 [![PRs welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](./CONTRIBUTING.md)

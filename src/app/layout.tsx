@@ -29,7 +29,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <div className="mx-auto flex max-w-5xl flex-col gap-2 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
             <Link href="/" className="flex shrink-0 items-center gap-2 font-semibold tracking-tight">
               <span className="grid size-7 place-items-center rounded-md bg-[var(--accent-weak)] text-[var(--accent)]">
-                >
+                &gt;
               </span>
               Fantasy Copilot
             </Link>

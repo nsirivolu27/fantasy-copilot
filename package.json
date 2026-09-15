@@ -36,7 +36,7 @@
     "db:generate": "npm run prisma:schema && prisma generate --schema=prisma/generated-schema.prisma",
     "postinstall": "npm run db:generate",
     "typecheck": "tsc --noEmit",
-    "test": "npm run test:sleeper && npm run test:rag && npm run test:projections && npm run test:trade && npm run test:format && npm run test:schedule && npm run test:matchups && npm run test:league && npm run test:auth && npm run test:boundaries",
+    "test": "npm run test:sleeper && npm run test:rag && npm run test:projections && npm run test:trade && npm run test:format && npm run test:schedule && npm run test:matchups && npm run test:league && npm run test:auth && npm run test:live && npm run test:boundaries",
     "test:sleeper": "node --experimental-strip-types scripts/test-normalize.mjs",
     "test:rag": "node --experimental-strip-types scripts/test-rag.mjs",
     "test:projections": "node --experimental-strip-types scripts/test-projections.mjs",
@@ -49,7 +49,8 @@
     "mcp:stdio": "tsx mcp/stdio.ts",
     "test:league": "node --experimental-strip-types scripts/test-league.mjs",
     "test:format": "node --experimental-strip-types scripts/test-format.mjs",
-    "test:auth": "node --experimental-strip-types scripts/test-auth.mjs"
+    "test:auth": "node --experimental-strip-types scripts/test-auth.mjs",
+    "test:live": "tsx scripts/test-live.mts"
   },
   "dependencies": {
     "@prisma/client": "^6.5.0",
