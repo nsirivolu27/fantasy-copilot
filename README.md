@@ -2,7 +2,19 @@
 
 # Fantasy Copilot
 
-## Live league view and installable plugin
+## Live team dashboard
+
+**[Open the live dashboard](https://nsirivolu27.github.io/fantasy-copilot/?league=1391520474978066432&teams=2)**
+
+Babble opens with nihalsirivolu's team selected. Sync a Sleeper username to discover every
+current-season league, or connect a league URL. Choose teams, view weekly lineups and actual
+scores, compare season analytics, and follow score changes as games progress. Connections can
+be removed, shared by link, or exported/imported as portable JSON preferences.
+
+GitHub Pages serves the interactive dashboard. The browser reads Sleeper every minute while
+visible; no scheduled commits are needed. See [dashboard setup](./GITHUB-DASHBOARD.md).
+
+## Running app and plugin
 
 Open `/live` in your running app, paste a Sleeper league URL, and share the resulting link.
 Scores refresh every minute while the page is visible, with season power rankings, weekly

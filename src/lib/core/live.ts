@@ -1,3 +1,9 @@
+/** A display bar for nonnegative score totals, never a win probability. */
+export function scoreShare(points: number, opponentPoints: number) {
+  if (!Number.isFinite(points) || !Number.isFinite(opponentPoints) || points < 0 || opponentPoints < 0 || points + opponentPoints === 0) return null;
+  return points / (points + opponentPoints) * 100;
+}
+
 /** Compare actual weekly scores with every other team, including tied scores. */
 export function weeklyScoreboard(scores: { teamId: string; points: number }[]) {
   if (scores.some((s) => !Number.isFinite(s.points))) throw new Error("Scores must be finite.");

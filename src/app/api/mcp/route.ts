@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { authenticate } from "@/lib/api/auth";
 import { getActiveLeague } from "@/lib/settings";
 import { runTool, tools } from "@/lib/tools/registry";
+import { mcpInputSchema } from "@/lib/tools/mcpSchema";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -46,7 +47,7 @@ async function buildHandler() {
     for (const prompt of MCP_PROMPTS) {
       server.registerPrompt?.(
         prompt.name,
-        { title: prompt.title, description: prompt.description, argsSchema: {} },
+        { title: prompt.title, description: prompt.description, argsSchema: mcpInputSchema({ type: "object", properties: {} }) },
         async () => ({
           messages: [{ role: "user", content: { type: "text", text: prompt.text } }],
         }),
@@ -59,7 +60,7 @@ async function buildHandler() {
         {
           title: tool.title,
           description: tool.description,
-          inputSchema: tool.inputSchema,
+          inputSchema: mcpInputSchema(tool.inputSchema),
           annotations: { readOnlyHint: tool.readOnly },
         },
         async (input: Record<string, unknown>) => {

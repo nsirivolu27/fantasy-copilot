@@ -29,6 +29,8 @@
     "prisma:schema": "node scripts/prisma-schema.mjs",
     "dev": "npm run prisma:schema && next dev",
     "build": "npm run prisma:schema && prisma generate --schema=prisma/generated-schema.prisma && next build",
+    "build:dashboard": "next build github-dashboard",
+    "dev:dashboard": "next dev github-dashboard -p 3218",
     "start": "next start -H 0.0.0.0 -p ${PORT:-3000}",
     "lint": "next lint",
     "db:push": "npm run prisma:schema && prisma db push --schema=prisma/generated-schema.prisma",
@@ -36,7 +38,7 @@
     "db:generate": "npm run prisma:schema && prisma generate --schema=prisma/generated-schema.prisma",
     "postinstall": "npm run db:generate",
     "typecheck": "tsc --noEmit",
-    "test": "npm run test:sleeper && npm run test:rag && npm run test:projections && npm run test:trade && npm run test:format && npm run test:schedule && npm run test:matchups && npm run test:league && npm run test:auth && npm run test:live && npm run test:boundaries",
+    "test": "npm run test:sleeper && npm run test:rag && npm run test:projections && npm run test:trade && npm run test:format && npm run test:schedule && npm run test:matchups && npm run test:league && npm run test:auth && npm run test:live && npm run test:dashboard && npm run test:boundaries",
     "test:sleeper": "node --experimental-strip-types scripts/test-normalize.mjs",
     "test:rag": "node --experimental-strip-types scripts/test-rag.mjs",
     "test:projections": "node --experimental-strip-types scripts/test-projections.mjs",
@@ -50,7 +52,8 @@
     "test:league": "node --experimental-strip-types scripts/test-league.mjs",
     "test:format": "node --experimental-strip-types scripts/test-format.mjs",
     "test:auth": "node --experimental-strip-types scripts/test-auth.mjs",
-    "test:live": "tsx scripts/test-live.mts"
+    "test:live": "tsx scripts/test-live.mts",
+    "test:dashboard": "tsx scripts/test-dashboard.mts"
   },
   "dependencies": {
     "@prisma/client": "^6.5.0",

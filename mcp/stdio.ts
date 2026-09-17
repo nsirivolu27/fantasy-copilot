@@ -56,7 +56,7 @@ async function main() {
       (request.params.arguments ?? {}) as Record<string, unknown>,
       { leagueId: league.id },
     );
-    return { content: [{ type: "text", text: result.summary }] };
+    return { content: [{ type: "text", text: result.summary }, { type: "text", text: JSON.stringify(result.data) }] };
   });
 
   await server.connect(new StdioServerTransport());

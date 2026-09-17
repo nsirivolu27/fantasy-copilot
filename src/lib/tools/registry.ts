@@ -9,6 +9,9 @@ import { getLeagueHub } from "@/lib/league/service";
 import { getLeagueFormat } from "@/lib/league/format";
 import { VERDICT_LABEL } from "@/lib/core";
 import type { NormalizedSlot } from "@/lib/platforms/types";
+import { getLiveSnapshot } from "@/lib/live/service";
+import { selectLiveTeams } from "@/lib/live/selection";
+import { parseTeamSelection } from "@/lib/live/profile";
 
 /**
  * The tool registry: every capability defined exactly once.
@@ -75,6 +78,28 @@ async function findTeam(leagueId: string, nameOrMine: string) {
 }
 
 export const tools: FantasyTool[] = [
+  {
+    name: "get_live_dashboard",
+    title: "Live team dashboard",
+    description: "Actual Sleeper scores, weekly lineups (player IDs), all-play comparisons, and season power rankings for explicitly selected teams. Use the league ID and team IDs from an exported dashboard. This filters this response only; it does not change permissions or the active league.",
+    inputSchema: { type: "object", properties: {
+      league_id: { type: "string", description: "Sleeper league ID from the dashboard. Must match the server's synced league." },
+      team_ids: { type: "string", description: "Comma-separated Sleeper roster IDs. An empty string displays no teams." },
+      week: { type: "string", description: "Optional scoring week, 1 through 18. Omit for current week." },
+    }, required: ["league_id", "team_ids"] },
+    readOnly: true,
+    handler: async (input, ctx) => {
+      const league = await loadLeague(ctx.leagueId);
+      if (league.platform !== "sleeper" || str(input.league_id) !== league.platformLeagueId) throw new Error("This dashboard belongs to a different league. Sync the requested Sleeper league in this app first.");
+      if (typeof input.team_ids !== "string") throw new Error("Supply team_ids from your dashboard export.");
+      const ids = parseTeamSelection(input.team_ids)!;
+      const week = str(input.week) ? Number(input.week) : undefined;
+      if (week !== undefined && (!Number.isInteger(week) || week < 1 || week > 18)) throw new Error("Choose a scoring week from 1 to 18.");
+      const data = selectLiveTeams(await getLiveSnapshot(league.platformLeagueId, week), ids);
+      const scores = data.rankings.map(team => `${team.name}: ${data.matchups.find(row => row.platformTeamId === team.teamId)?.points.toFixed(2) ?? "no score reported"}`).join("; ");
+      return { summary: `${league.name}, week ${data.week}. ${scores || "No teams selected."} Fetched ${data.fetchedAt}.${data.stale ? " Stale: upstream refresh failed." : ""}${data.fixture ? " Demo fixture data." : ""}`, data };
+    },
+  },
   {
     name: "get_league_info",
     title: "League info",

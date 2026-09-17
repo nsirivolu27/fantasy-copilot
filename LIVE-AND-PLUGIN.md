@@ -1,5 +1,9 @@
 # Live league view and plugin package
 
+The interactive team dashboard now also builds for GitHub Pages. See
+[GitHub dashboard setup](./GITHUB-DASHBOARD.md) for account discovery, selected teams,
+portable exports, removal, and the `get_live_dashboard` MCP tool.
+
 ## What is implemented
 
 Open `/live` and enter a Sleeper league ID or league URL. Share the resulting
@@ -10,7 +14,8 @@ season power rankings, median scoring, and all-play comparisons. A reported zero
 commissioner overrides take precedence. All-play counts ties and includes teams on a bye
 when Sleeper reports their score. Missing weekly rows are excluded, with coverage displayed.
 
-The browser polls every minute while visible. The server shares a one-minute snapshot per
+The dashboard browser polls the public Sleeper API every minute while visible. The MCP/API
+server separately shares a one-minute snapshot per
 league/week and coalesces concurrent refreshes, with bounded in-memory caches. Failed refreshes
 preserve the previous snapshot and display a stale warning. Caches are per process and do not
 survive a restart. This is polling, not a guaranteed real-time scoring feed.
@@ -28,14 +33,14 @@ npm run typecheck
 npm run build
 ```
 
-For an offline preview, run with `SLEEPER_FIXTURES=1` and open
-`/live?league=1124839284756483920`. A prominent banner identifies fixture data. Remove that
-environment variable before connecting a real league. Historical leagues need an explicit week.
+For an offline dashboard preview, use **Explore sample dashboard**, or open
+`/live?demo=1&league=1124839284756483920&teams=1`. A prominent banner identifies fixture data.
+`SLEEPER_FIXTURES=1` still controls the server API's fixture mode. Historical leagues need an explicit week.
 
 ## GitHub and Replit
 
-GitHub stores the source and plugin package. Run the Next.js app and MCP endpoint on Replit
-or another Node host; GitHub Pages cannot run this backend.
+GitHub stores the source, plugin package, and static interactive dashboard. Run the full
+Next.js app and MCP endpoint on Replit or another Node host; GitHub Pages cannot run this backend.
 
 1. Import this repository into Replit or pull the reviewed feature branch into the existing Repl.
 2. Use a persistent Postgres database for the full app. Follow [REPLIT.md](./REPLIT.md), especially

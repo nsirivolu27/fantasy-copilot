@@ -75,6 +75,8 @@ const matchupSchema = z.array(z.object({
   matchup_id: z.union([z.number().int(), z.string().min(1)]).nullable(),
   points: z.number().finite(),
   custom_points: z.number().finite().nullish(),
+  starters: z.array(z.string()).nullish(),
+  players: z.array(z.string()).nullish(),
 }));
 
 /** Validate the entire score snapshot so missing points never masquerade as zero. */
@@ -88,6 +90,8 @@ export function normalizeMatchups(raw: unknown, week: number): NormalizedMatchup
     platformTeamId: String(row.roster_id),
     matchupId: row.matchup_id === null ? `bye:${row.roster_id}` : String(row.matchup_id),
     points: row.custom_points ?? row.points,
+    starters: row.starters ?? undefined,
+    players: row.players ?? undefined,
   }));
 }
 
