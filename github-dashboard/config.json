@@ -1,0 +1,7 @@
+{
+  "profiles": [
+    { "version": 1, "platform": "sleeper", "leagueId": "1391520474978066432", "name": "Babble", "teamIds": ["2"] },
+    { "version": 1, "platform": "sleeper", "leagueId": "1390815931600494592", "name": "PS5", "teamIds": ["6"] },
+    { "version": 1, "platform": "sleeper", "leagueId": "1389738747649593344", "name": "tech rejects", "teamIds": ["2"] }
+  ]
+}

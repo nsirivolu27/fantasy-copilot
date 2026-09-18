@@ -2,6 +2,34 @@
 
 # Fantasy Copilot
 
+## Live team dashboard
+
+**[Open the live dashboard](https://nsirivolu27.github.io/fantasy-copilot/?league=1391520474978066432&teams=2)**
+
+Babble opens with nihalsirivolu's team selected. Sync a Sleeper username to discover every
+current-season league, or connect a league URL. Choose teams, view weekly lineups and actual
+scores, compare season analytics, and follow score changes as games progress. Connections can
+be removed, shared by link, or exported/imported as portable JSON preferences.
+
+In **Roster**, each player shows actual league points and a weekly Sleeper projection
+scored with your league settings. Expand a player for the available passing, rushing,
+receiving, kicking, defensive, and usage statistics, projected stats, and scoring breakdown.
+Missing stats stay blank; incomplete scoring bonuses are identified beside the projection.
+
+GitHub Pages serves the interactive dashboard. The browser reads Sleeper every minute while
+visible; no scheduled commits are needed. See [dashboard setup](./GITHUB-DASHBOARD.md).
+
+## Running app and plugin
+
+Open `/live` in your running app, paste a Sleeper league URL, and share the resulting link.
+Scores refresh every minute while the page is visible, with season power rankings, weekly
+median scoring, and all-play comparisons. Failed refreshes keep the last good snapshot visible.
+
+The [plugin authoring package](./plugins/fantasy-copilot/) includes portable and Codex manifests
+plus a league check-in skill. The hosted MCP connection and public directory listing still need
+configuration. See [live hosting and plugin setup](./LIVE-AND-PLUGIN.md) for what is ready and
+what remains before hosting separate users' workspaces.
+
 [![CI](https://github.com/nsirivolu27/fantasy-copilot/actions/workflows/ci.yml/badge.svg)](https://github.com/nsirivolu27/fantasy-copilot/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 [![PRs welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](./CONTRIBUTING.md)

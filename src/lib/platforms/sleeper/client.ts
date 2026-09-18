@@ -17,6 +17,7 @@ const FIXTURE_MAP: { test: RegExp; file: string }[] = [
   { test: /^\/league\/[^/]+\/rosters$/, file: "rosters.json" },
   { test: /^\/league\/[^/]+\/users$/, file: "users.json" },
   { test: /^\/players\/nfl$/, file: "players.json" },
+  { test: /^\/league\/[^/]+\/matchups\/\d+$/, file: "matchups.json" },
 ];
 
 async function readFixture<T>(pathname: string): Promise<T> {

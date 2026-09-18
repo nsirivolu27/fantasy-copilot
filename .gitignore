@@ -10,3 +10,5 @@ next-env.d.ts
 prisma/generated-schema.prisma
 player_stats_*.csv
 backtest-results.json
+github-dashboard/out/
+*.tsbuildinfo

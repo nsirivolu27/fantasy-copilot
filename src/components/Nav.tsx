@@ -9,6 +9,7 @@ import { usePathname } from "next/navigation";
  * and touch scrollable.
  */
 const LINKS = [
+  { href: "/live", label: "Live" },
   { href: "/", label: "League" },
   { href: "/league", label: "Hub" },
   { href: "/lineup", label: "Lineup" },
