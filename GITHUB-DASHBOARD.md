@@ -20,6 +20,17 @@ Live URL: https://nsirivolu27.github.io/fantasy-copilot/
 
 ## Live data and analytics
 
+The Roster view includes each player's league-specific actual matchup points and
+weekly Sleeper projections scored with the league's scoring multipliers. Expand
+a player to see every numeric stat supplied by the weekly actual/projection feed,
+the NFL opponent and date, and the scoring contributions. Preset feed PPR totals
+are shown only as reference stats and never substituted for league scoring.
+Missing data displays a dash. Missing bonus/threshold inputs mark a projection
+as partial. These estimates do not replace the full app's calibrated Copilot model.
+The public `api.sleeper.com/stats` and `/projections` feeds were verified against
+live responses but are outside the supported v1 API documentation; failures show
+a warning and preserve previously loaded data without interrupting league scores.
+
 The page reads the public Sleeper API every 60 seconds while visible. It refreshes on return
 to the tab or network. Pause stops automatic refresh; Refresh is manual. The last successful
 timestamp stays visible when upstream fails. This is polling, not guaranteed real-time or

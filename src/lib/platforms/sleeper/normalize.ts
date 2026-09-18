@@ -77,6 +77,7 @@ const matchupSchema = z.array(z.object({
   custom_points: z.number().finite().nullish(),
   starters: z.array(z.string()).nullish(),
   players: z.array(z.string()).nullish(),
+  players_points: z.record(z.number().finite()).nullish(),
 }));
 
 /** Validate the entire score snapshot so missing points never masquerade as zero. */
@@ -92,6 +93,7 @@ export function normalizeMatchups(raw: unknown, week: number): NormalizedMatchup
     points: row.custom_points ?? row.points,
     starters: row.starters ?? undefined,
     players: row.players ?? undefined,
+    playerPoints: row.players_points ?? undefined,
   }));
 }
 

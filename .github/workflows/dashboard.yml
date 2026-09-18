@@ -28,6 +28,7 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run test:dashboard
+      - run: npm run test:player-stats
       - run: npm run build:dashboard
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3

@@ -106,3 +106,13 @@
 .dash-integration .dash-fine { margin-top:14px; }
 .dash-footer { font-size:12px; color:var(--muted); margin-top:32px; padding-top:20px; border-top:1px solid var(--border); flex-wrap:wrap; }
 @media(max-width:720px) { .dashboard-shell { padding:20px 16px; } .dash-heading { flex-direction:column; gap:14px; } .dash-connect { flex-direction:column; align-items:stretch; } .dash-connect form { flex-wrap:wrap; } .dash-connect label { flex-basis:100%; } .dash-integration form { flex-wrap:wrap; } .dash-integration label { flex-basis:100%; } .dash-league-heading { align-items:flex-start; } .dash-toolbar { gap:12px; } .dash-score strong { font-size:56px; } }
+.dash-player-details { border-bottom:1px solid var(--border-soft); }
+.dash-player-details>summary { cursor:pointer; list-style:none; }
+.dash-player-details>summary::-webkit-details-marker { display:none; }
+.dash-player-points { min-width:64px; text-align:right; font-variant-numeric:tabular-nums; }
+.dash-player-points small { font-size:11px; }
+.dash-player-breakdown { padding:12px 0 20px; }
+.dash-player-breakdown table { font-size:12px; }
+.dash-player-breakdown th,.dash-player-breakdown td { padding:10px; }
+.dash-player-breakdown th small { display:block; font-size:10px; font-weight:400; }
+@media(max-width:480px) { .dash-player { gap:7px; } .dash-player-points { min-width:48px; } .dash-player .dash-slot { min-width:30px; } }

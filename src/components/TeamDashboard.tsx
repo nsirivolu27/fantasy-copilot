@@ -7,6 +7,8 @@ import { DashboardProfileSchema, parseProfiles, parseTeamSelection, PROFILE_STOR
 import { discoverSleeperTeams, readBrowserPlayers } from "@/lib/platforms/browser";
 import type { NormalizedPlayer } from "@/lib/platforms/types";
 import { scoreShare } from "@/lib/core/live";
+import { PlayerDetails } from "@/components/PlayerDetails";
+import { readWeeklyPlayerData, type WeeklyPlayerData } from "@/lib/platforms/sleeper/playerStats";
 
 type FeedItem = { teamId: string; at: string; before: number; after: number };
 const money = (value: number | null | undefined) => value == null ? "—" : value.toFixed(2);
@@ -31,6 +33,8 @@ export function TeamDashboard({ standalone = false, initialLeague = "", initialW
   const [data, setData] = useState<DashboardSnapshot | null>(null);
   const [players, setPlayers] = useState<Record<string, NormalizedPlayer>>({});
   const [playerError, setPlayerError] = useState("");
+  const [weeklyPlayers, setWeeklyPlayers] = useState<WeeklyPlayerData | null>(null);
+  const [weeklyLoading, setWeeklyLoading] = useState(false);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [loading, setLoading] = useState(false);
@@ -113,6 +117,21 @@ export function TeamDashboard({ standalone = false, initialLeague = "", initialW
     return () => { cancelled = true; };
   }, [!!data, demo]);
 
+  useEffect(() => {
+    if (!data || demo) { setWeeklyPlayers(null); return; }
+    let cancelled = false;
+    setWeeklyLoading(true);
+    readWeeklyPlayerData(data.league.season, data.week).then(result => {
+      if (!cancelled) setWeeklyPlayers(old => ({
+        ...result,
+        stats: result.warnings.some(w => w.includes("statistics")) ? old?.stats ?? result.stats : result.stats,
+        projections: result.warnings.some(w => w.includes("projections")) ? old?.projections ?? result.projections : result.projections,
+        warnings: result.warnings.map(w => old ? `${w} Previously loaded player data is retained; it may be stale.` : w),
+      }));
+    }).finally(() => { if (!cancelled) setWeeklyLoading(false); });
+    return () => { cancelled = true; };
+  }, [data, demo]);
+
   function updateUrl(id: string, ids: string[], scoringWeek = week, isDemo = false) {
     const query = new URLSearchParams({ league: id, teams: ids.join(",") });
     if (scoringWeek) query.set("week", scoringWeek);
@@ -120,7 +139,7 @@ export function TeamDashboard({ standalone = false, initialLeague = "", initialW
     window.history.replaceState(null, "", `${window.location.pathname}?${query}`);
   }
   function connect(id: string, ids: string[] = [], isDemo = false) {
-    previous.current = null; setData(null); setFeed([]); setError(""); setPlayers({}); setPlayerError("");
+    previous.current = null; setData(null); setFeed([]); setError(""); setPlayers({}); setPlayerError(""); setWeeklyPlayers(null);
     setLeagueId(id); setInput(id); setWeek(""); setSelected(ids); setDemo(isDemo); setTab("Overview");
     setRefresh(v => v + 1);
     updateUrl(id, ids, "", isDemo);
@@ -206,7 +225,7 @@ export function TeamDashboard({ standalone = false, initialLeague = "", initialW
     {data && <>
       {demo && <div className="dash-banner tint-warn"><div><strong>Sample dashboard.</strong> These are bundled test records, not your league or a live game. Connect your Sleeper league above.</div></div>}
       <section className="dash-league-heading"><div><h2>{data.league.name}</h2><p className="dash-muted">{data.league.season} season · {data.teams.length} teams · {data.league.isDynasty ? "Dynasty" : data.league.isKeeper ? "Keeper" : "Redraft"}</p><p className="dash-timestamp">{demo ? "Sample snapshot" : `Last successful sync ${new Date(data.fetchedAt).toLocaleTimeString()}`} · Scores follow Sleeper’s reporting delay</p></div>
-        <div className="dash-actions"><label>Scoring week<select value={week} disabled={demo} onChange={event => { const value = event.target.value; setWeek(value); setData(null); setFeed([]); previous.current = null; updateUrl(leagueId, selected, value, demo); }}><option value="">Current {data.league.currentWeek > 0 ? `(${data.league.currentWeek})` : "— choose week"}</option>{Array.from({ length: 18 }, (_, i) => <option key={i + 1} value={i + 1}>Week {i + 1}</option>)}</select></label><button disabled={loading || demo} onClick={() => setRefresh(v => v + 1)}>Refresh</button><button disabled={demo} onClick={() => setPaused(v => !v)}>{paused ? "Resume" : "Pause"}</button></div>
+        <div className="dash-actions"><label>Scoring week<select value={week} disabled={demo} onChange={event => { const value = event.target.value; setWeek(value); setData(null); setWeeklyPlayers(null); setFeed([]); previous.current = null; updateUrl(leagueId, selected, value, demo); }}><option value="">Current {data.league.currentWeek > 0 ? `(${data.league.currentWeek})` : "— choose week"}</option>{Array.from({ length: 18 }, (_, i) => <option key={i + 1} value={i + 1}>Week {i + 1}</option>)}</select></label><button disabled={loading || demo} onClick={() => setRefresh(v => v + 1)}>Refresh</button><button disabled={demo} onClick={() => setPaused(v => !v)}>{paused ? "Resume" : "Pause"}</button></div>
       </section>
 
       <details className="dash-selection" open={!selected.length}>
@@ -234,7 +253,7 @@ export function TeamDashboard({ standalone = false, initialLeague = "", initialW
         </article>;
       })}</div>}
 
-      {tab === "Roster" && <><p className="dash-fine">Weekly lineups come from the selected matchup week. Current roster and injury labels are identified separately.</p>{playerError && <p className="dash-banner tint-warn">{playerError}</p>}<div className="dash-roster-grid">{visibleTeams.map(team => {
+      {tab === "Roster" && <>{weeklyLoading && <p className="dash-fine" role="status">Refreshing player statistics and projections…</p>}{weeklyPlayers?.warnings.map(message => <p key={message} className="dash-banner tint-warn">{message}</p>)}<p className="dash-fine">Weekly lineups come from the selected matchup week. Current roster and injury labels are identified separately.</p>{playerError && <p className="dash-banner tint-warn">{playerError}</p>}<div className="dash-roster-grid">{visibleTeams.map(team => {
         const matchup = data.matchups.find(m => m.platformTeamId === team.platformTeamId);
         const roster = data.rosters.find(r => r.platformTeamId === team.platformTeamId);
         const historical = !!matchup?.starters && !!matchup?.players;
@@ -245,7 +264,7 @@ export function TeamDashboard({ standalone = false, initialLeague = "", initialW
         ] : roster?.spots ?? [];
         return <section className="dash-panel" key={team.platformTeamId}><div className="dash-panel-heading"><h3>{team.name}</h3><span className="dash-fine">{historical ? `Week ${data.week} lineup` : "Current roster · not historical"}</span></div><div className="dash-roster-list">{spots.map((spot, index) => {
           const player = players[spot.platformPlayerId];
-          return <div key={`${spot.platformPlayerId}:${index}`} className={`dash-player ${!spot.isStarter ? "bench" : ""}`}><span className="dash-slot">{spot.slot}</span><div><strong>{spot.platformPlayerId === "0" ? "Empty slot" : player?.fullName ?? `Player ${spot.platformPlayerId}`}</strong><small>{player ? `${player.position ?? ""} · ${player.nflTeam ?? "Free agent"}` : "Player details unavailable"}</small></div>{player?.injuryStatus && <span className="dash-injury tint-warn">{player.injuryStatus} · now</span>}</div>;
+          return <PlayerDetails key={`${spot.platformPlayerId}:${index}`} id={spot.platformPlayerId} slot={spot.slot} starter={spot.isStarter} player={player} actual={matchup?.playerPoints?.[spot.platformPlayerId]} weekly={weeklyPlayers} scoring={data.league.scoringSettings} />;
         })}{!spots.length && <p className="dash-muted">No roster reported.</p>}</div></section>;
       })}</div></>}
 

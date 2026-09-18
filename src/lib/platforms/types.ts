@@ -77,6 +77,7 @@ export interface NormalizedRoster {
 }
 
 export interface NormalizedMatchup {
+  playerPoints?: Record<string, number>;
   week: number;
   platformTeamId: string;
   /** Teams sharing a matchupId play each other. */

@@ -11,6 +11,11 @@ current-season league, or connect a league URL. Choose teams, view weekly lineup
 scores, compare season analytics, and follow score changes as games progress. Connections can
 be removed, shared by link, or exported/imported as portable JSON preferences.
 
+In **Roster**, each player shows actual league points and a weekly Sleeper projection
+scored with your league settings. Expand a player for the available passing, rushing,
+receiving, kicking, defensive, and usage statistics, projected stats, and scoring breakdown.
+Missing stats stay blank; incomplete scoring bonuses are identified beside the projection.
+
 GitHub Pages serves the interactive dashboard. The browser reads Sleeper every minute while
 visible; no scheduled commits are needed. See [dashboard setup](./GITHUB-DASHBOARD.md).
 
