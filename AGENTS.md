@@ -2,7 +2,7 @@
 
 Context for coding agents working in this repo.
 
-**This file is canonical.** `DEVELOPER-NOTES.md` and `.cursorrules` are
+**This file is canonical.** Codex reads it automatically. `CLAUDE.md` and `.cursorrules` are
 shorter pointers to it, so the rules live in one place and cannot drift.
 
 ## What this is
@@ -19,7 +19,7 @@ chat interface grounded in the league's real data and an MCP server exposing the
 npm install
 npm run db:push        # create/update the schema (idempotent)
 npm run dev            # http://localhost:3000
-npm test               # 188 checks, no database and no network needed
+npm test               # 133 checks, no database and no network needed
 npx tsc --noEmit       # typecheck
 npm run build          # full build
 npm run backtest 2024  # measure the projection model against real data
@@ -165,10 +165,3 @@ than a worse RB, and a model that lost to its own baseline.
 - Hardcode scoring, roster slots, week, season or a provider.
 - Weaken or delete a test to make it pass.
 - Skip `npm test`, `npx tsc --noEmit` and `npm run build` before calling something done.
-
-
-## Injury risk pipeline
-The TypeScript implementation lives in `src/lib/injury/`, with
-`knee-injury-severity-map.json` as the category and recovery source of truth. The start/sit
-adjustment is wired through `src/lib/lineup/service.ts`; historical calibration extends
-`src/lib/data/nflverse.ts` and uses free nflverse releases.

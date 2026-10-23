@@ -38,14 +38,11 @@
     "db:generate": "npm run prisma:schema && prisma generate --schema=prisma/generated-schema.prisma",
     "postinstall": "npm run db:generate",
     "typecheck": "tsc --noEmit",
-    "test": "npm run test:sleeper && npm run test:injury && npm run test:rag && npm run test:projections && npm run test:trade && npm run test:format && npm run test:schedule && npm run test:matchups && npm run test:league && npm run test:auth && npm run test:live && npm run test:dashboard && npm run test:game-status && npm run test:player-stats && npm run test:boundaries",
+    "test": "npm run test:sleeper && npm run test:rag && npm run test:projections && npm run test:trade && npm run test:format && npm run test:schedule && npm run test:matchups && npm run test:league && npm run test:auth && npm run test:live && npm run test:dashboard && npm run test:game-status && npm run test:player-stats && npm run test:boundaries",
     "test:sleeper": "node --experimental-strip-types scripts/test-normalize.mjs",
-    "test:injury": "node --experimental-strip-types src/lib/injury/classify.test.mjs && node --experimental-strip-types src/lib/injury/risk.test.mjs && node --experimental-strip-types src/lib/injury/adjust.test.mjs && node --experimental-strip-types src/lib/injury/calibrate.test.mjs",
-    "test:player-stats": "node --experimental-strip-types scripts/test-player-stats.mjs && tsx scripts/test-player-stats.mts",
     "test:rag": "node --experimental-strip-types scripts/test-rag.mjs",
     "test:projections": "node --experimental-strip-types scripts/test-projections.mjs",
     "backtest": "node --experimental-strip-types scripts/backtest.mjs",
-    "calibrate:injuries": "node --experimental-strip-types scripts/calibrate-injuries.mjs",
     "test:trade": "node --experimental-strip-types scripts/test-trade.mjs",
     "test:boundaries": "node --experimental-strip-types scripts/test-boundaries.mjs",
     "test:schedule": "node --experimental-strip-types scripts/test-schedule.mjs",
@@ -57,7 +54,8 @@
     "test:auth": "node --experimental-strip-types scripts/test-auth.mjs",
     "test:live": "tsx scripts/test-live.mts",
     "test:dashboard": "tsx scripts/test-dashboard.mts",
-    "test:game-status": "node --experimental-strip-types scripts/test-game-status.mjs"
+    "test:game-status": "node --experimental-strip-types scripts/test-game-status.mjs",
+    "test:player-stats": "tsx scripts/test-player-stats.mts"
   },
   "dependencies": {
     "@prisma/client": "^6.5.0",

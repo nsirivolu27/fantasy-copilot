@@ -8,7 +8,6 @@ import type { NormalizedSlot } from "@/lib/platforms/types";
 import { Badge, Banner, Card, CardHeader, EmptyState, Stat } from "@/components/ui";
 import { getStartSitAdvice } from "@/lib/lineup/service";
 import { getLeagueFormat } from "@/lib/league/format";
-import { getRosterStatSummaries } from "@/lib/league/rosterStats";
 import { TeamCard, type RosterRow } from "@/components/TeamCard";
 
 export const dynamic = "force-dynamic";
@@ -67,7 +66,6 @@ export default async function LeaguePage() {
     where: { leagueId: league.id, week: league.currentWeek, season: league.season },
   });
   const projectionByPlayer = new Map(projectionRows.map((p) => [p.playerId, p]));
-  const statSummaryByPlayer = await getRosterStatSummaries(league.id, league.season, scoring);
 
   // Lineup problems for the user's own team, surfaced before anything else.
   const advice = await getStartSitAdvice(league.id).catch(() => null);
@@ -87,13 +85,11 @@ export default async function LeaguePage() {
     position: spot.player.position,
     nflTeam: spot.player.nflTeam,
     injuryStatus: spot.player.injuryStatus,
-    injuryNote: spot.player.injuryNote,
     positionColor: sport.positionColor(spot.player.position),
     projectedPoints: projectionByPlayer.get(spot.player.id)?.projectedPoints ?? null,
     floor: projectionByPlayer.get(spot.player.id)?.floor ?? null,
     ceiling: projectionByPlayer.get(spot.player.id)?.ceiling ?? null,
     confidence: projectionByPlayer.get(spot.player.id)?.confidence ?? null,
-    stats: statSummaryByPlayer.get(spot.player.id) ?? null,
   });
 
   return (

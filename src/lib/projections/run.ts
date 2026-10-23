@@ -87,6 +87,7 @@ export async function runProjections(leagueId: string, week?: number): Promise<R
       seasonAveragePoints: scoredGames.length ? totalPoints / scoredGames.length : undefined,
       seasonAverageOpportunity: scoredGames.length ? totalOpportunity / scoredGames.length : undefined,
       seasonPointsPerOpportunity: totalOpportunity > 0 ? totalPoints / totalOpportunity : 0,
+      injuryStatus: player.injuryStatus,
       isByeWeek: player.byeWeek === targetWeek,
       replacementLevel: replacementLevel[player.position ?? ""] ?? 4,
     });

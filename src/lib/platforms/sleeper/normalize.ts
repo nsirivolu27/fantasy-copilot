@@ -225,7 +225,6 @@ export function normalizePlayer(id: string, raw: unknown): NormalizedPlayer {
     age: typeof p.age === "number" ? p.age : undefined,
     yearsExp: typeof p.years_exp === "number" ? p.years_exp : undefined,
     injuryStatus: typeof p.injury_status === "string" ? p.injury_status : undefined,
-    injuryBodyPart: typeof p.injury_body_part === "string" ? p.injury_body_part : undefined,
     injuryNote: typeof p.injury_notes === "string" ? p.injury_notes : undefined,
   };
 }
