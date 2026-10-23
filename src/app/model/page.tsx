@@ -110,7 +110,7 @@ export default async function ModelPage() {
             weighted per position by what actually helped in the backtest: QB 80%, RB 40%, TE 30%,
             WR 20%.
           </li>
-          <li>Start/sit advice applies nflverse-calibrated availability after computing the base projection.</li>
+          <li>Injury designations gate the projection; Out and IR project zero, Questionable takes 15% off.</li>
           <li>Floor and ceiling come from the player&apos;s own 20th/80th percentile spread.</li>
           <li>
             Confidence combines sample size and role stability, a steady 10-touch back scores higher

@@ -118,6 +118,8 @@ export async function syncLeague(platform: PlatformId, platformLeagueId: string)
       waiverBudget: league.waiverBudget,
       playoffWeekStart: league.playoffWeekStart,
       playoffTeams: league.playoffTeams,
+      playoffWeekStart: league.playoffWeekStart,
+      playoffTeams: league.playoffTeams,
       isDynasty: league.isDynasty,
       isKeeper: league.isKeeper,
       syncStatus: "ok",

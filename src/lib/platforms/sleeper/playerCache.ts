@@ -69,7 +69,6 @@ export async function upsertPlayers(players: NormalizedPlayer[]): Promise<void> 
             age: p.age,
             yearsExp: p.yearsExp,
             injuryStatus: p.injuryStatus,
-            injuryBodyPart: p.injuryBodyPart,
             injuryNote: p.injuryNote,
           },
           update: {
@@ -80,7 +79,6 @@ export async function upsertPlayers(players: NormalizedPlayer[]): Promise<void> 
             age: p.age,
             yearsExp: p.yearsExp,
             injuryStatus: p.injuryStatus,
-            injuryBodyPart: p.injuryBodyPart,
             injuryNote: p.injuryNote,
           },
         }),

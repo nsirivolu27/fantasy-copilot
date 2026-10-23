@@ -95,7 +95,6 @@ model Player {
   age          Int?
   yearsExp     Int?
   injuryStatus String?
-  injuryBodyPart String?
   injuryNote   String?
   byeWeek      Int?
 

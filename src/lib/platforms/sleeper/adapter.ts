@@ -2,7 +2,6 @@ import { sleeperGet } from "./client";
 import {
   SleeperStateSchema,
   normalizeLeague,
-  normalizeMatchups,
   normalizePlayer,
   normalizeRosters,
   normalizeTeams,
@@ -43,10 +42,7 @@ export class SleeperAdapter implements PlatformAdapter {
       sleeperGet<unknown>(`/league/${encodeURIComponent(leagueId)}`),
       this.getNflState(),
     ]);
-    const league = normalizeLeague(raw, state.week, state.seasonType);
-    // An old league must not silently display the current season's week.
-    if (league.season !== state.season) league.currentWeek = 0;
-    return league;
+    return normalizeLeague(raw, state.week, state.seasonType);
   }
 
   async getTeams(leagueId: string): Promise<NormalizedTeam[]> {
@@ -86,10 +82,23 @@ export class SleeperAdapter implements PlatformAdapter {
    * on bye in a league with an odd number of teams.
    */
   async getMatchups(leagueId: string, week: number): Promise<NormalizedMatchup[]> {
-    const rows = await sleeperGet<unknown>(
+    const rows = await sleeperGet<unknown[]>(
       `/league/${encodeURIComponent(leagueId)}/matchups/${week}`,
     );
-    return normalizeMatchups(rows, week);
+
+    const out: NormalizedMatchup[] = [];
+    for (const raw of rows ?? []) {
+      const row = raw as { roster_id?: number | string; matchup_id?: number | string; points?: number };
+      if (row.roster_id == null || row.matchup_id == null) continue;
+      const points = Number(row.points ?? 0);
+      out.push({
+        week,
+        platformTeamId: String(row.roster_id),
+        matchupId: String(row.matchup_id),
+        points: Number.isFinite(points) ? points : 0,
+      });
+    }
+    return out;
   }
 
   /** Adds, drops and trades for one waiver round. Not yet surfaced in the UI. */
