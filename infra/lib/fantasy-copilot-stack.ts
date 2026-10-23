@@ -1,7 +1,7 @@
 import * as cdk from "aws-cdk-lib";
 import * as ec2 from "aws-cdk-lib/aws-ec2";
 import * as ecs from "aws-cdk-lib/aws-ecs";
-import * as ecr from "aws-cdk-lib/aws-ecr";
+import * as ecrAssets from "aws-cdk-lib/aws-ecr-assets";
 import * as elbv2 from "aws-cdk-lib/aws-elasticloadbalancingv2";
 import * as rds from "aws-cdk-lib/aws-rds";
 import * as logs from "aws-cdk-lib/aws-logs";
@@ -10,11 +10,14 @@ import * as acm from "aws-cdk-lib/aws-certificatemanager";
 import * as route53 from "aws-cdk-lib/aws-route53";
 import * as targets from "aws-cdk-lib/aws-route53-targets";
 import type { Construct } from "constructs";
+import path from "node:path";
 
 export interface FantasyCopilotStackProps extends cdk.StackProps {
   domainName?: string;
   hostedZoneId?: string;
+  hostedZoneName?: string;
   dbSize?: string;
+  environmentName?: string;
 }
 
 /**
@@ -32,6 +35,10 @@ export interface FantasyCopilotStackProps extends cdk.StackProps {
 export class FantasyCopilotStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props: FantasyCopilotStackProps) {
     super(scope, id, props);
+
+    cdk.Tags.of(this).add("Project", "fantasy-copilot");
+    cdk.Tags.of(this).add("ManagedBy", "aws-cdk");
+    cdk.Tags.of(this).add("Environment", props.environmentName ?? "production");
 
     // ---- Network -----------------------------------------------------------
 
@@ -100,21 +107,12 @@ export class FantasyCopilotStack extends cdk.Stack {
       },
     });
 
-    // ---- Container image ---------------------------------------------------
-
-    const repository = new ecr.Repository(this, "Repository", {
-      repositoryName: "fantasy-copilot",
-      imageScanOnPush: true,
-      removalPolicy: cdk.RemovalPolicy.DESTROY,
-      emptyOnDelete: true,
-      lifecycleRules: [
-        { description: "Keep the last 10 images", maxImageCount: 10 },
-      ],
-    });
-
     // ---- Service -----------------------------------------------------------
 
-    const cluster = new ecs.Cluster(this, "Cluster", { vpc, containerInsights: false });
+    const cluster = new ecs.Cluster(this, "Cluster", {
+      vpc,
+      containerInsightsV2: ecs.ContainerInsights.DISABLED,
+    });
 
     const taskDefinition = new ecs.FargateTaskDefinition(this, "TaskDefinition", {
       cpu: 512,
@@ -127,7 +125,12 @@ export class FantasyCopilotStack extends cdk.Stack {
     });
 
     const container = taskDefinition.addContainer("app", {
-      image: ecs.ContainerImage.fromEcrRepository(repository, "latest"),
+      // CDK publishes a content-addressed image during deploy. A new account
+      // can therefore deploy the whole stack without first creating and
+      // populating a separate ECR repository.
+      image: ecs.ContainerImage.fromAsset(path.resolve(__dirname, "../.."), {
+        platform: ecrAssets.Platform.LINUX_ARM64,
+      }),
       logging: ecs.LogDrivers.awsLogs({
         streamPrefix: "fantasy-copilot",
         logRetention: logs.RetentionDays.TWO_WEEKS,
@@ -202,6 +205,12 @@ export class FantasyCopilotStack extends cdk.Stack {
       vpcSubnets: { subnetType: ec2.SubnetType.PUBLIC },
     });
 
+    service.connections.allowFrom(
+      loadBalancer,
+      ec2.Port.tcp(3000),
+      "Load balancer to app service",
+    );
+
     const targetGroup = new elbv2.ApplicationTargetGroup(this, "TargetGroup", {
       vpc,
       port: 3000,
@@ -224,7 +233,7 @@ export class FantasyCopilotStack extends cdk.Stack {
     if (props.domainName && props.hostedZoneId) {
       const zone = route53.HostedZone.fromHostedZoneAttributes(this, "Zone", {
         hostedZoneId: props.hostedZoneId,
-        zoneName: props.domainName.split(".").slice(-2).join("."),
+        zoneName: props.hostedZoneName ?? props.domainName.split(".").slice(-2).join("."),
       });
 
       const certificate = new acm.Certificate(this, "Certificate", {
@@ -267,7 +276,6 @@ export class FantasyCopilotStack extends cdk.Stack {
 
     // ---- Outputs -----------------------------------------------------------
 
-    new cdk.CfnOutput(this, "EcrRepositoryUri", { value: repository.repositoryUri });
     new cdk.CfnOutput(this, "DbSecretArn", { value: dbCredentials.secretArn });
     new cdk.CfnOutput(this, "AppSecretArn", {
       value: appSecrets.secretArn,

@@ -23,8 +23,9 @@ $47/month at the default size, with cheaper variants documented.
 cd infra && npm install && npx cdk bootstrap && npx cdk deploy
 ```
 
-Full walkthrough, including the first image push and how to set the app
-password, is in [infra/README.md](./infra/README.md).
+CDK builds and publishes a content-addressed image as part of the deployment,
+so there is no separate first image push. The full walkthrough, including TLS,
+GitHub OIDC deployment, and app access, is in [infra/README.md](./infra/README.md).
 
 Before inviting anyone else onto it, read
 [MULTI-TENANCY.md](./MULTI-TENANCY.md): the app is built as one league, one

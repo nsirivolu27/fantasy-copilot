@@ -1,5 +1,7 @@
 node_modules
+**/node_modules
 .next
+**/.next
 .git
 .env
 .env.local
@@ -7,3 +9,6 @@ node_modules
 prisma/dev.db*
 prisma/generated-schema.prisma
 README.md
+**/cdk.out
+github-dashboard/out
+graphify-out

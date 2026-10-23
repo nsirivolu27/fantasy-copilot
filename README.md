@@ -247,7 +247,8 @@ Where to run it:
 |---|---|
 | **[REPLIT.md](./REPLIT.md)** | Replit, fastest path from nothing to running |
 | **[DEPLOYING.md](./DEPLOYING.md)** | Vercel, Docker, Railway, Render, Fly |
-| **[AWS.md](./AWS.md)** | Production AWS: Fargate, RDS, ECR, CDK in `infra/` |
+| **[AWS architecture](./AWS-ARCHITECTURE.md)** | Reusable AWS decisions and the Fantasy Copilot production design |
+| **[infra/README.md](./infra/README.md)** | Commands for deploying the CDK stack |
 
 ## ✅ Tests
 

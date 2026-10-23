@@ -1,7 +1,7 @@
 # Fantasy Copilot, Cursor rules
 
 Read AGENTS.md first. It is the full brief: architecture, commands, testing conventions and the
-twelve rules this project is built around. DEVELOPER-NOTES.md is a shorter version of the same thing.
+twelve rules this project is built around. CLAUDE.md is a shorter version of the same thing.
 
 This is an existing working repo, nine of the thirteen phases built, 133 tests passing.
 Finish it, do not redesign it.
