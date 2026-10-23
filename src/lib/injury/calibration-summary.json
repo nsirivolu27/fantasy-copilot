@@ -1,0 +1,123 @@
+{
+  "seasons": [
+    2016,
+    2017,
+    2018,
+    2019,
+    2020,
+    2021,
+    2022,
+    2023,
+    2024,
+    2025
+  ],
+  "sources": {
+    "injuries": "https://github.com/nflverse/nflverse-data/releases/tag/injuries",
+    "participation": "https://github.com/nflverse/nflverse-data/releases/tag/snap_counts",
+    "playerIds": "https://github.com/nflverse/nflverse-data/releases/tag/weekly_rosters",
+    "schedule": "https://github.com/nflverse/nflverse-data/releases/tag/schedules"
+  },
+  "inputCounts": {
+    "injuryReports": 16405,
+    "participationWeeks": 175,
+    "scheduledGames": 2761,
+    "classifiedKneeReports": 2655
+  },
+  "method": {
+    "played": "Player logged at least one offense, defense, or special-teams snap.",
+    "episode": "Consecutive injury-report weeks for one player and category form one episode.",
+    "gamesMissedRange": "25th and 75th percentiles of scheduled regular-season games missed from episode start.",
+    "baseReturnProbability": "Share of category injury-report weeks in which the player logged a snap.",
+    "designationPlayRate": "Share of knee injury-report weeks at that designation in which the player logged a snap."
+  },
+  "categories": [
+    {
+      "id": "acl_tear",
+      "reportCount": 0,
+      "episodeCount": 0,
+      "gamesMissedLow": null,
+      "gamesMissedHigh": null,
+      "baseReturnProbability": null
+    },
+    {
+      "id": "patellar_tendon_rupture",
+      "reportCount": 0,
+      "episodeCount": 0,
+      "gamesMissedLow": null,
+      "gamesMissedHigh": null,
+      "baseReturnProbability": null
+    },
+    {
+      "id": "pcl_sprain",
+      "reportCount": 0,
+      "episodeCount": 0,
+      "gamesMissedLow": null,
+      "gamesMissedHigh": null,
+      "baseReturnProbability": null
+    },
+    {
+      "id": "meniscus_tear",
+      "reportCount": 0,
+      "episodeCount": 0,
+      "gamesMissedLow": null,
+      "gamesMissedHigh": null,
+      "baseReturnProbability": null
+    },
+    {
+      "id": "mcl_sprain",
+      "reportCount": 0,
+      "episodeCount": 0,
+      "gamesMissedLow": null,
+      "gamesMissedHigh": null,
+      "baseReturnProbability": null
+    },
+    {
+      "id": "lcl_sprain",
+      "reportCount": 0,
+      "episodeCount": 0,
+      "gamesMissedLow": null,
+      "gamesMissedHigh": null,
+      "baseReturnProbability": null
+    },
+    {
+      "id": "knee_sprain",
+      "reportCount": 0,
+      "episodeCount": 0,
+      "gamesMissedLow": null,
+      "gamesMissedHigh": null,
+      "baseReturnProbability": null
+    },
+    {
+      "id": "bone_bruise",
+      "reportCount": 0,
+      "episodeCount": 0,
+      "gamesMissedLow": null,
+      "gamesMissedHigh": null,
+      "baseReturnProbability": null
+    },
+    {
+      "id": "patellar_tendinitis",
+      "reportCount": 0,
+      "episodeCount": 0,
+      "gamesMissedLow": null,
+      "gamesMissedHigh": null,
+      "baseReturnProbability": null
+    },
+    {
+      "id": "knee_unspecified",
+      "reportCount": 2655,
+      "episodeCount": 1043,
+      "gamesMissedLow": 0,
+      "gamesMissedHigh": 1,
+      "baseReturnProbability": 0.58
+    }
+  ],
+  "designationPlayRates": {
+    "doubtful": 0,
+    "questionable": 0.64
+  },
+  "designationSampleCounts": {
+    "doubtful": 74,
+    "questionable": 762
+  }
+}

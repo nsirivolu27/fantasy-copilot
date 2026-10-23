@@ -1,0 +1,9 @@
+node_modules
+.next
+.git
+.env
+.env.local
+*.db
+prisma/dev.db*
+prisma/generated-schema.prisma
+README.md

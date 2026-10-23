@@ -1,0 +1,23 @@
+{
+  "4034": { "first_name": "Christian", "last_name": "McCaffrey", "position": "RB", "team": "SF", "age": 30, "years_exp": 9 },
+  "6794": { "first_name": "Bucky", "last_name": "Irving", "position": "RB", "team": "TB", "age": 24, "years_exp": 2 },
+  "8155": { "first_name": "Rashee", "last_name": "Rice", "position": "WR", "team": "KC", "age": 26, "years_exp": 3 },
+  "5849": { "first_name": "Derrick", "last_name": "Henry", "position": "RB", "team": "BAL", "age": 32, "years_exp": 10 },
+  "4866": { "first_name": "Luther", "last_name": "Burden", "position": "WR", "team": "CHI", "age": 22, "years_exp": 1 },
+  "7553": { "first_name": "Travis", "last_name": "Kelce", "position": "TE", "team": "KC", "age": 36, "years_exp": 13, "injury_status": "Questionable" },
+  "4195": { "first_name": "Chris", "last_name": "Boswell", "position": "K", "team": "PIT", "age": 35, "years_exp": 11 },
+  "SF": { "position": "DEF", "team": "SF" },
+  "DAL": { "position": "DEF", "team": "DAL" },
+  "9001": { "first_name": "Chuba", "last_name": "Hubbard", "position": "RB", "team": "CAR", "age": 27, "years_exp": 5 },
+  "9002": { "first_name": "Carnell", "last_name": "Tate", "position": "WR", "team": "CHI", "age": 22, "years_exp": 1 },
+  "9003": { "first_name": "Bo", "last_name": "Nix", "position": "QB", "team": "DEN", "age": 26, "years_exp": 2, "injury_status": "IR" },
+  "4881": { "first_name": "Josh", "last_name": "Allen", "position": "QB", "team": "BUF", "age": 30, "years_exp": 9 },
+  "7564": { "first_name": "Breece", "last_name": "Hall", "position": "RB", "team": "NYJ", "age": 25, "years_exp": 5 },
+  "6801": { "first_name": "Jahmyr", "last_name": "Gibbs", "position": "RB", "team": "DET", "age": 24, "years_exp": 4 },
+  "5045": { "first_name": "Justin", "last_name": "Jefferson", "position": "WR", "team": "MIN", "age": 27, "years_exp": 7 },
+  "4993": { "first_name": "Ja'Marr", "last_name": "Chase", "position": "WR", "team": "CIN", "age": 26, "years_exp": 6 },
+  "8112": { "first_name": "Brock", "last_name": "Bowers", "position": "TE", "team": "LV", "age": 23, "years_exp": 3 },
+  "2216": { "first_name": "Amon-Ra", "last_name": "St. Brown", "position": "WR", "team": "DET", "age": 27, "years_exp": 6 },
+  "4950": { "first_name": "Brandon", "last_name": "Aubrey", "position": "K", "team": "DAL", "age": 31, "years_exp": 4 },
+  "9004": { "first_name": "Trey", "last_name": "McBride", "position": "TE", "team": "ARI", "age": 27, "years_exp": 5 }
+}

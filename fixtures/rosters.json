@@ -1,0 +1,21 @@
+[
+  {
+    "roster_id": 1, "owner_id": "u1",
+    "starters": ["4034","6794","8155","5849","4866","7553","0","4195","SF"],
+    "players": ["4034","6794","8155","5849","4866","7553","4195","SF","9001","9002","9003"],
+    "reserve": ["9003"], "taxi": [],
+    "settings": { "wins": 1, "losses": 0, "ties": 0, "fpts": 128, "fpts_decimal": 42, "fpts_against": 99, "fpts_against_decimal": 8, "waiver_budget_used": 12 }
+  },
+  {
+    "roster_id": 2, "owner_id": "u2",
+    "starters": ["4881","7564","6801","5045","4993","8112","2216","4950","DAL"],
+    "players": ["4881","7564","6801","5045","4993","8112","2216","4950","DAL","9004"],
+    "reserve": [], "taxi": [],
+    "settings": { "wins": 0, "losses": 1, "ties": 0, "fpts": 99, "fpts_decimal": 8, "fpts_against": 128, "fpts_against_decimal": 42 }
+  },
+  {
+    "roster_id": 3, "owner_id": null,
+    "starters": [], "players": [], "reserve": [], "taxi": [],
+    "settings": {}
+  }
+]

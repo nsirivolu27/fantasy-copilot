@@ -1,0 +1,81 @@
+{
+  "name": "fantasy-copilot",
+  "version": "0.1.0",
+  "private": true,
+  "description": "A free, self-hosted fantasy football companion. Syncs your league, and helps with start/sit, waivers, streaming and trades.",
+  "license": "MIT",
+  "author": "Nihal Sirivolu (@nsirivolu27)",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nsirivolu27/fantasy-copilot.git"
+  },
+  "bugs": {
+    "url": "https://github.com/nsirivolu27/fantasy-copilot/issues"
+  },
+  "homepage": "https://github.com/nsirivolu27/fantasy-copilot#readme",
+  "keywords": [
+    "fantasy-football",
+    "sleeper",
+    "espn-fantasy",
+    "nfl",
+    "fantasy-sports",
+    "nextjs",
+    "self-hosted"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "prisma:schema": "node scripts/prisma-schema.mjs",
+    "dev": "npm run prisma:schema && next dev",
+    "build": "npm run prisma:schema && prisma generate --schema=prisma/generated-schema.prisma && next build",
+    "build:dashboard": "next build github-dashboard",
+    "dev:dashboard": "next dev github-dashboard -p 3218",
+    "start": "next start -H 0.0.0.0 -p ${PORT:-3000}",
+    "lint": "next lint",
+    "db:push": "npm run prisma:schema && prisma db push --schema=prisma/generated-schema.prisma",
+    "db:studio": "npm run prisma:schema && prisma studio --schema=prisma/generated-schema.prisma",
+    "db:generate": "npm run prisma:schema && prisma generate --schema=prisma/generated-schema.prisma",
+    "postinstall": "npm run db:generate",
+    "typecheck": "tsc --noEmit",
+    "test": "npm run test:sleeper && npm run test:injury && npm run test:rag && npm run test:projections && npm run test:trade && npm run test:format && npm run test:schedule && npm run test:matchups && npm run test:league && npm run test:auth && npm run test:live && npm run test:dashboard && npm run test:game-status && npm run test:player-stats && npm run test:boundaries",
+    "test:sleeper": "node --experimental-strip-types scripts/test-normalize.mjs",
+    "test:injury": "node --experimental-strip-types src/lib/injury/classify.test.mjs && node --experimental-strip-types src/lib/injury/risk.test.mjs && node --experimental-strip-types src/lib/injury/adjust.test.mjs && node --experimental-strip-types src/lib/injury/calibrate.test.mjs",
+    "test:player-stats": "node --experimental-strip-types scripts/test-player-stats.mjs && tsx scripts/test-player-stats.mts",
+    "test:rag": "node --experimental-strip-types scripts/test-rag.mjs",
+    "test:projections": "node --experimental-strip-types scripts/test-projections.mjs",
+    "backtest": "node --experimental-strip-types scripts/backtest.mjs",
+    "calibrate:injuries": "node --experimental-strip-types scripts/calibrate-injuries.mjs",
+    "test:trade": "node --experimental-strip-types scripts/test-trade.mjs",
+    "test:boundaries": "node --experimental-strip-types scripts/test-boundaries.mjs",
+    "test:schedule": "node --experimental-strip-types scripts/test-schedule.mjs",
+    "replit": "npm run db:push && next dev -H 0.0.0.0 -p ${PORT:-3000}",
+    "test:matchups": "node --experimental-strip-types scripts/test-matchups.mjs",
+    "mcp:stdio": "tsx mcp/stdio.ts",
+    "test:league": "node --experimental-strip-types scripts/test-league.mjs",
+    "test:format": "node --experimental-strip-types scripts/test-format.mjs",
+    "test:auth": "node --experimental-strip-types scripts/test-auth.mjs",
+    "test:live": "tsx scripts/test-live.mts",
+    "test:dashboard": "tsx scripts/test-dashboard.mts",
+    "test:game-status": "node --experimental-strip-types scripts/test-game-status.mjs"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.5.0",
+    "next": "^15.2.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "zod": "^3.24.0",
+    "mcp-handler": "^2.0.0",
+    "@modelcontextprotocol/sdk": "^1.12.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.0.0",
+    "@types/node": "^22.13.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "prisma": "^6.5.0",
+    "tailwindcss": "^4.0.0",
+    "typescript": "^5.7.0",
+    "tsx": "^4.19.0"
+  }
+}

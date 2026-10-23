@@ -1,0 +1,5 @@
+[
+  { "user_id": "u1", "display_name": "nihal", "avatar": null, "metadata": { "team_name": "tech rejects" } },
+  { "user_id": "u2", "display_name": "jeet", "avatar": null, "metadata": {} },
+  { "user_id": "u3", "display_name": "sam", "avatar": null, "metadata": { "team_name": "Sam's Squad" } }
+]
