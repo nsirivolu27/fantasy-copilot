@@ -1,0 +1,5 @@
+[
+  { "roster_id": 1, "matchup_id": 1, "points": 128.42, "custom_points": null },
+  { "roster_id": 2, "matchup_id": 1, "points": 99.08, "custom_points": null },
+  { "roster_id": 3, "matchup_id": null, "points": 0, "custom_points": null }
+]

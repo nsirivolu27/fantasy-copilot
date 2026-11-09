@@ -1,0 +1,10 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "fantasy-copilot",
+  "version": "0.1.0",
+  "description": "Sleeper fantasy football workflows grounded in a connected Fantasy Copilot MCP server.",
+  "author": { "name": "Nihal Sirivolu", "url": "https://github.com/nsirivolu27" },
+  "repository": "https://github.com/nsirivolu27/fantasy-copilot",
+  "license": "MIT",
+  "keywords": ["fantasy-football", "sleeper", "league-analytics"]
+}
