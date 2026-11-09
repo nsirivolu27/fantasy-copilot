@@ -21,10 +21,6 @@ export interface LineupPlayer {
   isOnBye?: boolean;
   /** False when no projection exists, so advice can say so instead of guessing. */
   hasProjection?: boolean;
-  /** One-line explanation when injury risk changed this week's projection. */
-  injuryNote?: string;
-  /** True when estimated availability is below 50%. */
-  injuryBenchFlag?: boolean;
 }
 
 export interface LineupSlot {

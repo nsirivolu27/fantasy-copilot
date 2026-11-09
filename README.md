@@ -2,127 +2,7 @@
 
 # Fantasy Copilot
 
-[![CI](https://github.com/nsirivolu27/fantasy-copilot/actions/workflows/ci.yml/badge.svg)](https://github.com/nsirivolu27/fantasy-copilot/actions/workflows/ci.yml)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
-[![PRs welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](./CONTRIBUTING.md)
-
-Fantasy Copilot includes an open, reproducible pipeline for studying NFL player knee-injury
-reports. It converts public weekly reports into traceable player episodes, joins them to actual
-game participation, and publishes the sample sizes and measured outcomes. The fantasy application
-uses those outputs, but the injury-report calibration can be reproduced without a league or
-database.
-
-Built on free public data. **No paid APIs and no required API keys.**
-
-## Open NFL player injury-report research
-
-The pipeline documents what public NFL reporting can support about knee injuries: which players
-were listed, how consecutive report weeks form an episode, whether a listed player participated,
-and how many scheduled games passed before participation resumed. Every published rate includes
-its sample count, and categories without diagnosis-level evidence remain visibly unmeasured.
-
-The source data contains administrative injury labels and participation records. It does not
-contain imaging, physical-exam findings, surgical details, or clinical diagnoses, so it cannot
-identify structural knee abnormalities or estimate an individual player's medical prognosis.
-
-### Reproduce the calibration
-
-Requirements: Node.js 22 or newer and internet access to the free nflverse release files. No
-database, fantasy league, or installed npm dependencies are required for calibration.
-
-```bash
-git clone https://github.com/nsirivolu27/fantasy-copilot.git fantasy-copilot-research
-cd fantasy-copilot-research
-npm run calibrate:injuries -- 2016-2025
-npm run test:injury
-```
-
-Use the plain repository URL when cloning; Markdown link syntax such as `[URL](URL)` is not a
-shell command. If a checkout already exists, update it instead of cloning over it:
-
-```bash
-cd fantasy-copilot
-git status --short
-git pull --ff-only origin main
-npm run calibrate:injuries -- 2016-2025
-npm run test:injury
-```
-
-If `git status --short package-lock.json` shows `?? package-lock.json`, that file came from the
-older checkout and will conflict with the now-committed lockfile. Move it aside before pulling.
-In PowerShell:
-
-```powershell
-Rename-Item package-lock.json package-lock.before-injury-update.json
-git pull --ff-only origin main
-```
-
-`Missing script: "calibrate:injuries"` means the checkout still predates the injury pipeline;
-`git pull --ff-only origin main` supplies it. A Windows `EPERM` error involving
-`next-swc.win32-x64-msvc.node` means a running Next.js/Node process has the binary open. It does
-not block the dependency-free calibration commands above. To reinstall the full application,
-first stop that checkout's `npm run dev` or `next dev` terminal with Ctrl+C, then run:
-
-```powershell
-Remove-Item -LiteralPath node_modules -Recurse -Force
-npm ci
-```
-
-The command downloads nflverse injury reports, weekly rosters, snap counts, and schedules. It
-preserves the reported injury text, joins players through GSIS IDs, groups consecutive report
-weeks into episodes, checks actual participation, and writes three reviewable outputs:
-
-| Output | Purpose |
-|---|---|
-| [`calibration-summary.json`](./src/lib/injury/calibration-summary.json) | Seasons, source URLs, sample sizes, methods, measured ranges, and play rates |
-| [`knee-injury-severity-map.json`](./src/lib/injury/knee-injury-severity-map.json) | Runtime category definitions and measured values where the source supports them |
-| [`risk.ts`](./src/lib/injury/risk.ts) | Named designation play rates and the availability model used by start/sit |
-
-The report classifier and availability assessment read those outputs at runtime; the calibration
-script does not create a separate unpublished result that can drift from the committed evidence.
-
-### Current injury-report sample
-
-The committed calibration covers the 2016–2025 regular seasons.
-
-| Measure | Result |
-|---|---:|
-| Eligible fantasy-player injury reports | 16,405 |
-| Reports classified as knee injuries | 2,655 |
-| Completed knee-injury episodes | 1,043 |
-| Unspecified knee games-missed range | 0–1 games (25th–75th percentile) |
-| Unspecified knee weekly play rate | 0.58 |
-| Questionable play rate | 0.64 across 762 reports |
-| Doubtful play rate | 0.00 across 74 reports |
-
-nflverse's official reports identify these records as generic **Knee** injuries. They do not
-provide enough diagnosis-level text to measure ACL, PCL, MCL, LCL, meniscus, patellar tendon,
-bone bruise, or tendinitis groups separately. Those rows remain seed assumptions in the map and
-have zero measured samples in the summary. Do not cite them as calibrated findings.
-
-### Definitions and interpretation
-
-| Term | Definition used here |
-|---|---|
-| Played | Logged at least one offensive, defensive, or special-teams snap |
-| Episode | Consecutive injury-report weeks for the same player and category |
-| Games missed | Scheduled regular-season team games before the player's next recorded snap |
-| Games-missed range | 25th and 75th percentiles across completed episodes |
-| Base return probability | Share of category report-weeks in which the player logged a snap |
-| Designation play rate | Share of knee report-weeks at that designation with a recorded snap |
-
-The analysis excludes episodes without an observed return, so the games-missed distribution is
-right-censored and can understate long absences. It treats any snap as participation, does not
-measure workload or physical function after return, and does not control for age, position,
-surgery, team reporting policy, or repeated injuries. Results describe the completeness and
-outcomes of historical injury reports. They are not medical guidance and should not be used for
-diagnosis, treatment, clearance, or return-to-play decisions.
-
-The calibration code is covered by the repository's [MIT license](./LICENSE). nflverse source
-data remains subject to its upstream terms. When publishing derived work, cite this repository,
-the exact commit, covered seasons, and the source URLs recorded in the calibration summary.
-
-## Fantasy application and live team dashboard
+## Live team dashboard
 
 **[Open the live dashboard](https://nsirivolu27.github.io/fantasy-copilot/?league=1391520474978066432&teams=2)**
 
@@ -137,9 +17,7 @@ receiving, kicking, defensive, and usage statistics, projected stats, and scorin
 Missing stats stay blank; incomplete scoring bonuses are identified beside the projection.
 
 GitHub Pages serves the interactive dashboard. The browser reads Sleeper every minute while
-visible; no scheduled commits are needed. The saved profiles for Babble, PS5, and tech rejects
-open with the configured team selected, and any visitor can add or remove their own browser-local
-profiles. See [dashboard setup](./GITHUB-DASHBOARD.md).
+visible; no scheduled commits are needed. See [dashboard setup](./GITHUB-DASHBOARD.md).
 
 ## Running app and plugin
 
@@ -151,6 +29,19 @@ The [plugin authoring package](./plugins/fantasy-copilot/) includes portable and
 plus a league check-in skill. The hosted MCP connection and public directory listing still need
 configuration. See [live hosting and plugin setup](./LIVE-AND-PLUGIN.md) for what is ready and
 what remains before hosting separate users' workspaces.
+
+[![CI](https://github.com/nsirivolu27/fantasy-copilot/actions/workflows/ci.yml/badge.svg)](https://github.com/nsirivolu27/fantasy-copilot/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
+[![PRs welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](./CONTRIBUTING.md)
+
+Your league, your data, your machine. Paste a Sleeper league ID and Fantasy Copilot pulls every
+roster, projects every player in **your** scoring, and tells you who to start, who to grab, and
+whether that trade is actually good, with the reasoning shown so you can argue with it.
+
+Built on free public data. **No paid APIs. No API keys. Nothing to buy.**
+
+It also tells you when it does not know. The projection model is 0.7% better than a season
+average, and that number is published inside the app rather than hidden.
 
 ## 🏈 Kick off
 
@@ -213,7 +104,6 @@ The whole sync path runs off `fixtures/`, no network needed.
 | `/streaming` | QB/TE/K/DST planned three weeks ahead by matchup |
 | `/chat` | Ask about your league; answers grounded in tool calls, never invented |
 | `/model` | The projection model's real accuracy, including where it is weak |
-| `/live` | Live Sleeper scores, selected teams, player statistics and league analytics |
 
 Plus an [MCP server](./MCP.md) so Claude Desktop or Cursor can query your league directly.
 
@@ -252,9 +142,8 @@ Where to run it:
 ## ✅ Tests
 
 ```bash
-npm test        # 188 checks, no database and no network needed
+npm test        # 118 checks, no database and no network needed
 npm run backtest 2024   # measure the projection model against a real season
-npm run build:dashboard # verify the static GitHub Pages dashboard
 ```
 
 ## 🗺️ Roadmap
@@ -277,8 +166,6 @@ npm run build:dashboard # verify the static GitHub Pages dashboard
 | Extra | Deployable: Postgres, Docker, health check, scheduled sync, site lock | ✅ Done |
 | Extra | Bye weeks derived from the nflverse schedule | ✅ Done |
 | Extra | Accounts: sign-up, sign-in, owner claim, invite codes | ✅ Done |
-| Extra | Live Sleeper dashboard and GitHub Pages profiles | ✅ Done |
-| Extra | Historical knee-injury calibration | ✅ Done |
 
 ## 📉 What the backtest says
 
@@ -332,14 +219,6 @@ The slot-filling order matters too: the optimizer fills the most restrictive slo
 is the fix for the classic FLEX bug where a naive pass hands your best RB to the FLEX and leaves
 RB2 empty.
 
-Injury availability is applied once, after the base projection. The reproducible nflverse
-calibration covers 16,405 reports from 2016–2025: 2,655 knee reports formed 1,043 completed
-episodes. An unspecified knee injury measured at 0–1 games missed with a 0.58 weekly return
-probability; Questionable players played in 64% of 762 reports, while none of the 74 Doubtful
-reports logged a snap. nflverse labels these reports as generic knee injuries, so diagnosis-level
-ACL, MCL, meniscus, and tendon ranges remain explicitly uncalibrated. The generated evidence is
-published in [`calibration-summary.json`](./src/lib/injury/calibration-summary.json).
-
 ## 🔎 Waivers and streaming
 
 `/waivers` ranks free agents by **what each adds to your starting lineup**: not by raw
@@ -390,19 +269,19 @@ It's lexical rather than embedding-based on purpose: embeddings cost money or ne
 and league data is short, factual and full of proper nouns, which is exactly where lexical
 scoring is strongest.
 
-**Tools, not memory.** Seventeen read-only tools are defined once in
-`src/lib/tools/registry.ts`, including projections, start/sit, waivers, trades, simulations,
-weekly digest, search, and the selected live dashboard. Chat, HTTP MCP, and stdio MCP all expose
-that same registry. There is deliberately no second list.
+**Tools, not memory.** Five read-only tools (`get_league_info`, `list_teams`, `get_roster`,
+`find_player`, `search_league`) are defined once in `src/lib/tools/registry.ts`. The chat
+route converts them into the model's function-calling format; the MCP server will expose
+the same array in Phase 10. There is deliberately no second list.
 
 Doing both means the app works across the whole range of models someone might plug in: a
 weak local model still gets correct facts pushed into its context, while a strong one goes
 and fetches exactly what it needs. Tool calls are shown in the UI, collapsible, so you can
 check the work.
 
-The system prompt forbids stating any number that did not come from a tool or retrieved context.
-Start/sit answers use the optimizer and calibrated availability pipeline, and missing projections
-are reported as missing rather than guessed.
+The system prompt forbids stating any number that didn't come from a tool or the retrieved
+context, and forbids inventing projections or start/sit advice that the app hasn't built
+yet. Ask it who to start and it will tell you that isn't built, rather than guessing.
 
 ## 🎨 Design
 
@@ -422,12 +301,9 @@ src/lib/core/          pure domain layer, zero dependencies
   schedule.ts          bye weeks derived from the schedule
 src/lib/platforms/     the adapter boundary; SleeperAdapter implements all of it
 src/lib/projections/   scoring (league aware), model v2, projection runs
-src/lib/injury/        classifier, calibrated availability and projection adjustment
-src/lib/live/          live snapshot cache, profile parsing and selected-team filtering
 src/lib/rag/           BM25 index over documents built from the synced league
 src/lib/tools/         one registry, read by both chat and MCP
 src/lib/{lineup,waivers,league,trade}/service.ts   database to core bridges
-github-dashboard/      static GitHub Pages build using the shared live dashboard
 infra/                 AWS CDK stack
 ```
 

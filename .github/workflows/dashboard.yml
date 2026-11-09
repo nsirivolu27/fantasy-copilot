@@ -2,7 +2,7 @@ name: Publish team dashboard
 
 on:
   push:
-    branches: [main]
+    branches: [main, codex/live-league-plugin]
   workflow_dispatch:
 
 permissions:

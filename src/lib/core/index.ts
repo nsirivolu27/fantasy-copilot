@@ -43,4 +43,3 @@ export * from "./trade/value";
 export * from "./league";
 export * from "./matchups";
 export * from "./schedule";
-export * from "./playerStats";

@@ -1,10 +1,11 @@
-# Developer notes
+# CLAUDE.md
 
-A concise development guide for this repository.
+Context for Claude Code working in this repo.
 
 **The full brief is [AGENTS.md](./AGENTS.md).** Read it before writing code. It covers the
 architecture, the commands, the testing conventions and the twelve rules the project is built
-around. This companion guide repeats the handful of rules that are expensive to rediscover.
+around. This file exists so Claude Code finds that brief automatically, and repeats the handful
+of rules that are expensive to rediscover.
 
 ## What this is
 

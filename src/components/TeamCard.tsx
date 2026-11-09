@@ -12,20 +12,11 @@ export interface RosterRow {
   position?: string | null;
   nflTeam?: string | null;
   injuryStatus?: string | null;
-  injuryNote?: string | null;
   positionColor: string;
   projectedPoints?: number | null;
   floor?: number | null;
   ceiling?: number | null;
   confidence?: number | null;
-  stats?: {
-    gamesPlayed: number;
-    seasonPoints: number;
-    pointsPerGame: number;
-    latestWeek: number;
-    latestPoints: number;
-    totals: { key: string; label: string; value: number }[];
-  } | null;
 }
 
 export interface TeamCardProps {
@@ -114,106 +105,51 @@ function RosterSection({ label, rows }: { label: string; rows: RosterRow[] }) {
       </p>
       <ul>
         {rows.map((r) => (
-          <li key={r.id}>
-            <details className="group rounded-md hoverable">
-              <summary className="flex cursor-pointer list-none items-center gap-2 px-2 py-1.5">
-                <span className="w-14 shrink-0 text-[11px] font-medium text-[var(--muted)]">
-                  {r.slotLabel}
+          <li key={r.id} className="flex items-center gap-2 rounded-md px-2 py-1.5 hoverable">
+            <span className="w-14 shrink-0 text-[11px] font-medium text-[var(--muted)]">
+              {r.slotLabel}
+            </span>
+            <Badge className={r.positionColor}>{r.position ?? "-"}</Badge>
+            <span className="min-w-0 flex-1 truncate text-sm">{r.playerName}</span>
+            {r.injuryStatus ? (
+              <Badge tone="bad" title="Injury status">
+                {r.injuryStatus}
+              </Badge>
+            ) : null}
+            <span className="w-8 shrink-0 text-right text-[11px] text-[var(--muted)]">
+              {r.nflTeam ?? "FA"}
+            </span>
+            {r.projectedPoints != null ? (
+              <span
+                className="w-14 shrink-0 text-right"
+                title={
+                  r.floor != null && r.ceiling != null
+                    ? `Floor ${r.floor.toFixed(1)}, ceiling ${r.ceiling.toFixed(1)}`
+                    : undefined
+                }
+              >
+                <span className="text-[13px] font-semibold tabular-nums">
+                  {r.projectedPoints.toFixed(1)}
                 </span>
-                <Badge className={r.positionColor}>{r.position ?? "-"}</Badge>
-                <span className="min-w-0 flex-1 truncate text-sm">{r.playerName}</span>
-                {r.injuryStatus ? (
-                  <Badge tone="bad" title="Injury status">
-                    {r.injuryStatus}
-                  </Badge>
-                ) : null}
-                <span className="w-8 shrink-0 text-right text-[11px] text-[var(--muted)]">
-                  {r.nflTeam ?? "FA"}
-                </span>
-                {r.projectedPoints != null ? (
+                {r.confidence != null ? (
                   <span
-                    className="w-14 shrink-0 text-right"
-                    title={
-                      r.floor != null && r.ceiling != null
-                        ? `Floor ${r.floor.toFixed(1)}, ceiling ${r.ceiling.toFixed(1)}`
-                        : undefined
-                    }
+                    className={`ml-1 text-[10px] ${
+                      r.confidence >= 0.66
+                        ? "text-[var(--good-fg)]"
+                        : r.confidence >= 0.4
+                          ? "text-[var(--warn-fg)]"
+                          : "text-[var(--faint)]"
+                    }`}
+                    title={`Confidence ${(r.confidence * 100).toFixed(0)}%`}
                   >
-                    <span className="text-[13px] font-semibold tabular-nums">
-                      {r.projectedPoints.toFixed(1)}
-                    </span>
-                    {r.confidence != null ? (
-                      <span
-                        className={`ml-1 text-[10px] ${
-                          r.confidence >= 0.66
-                            ? "text-[var(--good-fg)]"
-                            : r.confidence >= 0.4
-                              ? "text-[var(--warn-fg)]"
-                              : "text-[var(--faint)]"
-                        }`}
-                        title={`Confidence ${(r.confidence * 100).toFixed(0)}%`}
-                      >
-                        ●
-                      </span>
-                    ) : null}
+                    ●
                   </span>
                 ) : null}
-                <span className="text-xs text-[var(--faint)] transition-transform group-open:rotate-90" aria-hidden>
-                  {">"}
-                </span>
-              </summary>
-              <PlayerDetails row={r} />
-            </details>
+              </span>
+            ) : null}
           </li>
         ))}
       </ul>
     </div>
   );
-}
-
-function PlayerDetails({ row }: { row: RosterRow }) {
-  const summaryStats = [
-    row.projectedPoints != null ? { label: "Projection", value: row.projectedPoints.toFixed(1) } : null,
-    row.floor != null && row.ceiling != null
-      ? { label: "Range", value: `${row.floor.toFixed(1)}–${row.ceiling.toFixed(1)}` }
-      : null,
-    row.stats ? { label: `Week ${row.stats.latestWeek}`, value: row.stats.latestPoints.toFixed(1) } : null,
-    row.stats ? { label: "Season avg", value: row.stats.pointsPerGame.toFixed(1) } : null,
-    row.stats ? { label: "Season total", value: row.stats.seasonPoints.toFixed(1) } : null,
-    row.stats ? { label: "Games", value: String(row.stats.gamesPlayed) } : null,
-  ].filter((stat): stat is { label: string; value: string } => stat !== null);
-
-  return (
-    <div className="border-t border-[var(--border-soft)] px-3 py-3">
-      {summaryStats.length > 0 ? (
-        <dl className="grid grid-cols-2 gap-2 sm:grid-cols-6">
-          {summaryStats.map((stat) => (
-            <div key={stat.label} className="rounded-md bg-[var(--panel-2)] px-2 py-1.5">
-              <dt className="text-[10px] uppercase tracking-wide text-[var(--muted)]">{stat.label}</dt>
-              <dd className="mt-0.5 text-sm font-semibold tabular-nums">{stat.value}</dd>
-            </div>
-          ))}
-        </dl>
-      ) : (
-        <p className="text-xs text-[var(--muted)]">No projection or weekly statistics are stored yet.</p>
-      )}
-
-      {row.stats?.totals.length ? (
-        <dl className="mt-3 flex flex-wrap gap-x-4 gap-y-2">
-          {row.stats.totals.map((stat) => (
-            <div key={stat.key}>
-              <dt className="text-[10px] uppercase tracking-wide text-[var(--muted)]">{stat.label}</dt>
-              <dd className="text-xs font-medium tabular-nums">{formatStat(stat.value)}</dd>
-            </div>
-          ))}
-        </dl>
-      ) : null}
-
-      {row.injuryNote ? <p className="mt-3 text-xs text-[var(--warn-fg)]">{row.injuryNote}</p> : null}
-    </div>
-  );
-}
-
-function formatStat(value: number): string {
-  return Number.isInteger(value) ? String(value) : value.toFixed(1);
 }

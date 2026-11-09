@@ -1,4 +1,4 @@
-import { parseCsv, num } from "./csv.ts";
+import { parseCsv, num } from "./csv";
 
 /**
  * nflverse weekly player stats, free, public, no key.
@@ -30,24 +30,6 @@ export interface NflverseWeek {
   receptions: number | null;
   fantasyPointsPpr: number | null;
   raw: Record<string, string>;
-}
-
-export interface NflverseInjuryReport {
-  season: string;
-  seasonType: string;
-  team: string;
-  week: number;
-  gsisId: string;
-  position: string | null;
-  fullName: string;
-  injuryText: string;
-  reportStatus: string | null;
-}
-
-export interface NflverseParticipation {
-  season: string;
-  week: number;
-  gsisIds: string[];
 }
 
 export async function fetchWeeklyStats(season: string): Promise<NflverseWeek[]> {
@@ -96,72 +78,6 @@ export async function fetchWeeklyStats(season: string): Promise<NflverseWeek[]> 
   return out;
 }
 
-export async function fetchInjuryReports(season: string): Promise<NflverseInjuryReport[]> {
-  const rows = await fetchReleaseCsv(`injuries/injuries_${season}.csv`, `injuries for ${season}`);
-
-  return rows.flatMap((row) => {
-    const week = num(row.week);
-    const gsisId = row.gsis_id ?? "";
-    if ((row.game_type ?? "REG") !== "REG" || week == null || !gsisId) return [];
-    if (!FANTASY_POSITIONS.has(row.position ?? "")) return [];
-
-    const injuryText = [
-      row.report_primary_injury,
-      row.report_secondary_injury,
-      row.practice_primary_injury,
-      row.practice_secondary_injury,
-    ]
-      .filter(Boolean)
-      .join(" — ");
-
-    return [{
-      season: row.season ?? season,
-      seasonType: row.game_type ?? "REG",
-      team: row.team ?? "",
-      week,
-      gsisId,
-      position: row.position || null,
-      fullName: row.full_name || gsisId,
-      injuryText,
-      reportStatus: row.report_status || null,
-    }];
-  });
-}
-
-/** One row per week with every player who logged an offense, defense or special-teams snap. */
-export async function fetchParticipation(season: string): Promise<NflverseParticipation[]> {
-  const rosterRows = await fetchReleaseCsv(
-    `weekly_rosters/roster_weekly_${season}.csv`,
-    `weekly rosters for ${season}`,
-  );
-  const snapRows = await fetchReleaseCsv(
-    `snap_counts/snap_counts_${season}.csv`,
-    `snap counts for ${season}`,
-  );
-  const gsisIdByPfrId = new Map<string, string>();
-  for (const row of rosterRows) {
-    if (row.pfr_id && row.gsis_id) gsisIdByPfrId.set(row.pfr_id, row.gsis_id);
-  }
-
-  const byWeek = new Map<number, Set<string>>();
-  for (const row of snapRows) {
-    const week = num(row.week);
-    const gsisId = gsisIdByPfrId.get(row.pfr_player_id ?? "") ?? "";
-    const totalSnaps =
-      (num(row.offense_snaps) ?? 0) +
-      (num(row.defense_snaps) ?? 0) +
-      (num(row.st_snaps) ?? 0);
-    if ((row.game_type ?? "REG") !== "REG" || week == null || !gsisId || totalSnaps === 0) {
-      continue;
-    }
-    const ids = byWeek.get(week) ?? new Set<string>();
-    ids.add(gsisId);
-    byWeek.set(week, ids);
-  }
-
-  return [...byWeek].map(([week, ids]) => ({ season, week, gsisIds: [...ids] }));
-}
-
 /**
  * Every NFL game, used to derive bye weeks (see core/schedule.ts).
  * One file covers all seasons, so it's fetched once and filtered.
@@ -184,13 +100,4 @@ export async function fetchSchedule(): Promise<
       homeTeam: row.home_team ?? "",
     }))
     .filter((g) => g.season && g.week > 0 && g.awayTeam && g.homeTeam);
-}
-
-async function fetchReleaseCsv(path: string, description: string): Promise<Record<string, string>[]> {
-  const res = await fetch(`${RELEASE_BASE}/${path}`, {
-    redirect: "follow",
-    cache: "no-store",
-  });
-  if (!res.ok) throw new Error(`nflverse returned ${res.status} for ${description}.`);
-  return parseCsv(await res.text());
 }

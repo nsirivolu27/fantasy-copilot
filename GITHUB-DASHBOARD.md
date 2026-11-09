@@ -77,6 +77,7 @@ To reuse the dashboard, edit those profiles (or use an empty array), update `bas
 `github-dashboard/next.config.mjs` to match your repository, and update the README links.
 
 Set GitHub Pages' source to **GitHub Actions**. `.github/workflows/dashboard.yml` builds and
-deploys on pushes to `main`. GitHub does not need any Sleeper credentials.
+deploys on pushes to main or the current review branch. After merging, remove the review
+branch from its trigger so only main publishes. GitHub does not need any Sleeper credentials.
 
 Validation: `npm test`, `npm run typecheck`, `npm run build`, `npm run build:dashboard`.

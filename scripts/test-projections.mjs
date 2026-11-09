@@ -83,12 +83,18 @@ test("a bye week projects zero with a reason, not a low number", () => {
   assert.match(p.reasoning.join(" "), /bye/i);
 });
 
-test("the base model stays injury-neutral so availability is applied once", () => {
+test("an Out player projects zero even with strong recent games", () => {
+  const games = [1, 2, 3, 4].map((w) => game(w, CHASE_W5, 12, PPR));
+  const p = project({ games, injuryStatus: "Out" });
+  assert.equal(p.projectedPoints, 0);
+});
+
+test("Questionable takes a haircut and lowers confidence", () => {
   const games = [1, 2, 3, 4].map((w) => game(w, CHASE_W5, 12, PPR));
   const healthy = project({ games });
-  const designated = project({ games, injuryStatus: "Questionable" });
-  assert.equal(designated.projectedPoints, healthy.projectedPoints);
-  assert.equal(designated.confidence, healthy.confidence);
+  const questionable = project({ games, injuryStatus: "Questionable" });
+  assert.ok(questionable.projectedPoints < healthy.projectedPoints);
+  assert.ok(questionable.confidence < healthy.confidence);
 });
 
 test("recent games are weighted more heavily than older ones", () => {
@@ -117,8 +123,8 @@ test("no history falls back to replacement level with low confidence", () => {
 });
 
 test("a steady role scores higher confidence than an erratic one", () => {
-  const steady = computeConfidence({ gameCount: 4, opportunities: [10, 10, 11, 9] });
-  const erratic = computeConfidence({ gameCount: 4, opportunities: [1, 18, 2, 15] });
+  const steady = computeConfidence({ gameCount: 4, opportunities: [10, 10, 11, 9], questionable: false });
+  const erratic = computeConfidence({ gameCount: 4, opportunities: [1, 18, 2, 15], questionable: false });
   assert.ok(steady > erratic);
   assert.ok(steady <= 0.95 && erratic >= 0.05);
 });

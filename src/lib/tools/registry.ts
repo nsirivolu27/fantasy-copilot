@@ -16,8 +16,10 @@ import { parseTeamSelection } from "@/lib/live/profile";
 /**
  * The tool registry: every capability defined exactly once.
  *
- * The chat route and both MCP transports expose this same array. Adding a tool
- * here adds it everywhere. There must never be a second list.
+ * This is the keystone of later phases, the chat route converts these to the
+ * model's function-calling format, and the MCP server (Phase 10) will expose
+ * the same array. Adding a tool here adds it everywhere. There must never be
+ * a second list.
  *
  * Every tool is read-only. Every handler returns structured data plus a short
  * human-readable summary, so a model that can't call tools can still be handed

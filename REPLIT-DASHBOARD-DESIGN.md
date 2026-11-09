@@ -1,6 +1,6 @@
 # Replit handoff: iOS-style dashboard design
 
-Work in https://github.com/nsirivolu27/fantasy-copilot
+Work in https://github.com/nsirivolu27/fantasy-copilot on `codex/live-league-plugin`
 (or main after this branch is merged). Pull the current branch before editing.
 
 ## Requested next pass

@@ -60,7 +60,6 @@ export interface NormalizedPlayer {
   age?: number;
   yearsExp?: number;
   injuryStatus?: string;
-  injuryBodyPart?: string;
   injuryNote?: string;
   byeWeek?: number;
 }
