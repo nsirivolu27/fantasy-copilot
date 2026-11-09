@@ -1,7 +1,6 @@
 import { prisma } from "@/lib/db";
 import { parseJson } from "@/lib/json";
 import { adviseLineup, type LineupAdvice, type LineupPlayer } from "@/lib/core";
-import { injuryAdjustedProjection } from "@/lib/injury/adjust";
 import type { NormalizedSlot } from "@/lib/platforms/types";
 
 /**
@@ -13,15 +12,6 @@ export interface StartSitResult extends LineupAdvice {
   teamName: string;
   week: number;
   hasProjections: boolean;
-  injuryAdjustments: {
-    playerId: string;
-    playerName: string;
-    baseProjection: number;
-    adjustedProjection: number;
-    availability: number;
-    benchFlag: boolean;
-    note: string;
-  }[];
 }
 
 export async function getStartSitAdvice(
@@ -56,32 +46,14 @@ export async function getStartSitAdvice(
   });
   const byPlayer = new Map(projections.map((p) => [p.playerId, p]));
 
-  const injuryAdjustments: StartSitResult["injuryAdjustments"] = [];
   const roster: LineupPlayer[] = spots.map((s) => {
     const projection = byPlayer.get(s.playerId);
-    const baseProjection = projection?.projectedPoints ?? 0;
-    const injuryText = [s.player.injuryBodyPart, s.player.injuryNote].filter(Boolean).join(" — ");
-    const adjusted = injuryAdjustedProjection(
-      baseProjection,
-      injuryText,
-      s.player.injuryStatus,
-      null,
-    );
-    if (adjusted.adjustedProjection !== adjusted.baseProjection || adjusted.benchFlag) {
-      injuryAdjustments.push({
-        playerId: s.playerId,
-        playerName: s.player.fullName,
-        ...adjusted,
-      });
-    }
     return {
       playerId: s.playerId,
       name: s.player.fullName,
       position: s.player.position ?? "FLEX",
-      projectedPoints: adjusted.adjustedProjection,
+      projectedPoints: projection?.projectedPoints ?? 0,
       injuryStatus: s.player.injuryStatus,
-      injuryNote: adjusted.adjustedProjection !== adjusted.baseProjection ? adjusted.note : undefined,
-      injuryBenchFlag: adjusted.benchFlag,
       isOnBye: s.player.byeWeek != null && s.player.byeWeek === league.currentWeek,
       hasProjection: projection != null,
     };
@@ -96,6 +68,5 @@ export async function getStartSitAdvice(
     teamName: team.name,
     week: league.currentWeek,
     hasProjections: projections.length > 0,
-    injuryAdjustments,
   };
 }

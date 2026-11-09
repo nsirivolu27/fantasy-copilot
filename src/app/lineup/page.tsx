@@ -64,23 +64,6 @@ export default async function LineupPage() {
         <Banner key={i} tone="bad" title={a.message} />
       ))}
 
-      {advice.injuryAdjustments.length > 0 ? (
-        <Card>
-          <CardHeader title="Injury-adjusted projections" subtitle="Expected points include estimated availability" />
-          <ul className="divide-y divide-[var(--border)]">
-            {advice.injuryAdjustments.map((adjustment) => (
-              <li key={adjustment.playerId} className="flex items-start gap-3 p-4">
-                <div className="min-w-0 flex-1">
-                  <p className="text-sm font-medium">{adjustment.playerName}</p>
-                  <p className="mt-1 text-[13px] text-[var(--muted)]">{adjustment.note}</p>
-                </div>
-                {adjustment.benchFlag ? <Badge tone="warn">Bench</Badge> : null}
-              </li>
-            ))}
-          </ul>
-        </Card>
-      ) : null}
-
       <div className="grid grid-cols-3 gap-2">
         <Stat label="Current" value={advice.currentTotal.toFixed(1)} hint="projected" />
         <Stat label="Optimal" value={advice.optimalTotal.toFixed(1)} hint="projected" />

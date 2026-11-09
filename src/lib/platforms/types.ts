@@ -60,7 +60,6 @@ export interface NormalizedPlayer {
   age?: number;
   yearsExp?: number;
   injuryStatus?: string;
-  injuryBodyPart?: string;
   injuryNote?: string;
   byeWeek?: number;
 }
@@ -78,15 +77,11 @@ export interface NormalizedRoster {
 }
 
 export interface NormalizedMatchup {
-  playerPoints?: Record<string, number>;
   week: number;
   platformTeamId: string;
   /** Teams sharing a matchupId play each other. */
   matchupId: string;
   points: number;
-  /** The lineup for this scoring week, which may differ from the current roster. */
-  starters?: string[];
-  players?: string[];
 }
 
 export interface NormalizedTransaction {

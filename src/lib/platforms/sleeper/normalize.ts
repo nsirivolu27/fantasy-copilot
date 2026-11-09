@@ -10,7 +10,6 @@ import {
 } from "./pure";
 import type {
   NormalizedLeague,
-  NormalizedMatchup,
   NormalizedRosterSpot,
   NormalizedPlayer,
   NormalizedRoster,
@@ -69,33 +68,6 @@ export const SleeperRosterSchema = z.object({
 export type SleeperLeague = z.infer<typeof SleeperLeagueSchema>;
 export type SleeperUser = z.infer<typeof SleeperUserSchema>;
 export type SleeperRoster = z.infer<typeof SleeperRosterSchema>;
-
-const matchupSchema = z.array(z.object({
-  roster_id: z.union([z.number().int(), z.string().min(1)]),
-  matchup_id: z.union([z.number().int(), z.string().min(1)]).nullable(),
-  points: z.number().finite(),
-  custom_points: z.number().finite().nullish(),
-  starters: z.array(z.string()).nullish(),
-  players: z.array(z.string()).nullish(),
-  players_points: z.record(z.number().finite()).nullish(),
-}));
-
-/** Validate the entire score snapshot so missing points never masquerade as zero. */
-export function normalizeMatchups(raw: unknown, week: number): NormalizedMatchup[] {
-  const parsed = matchupSchema.safeParse(raw);
-  if (!parsed.success) throw new PlatformError("Sleeper matchup scores were not in the expected shape.", "bad_shape");
-  const ids = parsed.data.map((row) => String(row.roster_id));
-  if (new Set(ids).size !== ids.length) throw new PlatformError("Sleeper returned duplicate matchup scores.", "bad_shape");
-  return parsed.data.map((row) => ({
-    week,
-    platformTeamId: String(row.roster_id),
-    matchupId: row.matchup_id === null ? `bye:${row.roster_id}` : String(row.matchup_id),
-    points: row.custom_points ?? row.points,
-    starters: row.starters ?? undefined,
-    players: row.players ?? undefined,
-    playerPoints: row.players_points ?? undefined,
-  }));
-}
 
 // The pure, dependency-free helpers live in pure.ts so they can be unit
 // tested without Prisma/Next/zod. Re-exported here for convenience.
@@ -225,7 +197,6 @@ export function normalizePlayer(id: string, raw: unknown): NormalizedPlayer {
     age: typeof p.age === "number" ? p.age : undefined,
     yearsExp: typeof p.years_exp === "number" ? p.years_exp : undefined,
     injuryStatus: typeof p.injury_status === "string" ? p.injury_status : undefined,
-    injuryBodyPart: typeof p.injury_body_part === "string" ? p.injury_body_part : undefined,
     injuryNote: typeof p.injury_notes === "string" ? p.injury_notes : undefined,
   };
 }

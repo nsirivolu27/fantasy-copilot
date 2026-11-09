@@ -51,6 +51,8 @@ export interface ProjectionInput {
   seasonPointsPerOpportunity?: number;
   /** Multiplier from the opponent's points allowed to this position. */
   matchupMultiplier?: number;
+  /** Sleeper injury designation: Out, Doubtful, Questionable, IR, etc. */
+  injuryStatus?: string | null;
   isByeWeek?: boolean;
   /** Replacement-level points for this position, used when a player has no history. */
   replacementLevel?: number;
@@ -70,12 +72,19 @@ const RECENCY_WEIGHTS = [0.4, 0.3, 0.2, 0.1];
 /** Matchup adjustment is capped so it can never dominate the projection. */
 const MATCHUP_CAP = 0.15;
 
+const OUT_STATUSES = new Set(["OUT", "IR", "PUP", "SUSP", "NA", "DOUBTFUL"]);
+
 export function project(input: ProjectionInput): ProjectionOutput {
   const reasoning: string[] = [];
   const replacement = input.replacementLevel ?? 0;
 
   if (input.isByeWeek) {
     return zero("On bye this week.", reasoning);
+  }
+
+  const status = (input.injuryStatus ?? "").toUpperCase();
+  if (status && OUT_STATUSES.has(status)) {
+    return zero(`Listed ${input.injuryStatus}, projected zero.`, reasoning);
   }
 
   const games = input.games.slice(0, 4);
@@ -140,16 +149,23 @@ export function project(input: ProjectionInput): ProjectionOutput {
     );
   }
 
-  // 5. Floor and ceiling from the player's own spread, widened on thin samples.
+  // 5. Questionable players keep playing but carry risk.
+  if (status === "QUESTIONABLE") {
+    base *= 0.85;
+    reasoning.push("Listed Questionable 15% haircut and lower confidence.");
+  }
+
+  // 6. Floor and ceiling from the player's own spread, widened on thin samples.
   const spread = percentileSpread(scored);
   const widen = scored.length >= 4 ? 1 : 1.25;
   const floor = Math.max(0, base - spread * widen);
   const ceiling = base + spread * widen;
 
-  // 6. Confidence: sample size and role stability.
+  // 7. Confidence: sample size, role stability, injury certainty.
   const confidence = computeConfidence({
     gameCount: scored.length,
     opportunities: games.map((g) => g.opportunity),
+    questionable: status === "QUESTIONABLE",
   });
 
   reasoning.push(
@@ -198,6 +214,7 @@ export function quantile(sorted: number[], q: number): number {
 export function computeConfidence(args: {
   gameCount: number;
   opportunities: number[];
+  questionable: boolean;
 }): number {
   // Sample size: 4 games is as confident as this model gets on history alone.
   const sample = Math.min(args.gameCount, 4) / 4;
@@ -209,7 +226,8 @@ export function computeConfidence(args: {
   const cv = mean > 0 ? Math.sqrt(variance) / mean : 1;
   const stability = clamp(1 - cv, 0, 1);
 
-  const confidence = 0.25 + 0.45 * sample + 0.3 * stability;
+  let confidence = 0.25 + 0.45 * sample + 0.3 * stability;
+  if (args.questionable) confidence *= 0.75;
   return clamp(confidence, 0.05, 0.95);
 }
 
