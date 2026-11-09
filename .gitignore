@@ -12,3 +12,5 @@ player_stats_*.csv
 backtest-results.json
 github-dashboard/out/
 *.tsbuildinfo
+graphify-out/
+infra/cdk.out/

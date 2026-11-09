@@ -20,7 +20,7 @@ fi
 # and a rolling deployment that adds a column brings it with it.
 echo "[entrypoint] applying schema"
 node scripts/prisma-schema.mjs
-./node_modules/.bin/prisma db push --schema=prisma/generated-schema.prisma --skip-generate
+node node_modules/prisma/build/index.js db push --schema=prisma/generated-schema.prisma --skip-generate
 
 echo "[entrypoint] starting server on ${PORT:-3000}"
 exec node server.js

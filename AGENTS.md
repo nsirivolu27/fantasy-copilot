@@ -2,7 +2,7 @@
 
 Context for coding agents working in this repo.
 
-**This file is canonical.** `DEVELOPER-NOTES.md` and `.cursorrules` are
+**This file is canonical.** Codex reads it automatically. `CLAUDE.md` and `.cursorrules` are
 shorter pointers to it, so the rules live in one place and cannot drift.
 
 ## What this is
